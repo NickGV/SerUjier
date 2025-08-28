@@ -1,7 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calculator, Users, UserCheck, Clock, Settings, LogOut, Home } from "lucide-react";
+import {
+  Calculator,
+  Users,
+  UserCheck,
+  Clock,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
 interface User {
@@ -15,30 +22,99 @@ interface BottomNavigationProps {
   onLogout: () => void;
 }
 
-export function BottomNavigation({ currentUser, onLogout }: BottomNavigationProps) {
+export function BottomNavigation({
+  currentUser,
+  onLogout,
+}: BottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const adminNavItems = [
-    { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
-    { id: "conteo", label: "Conteo", icon: Calculator, description: "Registrar asistencia", path: "/conteo" },
-    { id: "simpatizantes", label: "Simpatizantes", icon: Users, description: "Gestionar visitantes", path: "/simpatizantes" },
-    { id: "miembros", label: "Miembros", icon: UserCheck, description: "Gestionar miembros", path: "/miembros" },
-    { id: "historial", label: "Historial", icon: Clock, description: "Ver registros", path: "/historial" },
-    { id: "ujieres", label: "Usuarios", icon: Settings, description: "Gestionar usuarios", path: "/ujieres" },
+    // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
+    {
+      id: "conteo",
+      label: "Conteo",
+      icon: Calculator,
+      description: "Registrar asistencia",
+      path: "/conteo",
+    },
+    {
+      id: "simpatizantes",
+      label: "Simpatizantes",
+      icon: Users,
+      description: "Gestionar visitantes",
+      path: "/simpatizantes",
+    },
+    {
+      id: "miembros",
+      label: "Miembros",
+      icon: UserCheck,
+      description: "Gestionar miembros",
+      path: "/miembros",
+    },
+    {
+      id: "historial",
+      label: "Historial",
+      icon: Clock,
+      description: "Ver registros",
+      path: "/historial",
+    },
+    {
+      id: "ujieres",
+      label: "Usuarios",
+      icon: Settings,
+      description: "Gestionar usuarios",
+      path: "/ujieres",
+    },
   ];
 
   const directivaNavItems = [
-    { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
-    { id: "conteo", label: "Conteo", icon: Calculator, description: "Registrar asistencia", path: "/conteo" },
-    { id: "simpatizantes", label: "Simpatizantes", icon: Users, description: "Gestionar visitantes", path: "/simpatizantes" },
-    { id: "historial", label: "Historial", icon: Clock, description: "Ver registros", path: "/historial" },
-    { id: "ujieres", label: "Usuarios", icon: Settings, description: "Ver usuarios", path: "/ujieres" },
+    // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
+    {
+      id: "conteo",
+      label: "Conteo",
+      icon: Calculator,
+      description: "Registrar asistencia",
+      path: "/conteo",
+    },
+    {
+      id: "simpatizantes",
+      label: "Simpatizantes",
+      icon: Users,
+      description: "Gestionar visitantes",
+      path: "/simpatizantes",
+    },
+    {
+      id: "historial",
+      label: "Historial",
+      icon: Clock,
+      description: "Ver registros",
+      path: "/historial",
+    },
+    {
+      id: "ujieres",
+      label: "Usuarios",
+      icon: Settings,
+      description: "Ver usuarios",
+      path: "/ujieres",
+    },
   ];
 
   const ujierNavItems = [
-    { id: "conteo", label: "Conteo", icon: Calculator, description: "Registrar asistencia", path: "/conteo" },
-    { id: "simpatizantes", label: "Simpatizantes", icon: Users, description: "Gestionar visitantes", path: "/simpatizantes" },
+    {
+      id: "conteo",
+      label: "Conteo",
+      icon: Calculator,
+      description: "Registrar asistencia",
+      path: "/conteo",
+    },
+    {
+      id: "simpatizantes",
+      label: "Simpatizantes",
+      icon: Users,
+      description: "Gestionar visitantes",
+      path: "/simpatizantes",
+    },
   ];
 
   const getNavItems = () => {
@@ -90,19 +166,25 @@ export function BottomNavigation({ currentUser, onLogout }: BottomNavigationProp
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm bg-white/95 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm bg-white/95 z-50 pb-safe">
       {/* User Info */}
-      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/90">
+      <div className="px-3 py-2.5 border-b border-gray-100 bg-gray-50/90">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold text-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-white">
                 {currentUser?.nombre?.charAt(0).toUpperCase()}
               </span>
             </div>
-            <div>
-              <div className="text-xs font-semibold text-gray-900">{currentUser?.nombre}</div>
-              <div className={`text-xs px-1.5 py-0.5 rounded-full border ${getRoleColor(currentUser?.rol)}`}>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-gray-900 truncate">
+                {currentUser?.nombre}
+              </div>
+              <div
+                className={`text-xs px-2 py-1 rounded-full border ${getRoleColor(
+                  currentUser?.rol
+                )} inline-block`}
+              >
                 {getRoleLabel(currentUser?.rol)}
               </div>
             </div>
@@ -111,17 +193,17 @@ export function BottomNavigation({ currentUser, onLogout }: BottomNavigationProp
             variant="ghost"
             size="sm"
             onClick={onLogout}
-            className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-1"
+            className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 flex-shrink-0"
             title="Cerrar sesión"
           >
-            <LogOut className="w-3 h-3" />
-            <span className="ml-1 text-xs">Salir</span>
+            <LogOut className="w-4 h-4" />
+            <span className="ml-1.5 text-xs hidden sm:inline">Salir</span>
           </Button>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex safe-area-bottom">
+      <div className="flex ">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = isCurrentPath(item.path);
@@ -130,7 +212,7 @@ export function BottomNavigation({ currentUser, onLogout }: BottomNavigationProp
             <Button
               key={item.id}
               variant="ghost"
-              className={`flex-1 flex flex-col items-center gap-1 h-14 rounded-none border-r border-gray-100 last:border-r-0 ${
+              className={`flex-1 flex flex-col items-center gap-1.5 h-14 sm:h-16  rounded-none border-r border-gray-100 last:border-r-0 p-2 ${
                 isActive
                   ? "text-gray-900 bg-gray-100 border-t-2 border-t-gray-900"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -138,8 +220,10 @@ export function BottomNavigation({ currentUser, onLogout }: BottomNavigationProp
               onClick={() => handleNavigation(item.path)}
               title={item.description}
             >
-              <Icon className="w-4 h-4" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs font-medium leading-tight">
+                {item.label}
+              </span>
             </Button>
           );
         })}
