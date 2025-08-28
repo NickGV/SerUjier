@@ -2,6 +2,7 @@
 
 import React from "react";
 import { UserProvider, useUser } from "@/contexts/user-context";
+import { ConteoProvider } from "@/contexts/conteo-context";
 import { BottomNavigation } from "@/components/bottom-navigation";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -29,9 +30,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Main content with bottom padding for navigation */}
-      <main className="pb-24">
-        {children}
-      </main>
+      <main className="pb-28 sm:pb-24">{children}</main>
 
       {/* Bottom Navigation */}
       <BottomNavigation currentUser={user} onLogout={logout} />
@@ -39,11 +38,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <UserProvider>
-      <DashboardContent>{children}</DashboardContent>
+      <ConteoProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </ConteoProvider>
     </UserProvider>
   );
 }
-

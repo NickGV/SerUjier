@@ -1,545 +1,113 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  fetchSimpatizantes,
-  fetchMiembros,
-  addSimpatizante,
-  saveConteo,
-} from "@/lib/utils";
-import type { MiembroData, SimpatizanteData, ConteoData } from "@/app/types";
+import { useConteoLogic } from "@/hooks/use-conteo-logic";
+import { ConteoHeader } from "@/components/conteo/conteo-header";
+import { ConteoCounters } from "@/components/conteo/conteo-counters";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plus,
-  Minus,
-  Edit3,
-  UserPlus,
-  Calendar,
-  User,
-  Clock,
-  Search,
-  X,
-  Save,
-  Users,
-  Eye,
-  CheckCircle,
-  Trash2,
-} from "lucide-react";
+import { Users, Eye, Save, Calendar, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search, Plus, X, CheckCircle } from "lucide-react";
 
 export default function ConteoPage() {
-  // Estados principales
-  const [hermanos, setHermanos] = useState(0);
-  const [hermanas, setHermanas] = useState(0);
-  const [ninos, setNinos] = useState(0);
-  const [adolescentes, setAdolescentes] = useState(0);
-  const [simpatizantesCount, setSimpatizantesCount] = useState(0);
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
-  const [tipoServicio, setTipoServicio] = useState("dominical");
-  const [ujierSeleccionado, setUjierSeleccionado] = useState("");
-  const [ujierPersonalizado, setUjierPersonalizado] = useState("");
-  const [modoConsecutivo, setModoConsecutivo] = useState(false);
-  const [datosServicioBase, setDatosServicioBase] = useState<ConteoData | null>(
-    null
-  );
+  const {
+    // Estados del contexto
+    hermanos,
+    setHermanos,
+    hermanas,
+    setHermanas,
+    ninos,
+    setNinos,
+    adolescentes,
+    setAdolescentes,
+    simpatizantesCount,
+    setSimpatizantesCount,
+    fecha,
+    setFecha,
+    tipoServicio,
+    setTipoServicio,
+    selectedUjieres,
+    setSelectedUjieres,
+    modoConsecutivo,
+    datosServicioBase,
+    simpatizantesDelDia,
+    hermanosDelDia,
+    hermanasDelDia,
+    ninosDelDia,
+    adolescentesDelDia,
 
-  // Tipos auxiliares para miembros del día
-  type MiembroDelDia = { id: string; nombre: string };
+    // Estados locales
+    editingCounter,
+    tempValue,
+    setTempValue,
+    showAddDialog,
+    setShowAddDialog,
+    searchTerm,
+    setSearchTerm,
+    showNewForm,
+    setShowNewForm,
+    newSimpatizante,
+    setNewSimpatizante,
+    showAsistentesDialog,
+    setShowAsistentesDialog,
+    showMiembrosDialog,
+    setShowMiembrosDialog,
+    categoriaSeleccionada,
+    showContinuarDialog,
+    searchMiembros,
+    setSearchMiembros,
+    showBulkCountDialog,
+    setShowBulkCountDialog,
+    bulkCounts,
+    setBulkCounts,
 
-  // Estados para listas del día
-  const [simpatizantesDelDia, setSimpatizantesDelDia] = useState<
-    SimpatizanteData[]
-  >([]);
-  const [hermanosDelDia, setHermanosDelDia] = useState<MiembroDelDia[]>([]);
-  const [hermanasDelDia, setHermanasDelDia] = useState<MiembroDelDia[]>([]);
-  const [ninosDelDia, setNinosDelDia] = useState<MiembroDelDia[]>([]);
-  const [adolescentesDelDia, setAdolescentesDelDia] = useState<MiembroDelDia[]>(
-    []
-  );
+    // Estados de Firebase
+    loading,
 
-  // Estados para edición de contadores
-  const [editingCounter, setEditingCounter] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState("");
-  const [showAddDialog, setShowAddDialog] = useState(false);
+    // Constantes
+    servicios,
+    ujieres,
 
-  // Estados para el diálogo de simpatizantes
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newSimpatizante, setNewSimpatizante] = useState({
-    nombre: "",
-    telefono: "",
-    notas: "",
-  });
+    // Funciones
+    handleCounterEdit,
+    saveCounterEdit,
+    selectExistingSimpatizante,
+    addNewSimpatizante,
+    removeSimpatizanteDelDia,
+    selectMiembro,
+    removeMiembroDelDia,
+    openMiembrosDialog,
+    getMiembrosPorCategoria,
+    handleBulkCountSubmit,
+    resetBulkCounts,
+    handleSaveConteo,
+    continuarConDominical,
+    noContinarConDominical,
 
-  // Estados para miembros del día por categoría
-  const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
-  const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
+    // Cálculos
+    total,
+    filteredSimpatizantes,
+  } = useConteoLogic();
 
-  const [showContinuarDialog, setShowContinuarDialog] = useState(false);
-
-  const [searchMiembros, setSearchMiembros] = useState("");
-  const [selectedUjieres, setSelectedUjieres] = useState<string[]>([]);
-
-  // Estados para datos de Firebase
-  const [simpatizantes, setSimpatizantes] = useState<SimpatizanteData[]>([]);
-  const [miembros, setMiembros] = useState<MiembroData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const servicios = [
-    { value: "dominical", label: "Dominical" },
-    { value: "oracion", label: "Oración y Enseñanza" },
-    { value: "dorcas", label: "Hermanas Dorcas" },
-    { value: "evangelismo", label: "Evangelismo" },
-    { value: "misionero", label: "Misionero" },
-    { value: "jovenes", label: "Jóvenes" },
-  ];
-
-  const ujieres = [
-    "Wilmar Rojas",
-    "Juan Caldera",
-    "Joaquin Velez",
-    "Yarissa Rojas",
-    "Cristian Gomez",
-    "Hector Gaviria",
-    "Ivan Caro",
-    "Jhon echavarria",
-    "Karen Cadavid",
-    "Carolina Monsalve",
-    "Marta Verona",
-    "Nicolas Gömez",
-    "Oraliz Fernåndez",
-    "Santiago Graciano",
-    "Suri Vélez",
-    "Wilmar Vélez",
-    "Diana Suarez",
-    "José perdomo",
-    "Carolina Caro",
-  ];
-
-  // Add multiple count entry functionality
-  const [showBulkCountDialog, setShowBulkCountDialog] = useState(false);
-  const [bulkCounts, setBulkCounts] = useState({
-    hermanos: "",
-    hermanas: "",
-    ninos: "",
-    adolescentes: "",
-    simpatizantes: "",
-  });
-
-  // Efecto para cargar datos desde Firebase
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [simpatizantesData, miembrosData] = await Promise.all([
-          fetchSimpatizantes(),
-          fetchMiembros(),
-        ]);
-        setSimpatizantes(simpatizantesData);
-        setMiembros(miembrosData);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  // Efecto para cargar los datos base cuando se entra en modo consecutivo
-  useEffect(() => {
-    if (modoConsecutivo && datosServicioBase) {
-      setHermanos(datosServicioBase.hermanos || 0);
-      setHermanas(datosServicioBase.hermanas || 0);
-      setNinos(datosServicioBase.ninos || 0);
-      setAdolescentes(datosServicioBase.adolescentes || 0);
-      setSimpatizantesCount(datosServicioBase.simpatizantes || 0);
-      setSimpatizantesDelDia(
-        datosServicioBase.simpatizantesAsistieron?.map((s) => ({
-          id: s.id,
-          nombre: s.nombre,
-          fechaRegistro: "",
-        })) || []
-      );
-      setHermanosDelDia(datosServicioBase.miembrosAsistieron?.hermanos || []);
-      setHermanasDelDia(datosServicioBase.miembrosAsistieron?.hermanas || []);
-      setNinosDelDia(datosServicioBase.miembrosAsistieron?.ninos || []);
-      setAdolescentesDelDia(
-        datosServicioBase.miembrosAsistieron?.adolescentes || []
-      );
-      setTipoServicio("dominical"); // Forzar a dominical
-    }
-  }, [modoConsecutivo, datosServicioBase]);
-
-  const handleCounterEdit = (type: string, value: number) => {
-    setEditingCounter(type);
-    setTempValue(value.toString());
-  };
-
-  const saveCounterEdit = () => {
-    const newValue = Number.parseInt(tempValue) || 0;
-    switch (editingCounter) {
-      case "hermanos":
-        setHermanos(newValue);
-        break;
-      case "hermanas":
-        setHermanas(newValue);
-        break;
-      case "ninos":
-        setNinos(newValue);
-        break;
-      case "adolescentes":
-        setAdolescentes(newValue);
-        break;
-      case "simpatizantes":
-        setSimpatizantesCount(newValue);
-        break;
-    }
-    setEditingCounter(null);
-    setTempValue("");
-  };
-
-  const selectExistingSimpatizante = (simpatizante: SimpatizanteData) => {
-    // Verificar si ya está en la lista del día
-    if (simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
-      alert("Este simpatizante ya fue agregado hoy");
-      return;
-    }
-
-    setSimpatizantesDelDia((prev) => [...prev, simpatizante]);
-    setShowAddDialog(false);
-    setSearchTerm("");
-    setShowNewForm(false);
-  };
-
-  const addNewSimpatizante = async () => {
-    if (newSimpatizante.nombre.trim()) {
-      try {
-        // Agregar a Firebase
-        const result = await addSimpatizante({
-          ...newSimpatizante,
-          fechaRegistro: new Date().toISOString().split("T")[0],
-        });
-
-        // Construir el objeto completo SimpatizanteData
-        const nuevoSimpatizante: SimpatizanteData = {
-          id: result.id,
-          nombre: newSimpatizante.nombre,
-          fechaRegistro: new Date().toISOString().split("T")[0],
-          telefono: newSimpatizante.telefono ?? "",
-          notas: newSimpatizante.notas ?? "",
-        };
-
-        // Agregar a la lista del día
-        setSimpatizantesDelDia((prev) => [...prev, nuevoSimpatizante]);
-
-        // Actualizar la lista de simpatizantes disponibles
-        setSimpatizantes((prev) => [...prev, nuevoSimpatizante]);
-
-        // Limpiar formulario
-        setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
-        setShowAddDialog(false);
-        setSearchTerm("");
-        setShowNewForm(false);
-      } catch (error) {
-        console.error("Error agregando simpatizante:", error);
-        alert("Error al agregar simpatizante. Intente nuevamente.");
-      }
-    }
-  };
-
-  const removeSimpatizanteDelDia = (simpatizanteId: string) => {
-    setSimpatizantesDelDia((prev) =>
-      prev.filter((s) => s.id !== simpatizanteId)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Cargando datos...</p>
+        </div>
+      </div>
     );
-  };
+  }
 
-  const closeDialog = () => {
-    setShowAddDialog(false);
-    setSearchTerm("");
-    setShowNewForm(false);
-    setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
-  };
-
-  const selectMiembro = (miembro: MiembroDelDia, categoria: string) => {
-    const setterMap: { [key: string]: (value: MiembroDelDia[]) => void } = {
-      hermanos: setHermanosDelDia,
-      hermanas: setHermanasDelDia,
-      ninos: setNinosDelDia,
-      adolescentes: setAdolescentesDelDia,
-    };
-
-    const currentList =
-      ({
-        hermanos: hermanosDelDia,
-        hermanas: hermanasDelDia,
-        ninos: ninosDelDia,
-        adolescentes: adolescentesDelDia,
-      }[categoria] as MiembroDelDia[]) || [];
-
-    if (currentList.find((m: MiembroDelDia) => m.id === miembro.id)) {
-      alert("Este miembro ya fue agregado hoy");
-      return;
-    }
-
-    setterMap[categoria]?.([...currentList, miembro]);
-    setShowMiembrosDialog(false);
-  };
-
-  const removeMiembroDelDia = (miembroId: string, categoria: string) => {
-    const setterMap: { [key: string]: (value: MiembroDelDia[]) => void } = {
-      hermanos: setHermanosDelDia,
-      hermanas: setHermanasDelDia,
-      ninos: setNinosDelDia,
-      adolescentes: setAdolescentesDelDia,
-    };
-
-    const currentList =
-      ({
-        hermanos: hermanosDelDia,
-        hermanas: hermanasDelDia,
-        ninos: ninosDelDia,
-        adolescentes: adolescentesDelDia,
-      }[categoria] as MiembroDelDia[]) || [];
-    setterMap[categoria]?.(
-      currentList.filter((m: MiembroDelDia) => m.id !== miembroId)
-    );
-  };
-
-  const openMiembrosDialog = (categoria: string) => {
-    setCategoriaSeleccionada(categoria);
-    setShowMiembrosDialog(true);
-  };
-
-  const getMiembrosPorCategoria = (categoria: string) => {
-    return miembros.filter((m) => {
-      if (categoria === "ninos") return m.categoria === "nino";
-      if (categoria === "adolescentes") return m.categoria === "adolescente";
-      return m.categoria === categoria.slice(0, -1); // remove 's' from end
-    });
-  };
-
-  const handleBulkCountSubmit = () => {
-    const counts = {
-      hermanos: Number.parseInt(bulkCounts.hermanos) || 0,
-      hermanas: Number.parseInt(bulkCounts.hermanas) || 0,
-      ninos: Number.parseInt(bulkCounts.ninos) || 0,
-      adolescentes: Number.parseInt(bulkCounts.adolescentes) || 0,
-      simpatizantes: Number.parseInt(bulkCounts.simpatizantes) || 0,
-    };
-
-    setHermanos((prev) => prev + counts.hermanos);
-    setHermanas((prev) => prev + counts.hermanas);
-    setNinos((prev) => prev + counts.ninos);
-    setAdolescentes((prev) => prev + counts.adolescentes);
-    setSimpatizantesCount((prev) => prev + counts.simpatizantes);
-
-    setBulkCounts({
-      hermanos: "",
-      hermanas: "",
-      ninos: "",
-      adolescentes: "",
-      simpatizantes: "",
-    });
-    setShowBulkCountDialog(false);
-  };
-
-  const resetBulkCounts = () => {
-    setBulkCounts({
-      hermanos: "",
-      hermanas: "",
-      ninos: "",
-      adolescentes: "",
-      simpatizantes: "",
-    });
-  };
-
-  const handleSaveConteo = async () => {
-    // Usar los ujieres seleccionados
-    const ujieresFinal: string[] = selectedUjieres;
-
-    if (ujieresFinal.length === 0) {
-      alert("Por favor seleccione al menos un ujier");
-      return;
-    }
-
-    // Calcular totales, sumando la base si estamos en modo consecutivo
-    const baseHermanos = modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0;
-    const baseHermanas = modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0;
-    const baseNinos = modoConsecutivo ? datosServicioBase?.ninos || 0 : 0;
-    const baseAdolescentes = modoConsecutivo
-      ? datosServicioBase?.adolescentes || 0
-      : 0;
-    const baseSimpatizantes = modoConsecutivo
-      ? datosServicioBase?.simpatizantes || 0
-      : 0;
-
-    const totalSimpatizantes =
-      simpatizantesCount + simpatizantesDelDia.length + baseSimpatizantes;
-    const totalHermanos = hermanos + hermanosDelDia.length + baseHermanos;
-    const totalHermanas = hermanas + hermanasDelDia.length + baseHermanas;
-    const totalNinos = ninos + ninosDelDia.length + baseNinos;
-    const totalAdolescentes =
-      adolescentes + adolescentesDelDia.length + baseAdolescentes;
-
-    const conteoData = {
-      fecha,
-      servicio:
-        servicios.find((s) => s.value === tipoServicio)?.label || tipoServicio,
-      ujier: ujieresFinal, // Ahora es un array
-      hermanos: totalHermanos,
-      hermanas: totalHermanas,
-      ninos: totalNinos,
-      adolescentes: totalAdolescentes,
-      simpatizantes: totalSimpatizantes,
-      total:
-        totalHermanos +
-        totalHermanas +
-        totalNinos +
-        totalAdolescentes +
-        totalSimpatizantes,
-      simpatizantesAsistieron: [
-        ...(modoConsecutivo
-          ? datosServicioBase?.simpatizantesAsistieron || []
-          : []),
-        ...simpatizantesDelDia.map((s) => ({ id: s.id, nombre: s.nombre })),
-      ],
-      miembrosAsistieron: {
-        hermanos: [
-          ...(modoConsecutivo
-            ? datosServicioBase?.miembrosAsistieron?.hermanos || []
-            : []),
-          ...hermanosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
-        ],
-        hermanas: [
-          ...(modoConsecutivo
-            ? datosServicioBase?.miembrosAsistieron?.hermanas || []
-            : []),
-          ...hermanasDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
-        ],
-        ninos: [
-          ...(modoConsecutivo
-            ? datosServicioBase?.miembrosAsistieron?.ninos || []
-            : []),
-          ...ninosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
-        ],
-        adolescentes: [
-          ...(modoConsecutivo
-            ? datosServicioBase?.miembrosAsistieron?.adolescentes || []
-            : []),
-          ...adolescentesDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
-        ],
-      },
-    };
-
-    // Verificar si es domingo y evangelismo/misionero (y no estamos en modo consecutivo)
-    const fechaObj = new Date(fecha + "T12:00:00"); // Add time to avoid timezone issues
-    const esDomingo = fechaObj.getDay() === 0;
-    const esServicioBase =
-      tipoServicio === "evangelismo" || tipoServicio === "misionero";
-
-    try {
-      if (esDomingo && esServicioBase && !modoConsecutivo) {
-        // Guardar datos del evangelismo/misionero y preguntar si continuar
-        await saveConteo(conteoData);
-        setDatosServicioBase(conteoData); // Guardar el conteo actual como base
-        setShowContinuarDialog(true);
-        return;
-      }
-
-      if (modoConsecutivo) {
-        // Estamos guardando el dominical después del evangelismo/misionero
-        await saveConteo(conteoData);
-        resetConteoForm(); // Resetear todo el formulario
-        alert("Conteo dominical guardado exitosamente");
-      } else {
-        // Guardado normal
-        await saveConteo(conteoData);
-        resetConteoForm(); // Resetear todo el formulario
-        alert("Conteo guardado exitosamente");
-      }
-    } catch (error) {
-      console.error("Error guardando conteo:", error);
-      alert("Error al guardar el conteo. Intente nuevamente.");
-    }
-  };
-
-  const continuarConDominical = () => {
-    setModoConsecutivo(true);
-    setTipoServicio("dominical");
-    setShowContinuarDialog(false);
-    // Los contadores y listas ya se habrán cargado desde datosServicioBase en el useEffect
-    alert(
-      "Continuando con el servicio dominical. Los asistentes del servicio base se mantienen."
-    );
-  };
-
-  const noContinarConDominical = () => {
-    setShowContinuarDialog(false);
-    resetConteoForm(); // Resetear todo el formulario
-    alert("Conteo guardado exitosamente");
-  };
-
-  // Resetear el formulario de conteo
-  const resetConteoForm = () => {
-    setHermanos(0);
-    setHermanas(0);
-    setNinos(0);
-    setAdolescentes(0);
-    setSimpatizantesCount(0);
-    setSimpatizantesDelDia([]);
-    setHermanosDelDia([]);
-    setHermanasDelDia([]);
-    setNinosDelDia([]);
-    setAdolescentesDelDia([]);
-    setFecha(new Date().toISOString().split("T")[0]);
-    setTipoServicio("dominical");
-    setSelectedUjieres([]); // Limpiar ujieres seleccionados
-    setUjierSeleccionado("");
-    setUjierPersonalizado("");
-    setModoConsecutivo(false);
-    setDatosServicioBase(null);
-    setSearchMiembros(""); // Limpiar búsqueda
-  };
-
-  const filteredSimpatizantes = simpatizantes.filter(
-    (s) =>
-      s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !simpatizantesDelDia.find((sd) => sd.id === s.id)
-  );
-
-  // Calcular el total de asistentes incluyendo la base si estamos en modo consecutivo
-  const totalSimpatizantesActual =
-    simpatizantesCount + simpatizantesDelDia.length;
-  const totalHermanosActual = hermanos + hermanosDelDia.length;
-  const totalHermanasActual = hermanas + hermanasDelDia.length;
-  const totalNinosActual = ninos + ninosDelDia.length;
-  const totalAdolescentesActual = adolescentes + adolescentesDelDia.length;
-
-  const total =
-    totalHermanosActual +
-    totalHermanasActual +
-    totalNinosActual +
-    totalAdolescentesActual +
-    totalSimpatizantesActual;
-
+  // Preparar los contadores para el componente
   const counters = [
     {
       key: "hermanos",
@@ -604,223 +172,25 @@ export default function ConteoPage() {
       baseMiembros: modoConsecutivo
         ? datosServicioBase?.simpatizantesAsistieron || []
         : [],
-      miembrosDelDia: simpatizantesDelDia, // Asegurarse de que esta propiedad exista
+      miembrosDelDia: simpatizantesDelDia,
     },
   ];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Cargando datos...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
       {/* Header */}
-      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="pb-3 px-3 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <CardTitle className="text-base sm:text-lg font-semibold text-gray-800">
-              Conteo de Asistencia
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowBulkCountDialog(true)}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm"
-            >
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              Conteo Múltiple
-            </Button>
-          </div>
+      <ConteoHeader
+        fecha={fecha}
+        setFecha={setFecha}
+        tipoServicio={tipoServicio}
+        setTipoServicio={setTipoServicio}
+        selectedUjieres={selectedUjieres}
+        setSelectedUjieres={setSelectedUjieres}
+        servicios={servicios}
+        ujieres={ujieres}
+      />
 
-          {/* Campos editables */}
-          <div className="space-y-3 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  Fecha
-                </label>
-                <Input
-                  type="date"
-                  value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
-                  className="h-8 sm:h-9 text-xs sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Servicio
-                </label>
-                <Select value={tipoServicio} onValueChange={setTipoServicio}>
-                  <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {servicios.map((servicio) => (
-                      <SelectItem key={servicio.value} value={servicio.value}>
-                        {servicio.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                <User className="w-3 h-3" />
-                Ujier(es) -{" "}
-                {selectedUjieres.length > 0
-                  ? `${selectedUjieres.length} seleccionados`
-                  : "Ninguno seleccionado"}
-              </label>
-
-              {/* Ujieres seleccionados */}
-              {selectedUjieres.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-1">
-                  {selectedUjieres.map((ujier, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="bg-slate-50 text-slate-700 border-slate-200 flex items-center gap-1"
-                    >
-                      {ujier}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-slate-200"
-                        onClick={() => {
-                          setSelectedUjieres((prev) =>
-                            prev.filter((u) => u !== ujier)
-                          );
-                          // Actualizar ujierSeleccionado y ujierPersonalizado
-                          const remaining = selectedUjieres.filter(
-                            (u) => u !== ujier
-                          );
-                          if (remaining.length === 0) {
-                            setUjierSeleccionado("");
-                            setUjierPersonalizado("");
-                          } else if (
-                            remaining.length === 1 &&
-                            ujieres.includes(remaining[0])
-                          ) {
-                            setUjierSeleccionado(remaining[0]);
-                            setUjierPersonalizado("");
-                          } else {
-                            setUjierSeleccionado("otro");
-                            setUjierPersonalizado(remaining.join(", "));
-                          }
-                        }}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Selector de ujieres */}
-              <Select
-                value=""
-                onValueChange={(value) => {
-                  if (value === "otro") {
-                    // Abrir input para escribir nombre personalizado
-                    const nuevoUjier = prompt("Escriba el nombre del ujier:");
-                    if (nuevoUjier && nuevoUjier.trim()) {
-                      const ujierLimpio = nuevoUjier.trim();
-                      if (!selectedUjieres.includes(ujierLimpio)) {
-                        const nuevosUjieres = [...selectedUjieres, ujierLimpio];
-                        setSelectedUjieres(nuevosUjieres);
-                        setUjierSeleccionado("otro");
-                        setUjierPersonalizado(nuevosUjieres.join(", "));
-                      }
-                    }
-                  } else if (value && !selectedUjieres.includes(value)) {
-                    const nuevosUjieres = [...selectedUjieres, value];
-                    setSelectedUjieres(nuevosUjieres);
-                    if (nuevosUjieres.length === 1) {
-                      setUjierSeleccionado(value);
-                      setUjierPersonalizado("");
-                    } else {
-                      setUjierSeleccionado("otro");
-                      setUjierPersonalizado(nuevosUjieres.join(", "));
-                    }
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="+ Agregar ujier" />
-                </SelectTrigger>
-                <SelectContent className="max-h-48">
-                  {ujieres
-                    .filter((ujier) => !selectedUjieres.includes(ujier))
-                    .map((ujier) => (
-                      <SelectItem key={ujier} value={ujier}>
-                        {ujier}
-                      </SelectItem>
-                    ))}
-                  <SelectItem value="otro">
-                    + Escribir nombre personalizado
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Botón para limpiar selección */}
-              {selectedUjieres.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2 text-xs bg-transparent border-red-200 text-red-600 hover:bg-red-50"
-                  onClick={() => {
-                    setSelectedUjieres([]);
-                    setUjierSeleccionado("");
-                    setUjierPersonalizado("");
-                  }}
-                >
-                  <Trash2 className="w-3 h-3 mr-1" />
-                  Limpiar selección
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-3">
-            <Badge
-              variant="outline"
-              className="bg-slate-50 text-slate-700 border-slate-200"
-            >
-              {servicios.find((s) => s.value === tipoServicio)?.label}
-            </Badge>
-            {ujierSeleccionado === "otro" && ujierPersonalizado ? (
-              ujierPersonalizado.split(",").map((name, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-slate-50 text-slate-700 border-slate-200"
-                >
-                  {name.trim()}
-                </Badge>
-              ))
-            ) : ujierSeleccionado && ujierSeleccionado !== "otro" ? (
-              <Badge
-                variant="outline"
-                className="bg-slate-50 text-slate-700 border-slate-200"
-              >
-                {ujierSeleccionado}
-              </Badge>
-            ) : null}
-          </div>
-        </CardHeader>
-      </Card>
-
+      {/* Modo Consecutivo Banner */}
       {modoConsecutivo && datosServicioBase && (
         <Card className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
           <CardContent className="p-4">
@@ -854,110 +224,16 @@ export default function ConteoPage() {
       </Card>
 
       {/* Counters */}
-      <div className="space-y-3 sm:space-y-4">
-        {counters.map((counter) => (
-          <Card
-            key={counter.key}
-            className="bg-white/90 backdrop-blur-sm border-0 shadow-md"
-          >
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div
-                    className={`w-2 h-2 sm:w-3 sm:h-3 ${counter.color} rounded-full`}
-                  ></div>
-                  <span className="font-medium text-gray-800 text-sm sm:text-base">
-                    {counter.label}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-2">
-                  {counter.categoria && (
-                    <div className="relative">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
-                        onClick={() =>
-                          counter.categoria === "simpatizantes"
-                            ? setShowAddDialog(true)
-                            : openMiembrosDialog(counter.categoria)
-                        }
-                      >
-                        <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                      {counter.miembrosDelDia.length +
-                        counter.baseMiembros.length >
-                        0 && (
-                        <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-1 bg-emerald-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                          {counter.miembrosDelDia.length +
-                            counter.baseMiembros.length}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
-                    onClick={() =>
-                      counter.setter(Math.max(0, counter.value - 1))
-                    }
-                  >
-                    <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-
-                  {editingCounter === counter.key ? (
-                    <div className="flex items-center gap-1">
-                      <Input
-                        value={tempValue}
-                        onChange={(e) => setTempValue(e.target.value)}
-                        className="w-12 sm:w-16 h-6 sm:h-8 text-center text-xs sm:text-sm"
-                        type="number"
-                      />
-                      <Button
-                        size="sm"
-                        onClick={saveCounterEdit}
-                        className="h-6 sm:h-8 bg-slate-600 hover:bg-slate-700 text-xs"
-                      >
-                        ✓
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <span className="text-lg sm:text-xl font-semibold w-6 sm:w-8 text-center">
-                        {counter.value +
-                          counter.miembrosDelDia.length +
-                          counter.baseValue +
-                          counter.baseMiembros.length}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-4 h-4 sm:w-6 sm:h-6 p-0"
-                        onClick={() =>
-                          handleCounterEdit(counter.key, counter.value)
-                        }
-                      >
-                        <Edit3 className="w-2 h-2 sm:w-3 sm:h-3" />
-                      </Button>
-                    </div>
-                  )}
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
-                    onClick={() => counter.setter(counter.value + 1)}
-                  >
-                    <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <ConteoCounters
+        counters={counters}
+        editingCounter={editingCounter}
+        tempValue={tempValue}
+        setTempValue={setTempValue}
+        handleCounterEdit={handleCounterEdit}
+        saveCounterEdit={saveCounterEdit}
+        openMiembrosDialog={openMiembrosDialog}
+        setShowAddDialog={setShowAddDialog}
+      />
 
       {/* Ver Lista Asistentes Button */}
       {(hermanosDelDia.length > 0 ||
@@ -1047,39 +323,89 @@ export default function ConteoPage() {
 
       {/* Add Simpatizante Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <DialogTitle>Agregar Simpatizante</DialogTitle>
-              <Button variant="ghost" size="sm" onClick={closeDialog}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Agregar Simpatizantes</span>
+              <Badge
+                variant="outline"
+                className="bg-emerald-50 text-emerald-700"
+              >
+                {simpatizantesDelDia.length} agregados
+              </Badge>
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {!showNewForm ? (
-              <>
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Buscar simpatizante existente..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+          <div className="flex-1 overflow-hidden flex flex-col space-y-4">
+            {/* Búsqueda */}
+            <div className="flex-shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Buscar simpatizantes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
-                {/* Lista de simpatizantes existentes */}
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {filteredSimpatizantes.length > 0 ? (
-                    filteredSimpatizantes.map((simpatizante) => (
-                      <div
-                        key={simpatizante.id}
-                        className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                        onClick={() => selectExistingSimpatizante(simpatizante)}
+            {/* Ya agregados */}
+            {simpatizantesDelDia.length > 0 && (
+              <div className="flex-shrink-0">
+                <h4 className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Ya agregados ({simpatizantesDelDia.length})
+                </h4>
+                <div className="max-h-24 overflow-y-auto space-y-1">
+                  {simpatizantesDelDia.map((simpatizante) => (
+                    <div
+                      key={simpatizante.id}
+                      className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
+                    >
+                      <span className="text-green-800">
+                        {simpatizante.nombre}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                        onClick={() =>
+                          removeSimpatizanteDelDia(simpatizante.id)
+                        }
                       >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Lista de simpatizantes disponibles */}
+            <div className="flex-1 overflow-hidden">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
+                <Plus className="w-4 h-4" />
+                Disponibles para agregar
+              </h4>
+              <div className="h-full overflow-y-auto space-y-2">
+                {filteredSimpatizantes.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm">
+                      {searchTerm
+                        ? "No se encontraron simpatizantes disponibles"
+                        : "Todos los simpatizantes ya están agregados"}
+                    </p>
+                  </div>
+                ) : (
+                  filteredSimpatizantes.map((simpatizante) => (
+                    <div
+                      key={simpatizante.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => selectExistingSimpatizante(simpatizante)}
+                    >
+                      <div className="flex-1">
                         <div className="font-medium text-sm">
                           {simpatizante.nombre}
                         </div>
@@ -1092,99 +418,106 @@ export default function ConteoPage() {
                           </div>
                         )}
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-gray-500 py-4">
-                      {searchTerm
-                        ? "No se encontraron simpatizantes disponibles"
-                        : "No hay simpatizantes disponibles"}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
                     </div>
-                  )}
-                </div>
+                  ))
+                )}
+              </div>
+            </div>
 
-                {/* Botón para agregar nuevo */}
-                <div className="pt-3 border-t">
-                  <Button
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    onClick={() => setShowNewForm(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Nuevo Simpatizante
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Formulario para nuevo simpatizante */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Nombre Completo *
-                    </label>
-                    <Input
-                      placeholder="Nombre del simpatizante"
-                      value={newSimpatizante.nombre}
-                      onChange={(e) =>
-                        setNewSimpatizante({
-                          ...newSimpatizante,
-                          nombre: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+            {/* Botón para agregar nuevo */}
+            <div className="flex-shrink-0 pt-3 border-t">
+              <Button
+                variant="outline"
+                className="w-full bg-transparent"
+                onClick={() => setShowNewForm(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Nuevo Simpatizante
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Teléfono
-                    </label>
-                    <Input
-                      placeholder="Número de teléfono"
-                      value={newSimpatizante.telefono}
-                      onChange={(e) =>
-                        setNewSimpatizante({
-                          ...newSimpatizante,
-                          telefono: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+      {/* Dialog para nuevo simpatizante */}
+      <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agregar Nuevo Simpatizante</DialogTitle>
+          </DialogHeader>
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Notas
-                    </label>
-                    <Input
-                      placeholder="Notas adicionales"
-                      value={newSimpatizante.notas}
-                      onChange={(e) =>
-                        setNewSimpatizante({
-                          ...newSimpatizante,
-                          notas: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Nombre Completo *
+              </label>
+              <Input
+                placeholder="Nombre del simpatizante"
+                value={newSimpatizante.nombre}
+                onChange={(e) =>
+                  setNewSimpatizante({
+                    ...newSimpatizante,
+                    nombre: e.target.value,
+                  })
+                }
+              />
+            </div>
 
-                <div className="flex gap-2 pt-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1 bg-transparent"
-                    onClick={() => setShowNewForm(false)}
-                  >
-                    Volver
-                  </Button>
-                  <Button
-                    className="flex-1 bg-slate-600 hover:bg-slate-700"
-                    onClick={addNewSimpatizante}
-                    disabled={!newSimpatizante.nombre.trim()}
-                  >
-                    Agregar
-                  </Button>
-                </div>
-              </>
-            )}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Teléfono
+              </label>
+              <Input
+                placeholder="Número de teléfono"
+                value={newSimpatizante.telefono}
+                onChange={(e) =>
+                  setNewSimpatizante({
+                    ...newSimpatizante,
+                    telefono: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                Notas
+              </label>
+              <Input
+                placeholder="Notas adicionales"
+                value={newSimpatizante.notas}
+                onChange={(e) =>
+                  setNewSimpatizante({
+                    ...newSimpatizante,
+                    notas: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="flex gap-2 pt-3">
+              <Button
+                variant="outline"
+                className="flex-1 bg-transparent"
+                onClick={() => setShowNewForm(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                onClick={addNewSimpatizante}
+                disabled={!newSimpatizante.nombre.trim()}
+              >
+                Agregar
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1274,7 +607,7 @@ export default function ConteoPage() {
                         )
                       )}
                       {/* Miembros agregados en esta sesión */}
-                      {currentList.map((miembro: MiembroDelDia) => (
+                      {currentList.map((miembro: any) => (
                         <div
                           key={miembro.id}
                           className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
@@ -1334,10 +667,10 @@ export default function ConteoPage() {
                         .toLowerCase()
                         .includes(searchMiembros.toLowerCase());
                       const noEstaEnActuales = !currentList.find(
-                        (m: MiembroDelDia) => m.id === miembro.id
+                        (m: any) => m.id === miembro.id
                       );
                       const noEstaEnBase = !baseList.find(
-                        (m: MiembroDelDia) => m.id === miembro.id
+                        (m: any) => m.id === miembro.id
                       );
                       return nombreMatch && noEstaEnActuales && noEstaEnBase;
                     }
@@ -1348,7 +681,7 @@ export default function ConteoPage() {
                       <div className="text-center text-gray-500 py-8">
                         <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                         <p className="text-sm">
-                          {searchMiembros
+                          {searchTerm
                             ? "No se encontraron miembros disponibles"
                             : "Todos los miembros ya están agregados"}
                         </p>
@@ -1356,7 +689,7 @@ export default function ConteoPage() {
                     );
                   }
 
-                  return filteredMiembros.map((miembro: MiembroData) => (
+                  return filteredMiembros.map((miembro: any) => (
                     <div
                       key={miembro.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
