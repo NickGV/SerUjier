@@ -37,6 +37,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface Ujier {
   id: string;
@@ -161,10 +162,10 @@ function UjieresContent() {
       const updatedData = await fetchUjieres();
       setUjieres(updatedData);
       setShowDeleteConfirm(null);
-      alert("Usuario eliminado exitosamente");
+      toast.success("Usuario eliminado exitosamente");
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
-      alert("Error al eliminar el usuario. Intente nuevamente.");
+      toast.error("Error al eliminar el usuario. Intente nuevamente.");
     } finally {
       setIsDeleting(false);
     }
@@ -189,10 +190,10 @@ function UjieresContent() {
       const updatedData = await fetchUjieres();
       setUjieres(updatedData);
       setEditingUsuario(null);
-      alert("Usuario actualizado exitosamente");
+      toast.success("Usuario actualizado exitosamente");
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      alert("Error al actualizar el usuario. Intente nuevamente.");
+      toast.error("Error al actualizar el usuario. Intente nuevamente.");
     } finally {
       setIsSaving(false);
     }
@@ -520,9 +521,6 @@ function UjieresContent() {
                         year: "numeric",
                       }
                     )}
-                  </div>
-                  <div className="text-xs text-gray-400 font-mono mt-1">
-                    Contraseña: {usuario.password}
                   </div>
                 </div>
                 {/* Action buttons */}

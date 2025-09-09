@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface HistorialRecord {
   id: string;
@@ -424,7 +425,7 @@ function HistorialContent() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
-      alert(
+      toast.error(
         "Error al generar el archivo Excel. Por favor, intente nuevamente."
       );
     }
@@ -596,10 +597,10 @@ NOTAS FINALES:
       const updatedData = await fetchHistorial();
       setHistorial(updatedData);
       setShowDeleteConfirm(null);
-      alert("Registro eliminado exitosamente");
+      toast.success("Registro eliminado exitosamente");
     } catch (error) {
       console.error("Error al eliminar registro:", error);
-      alert("Error al eliminar el registro. Intente nuevamente.");
+      toast.error("Error al eliminar el registro. Intente nuevamente.");
     } finally {
       setIsDeleting(false);
     }
@@ -630,10 +631,10 @@ NOTAS FINALES:
       const updatedData = await fetchHistorial();
       setHistorial(updatedData);
       setEditingRecord(null);
-      alert("Registro actualizado exitosamente");
+      toast.success("Registro actualizado exitosamente");
     } catch (error) {
       console.error("Error al actualizar registro:", error);
-      alert("Error al actualizar el registro. Intente nuevamente.");
+      toast.error("Error al actualizar el registro. Intente nuevamente.");
     } finally {
       setIsSaving(false);
     }

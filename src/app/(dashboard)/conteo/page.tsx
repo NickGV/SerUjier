@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 export default function ConteoPage() {
   // Estados principales
@@ -204,7 +205,7 @@ export default function ConteoPage() {
   const selectExistingSimpatizante = (simpatizante: any) => {
     // Verificar si ya está en la lista del día
     if (simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
-      alert("Este simpatizante ya fue agregado hoy");
+      toast.info("Este simpatizante ya fue agregado hoy");
       return;
     }
 
@@ -236,7 +237,7 @@ export default function ConteoPage() {
         setShowNewForm(false);
       } catch (error) {
         console.error("Error agregando simpatizante:", error);
-        alert("Error al agregar simpatizante. Intente nuevamente.");
+        toast.error("Error al agregar simpatizante. Intente nuevamente.");
       }
     }
   };
@@ -271,7 +272,7 @@ export default function ConteoPage() {
       }[categoria] as any[]) || [];
 
     if (currentList.find((m: any) => m.id === miembro.id)) {
-      alert("Este miembro ya fue agregado hoy");
+      toast.info("Este miembro ya fue agregado hoy");
       return;
     }
 
@@ -345,7 +346,7 @@ export default function ConteoPage() {
     const ujieresFinal: string[] = selectedUjieres;
 
     if (ujieresFinal.length === 0) {
-      alert("Por favor seleccione al menos un ujier");
+      toast.info("Por favor seleccione al menos un ujier");
       return;
     }
 
@@ -437,16 +438,16 @@ export default function ConteoPage() {
         // Estamos guardando el dominical después del evangelismo/misionero
         await saveConteo(conteoData);
         resetConteoForm(); // Resetear todo el formulario
-        alert("Conteo dominical guardado exitosamente");
+        toast.success("Conteo dominical guardado exitosamente");
       } else {
         // Guardado normal
         await saveConteo(conteoData);
         resetConteoForm(); // Resetear todo el formulario
-        alert("Conteo guardado exitosamente");
+        toast.success("Conteo guardado exitosamente");
       }
     } catch (error) {
       console.error("Error guardando conteo:", error);
-      alert("Error al guardar el conteo. Intente nuevamente.");
+      toast.error("Error al guardar el conteo. Intente nuevamente.");
     }
   };
 
@@ -455,7 +456,7 @@ export default function ConteoPage() {
     setTipoServicio("dominical");
     setShowContinuarDialog(false);
     // Los contadores y listas ya se habrán cargado desde datosServicioBase en el useEffect
-    alert(
+    toast.success(
       "Continuando con el servicio dominical. Los asistentes del servicio base se mantienen."
     );
   };
@@ -463,7 +464,7 @@ export default function ConteoPage() {
   const noContinarConDominical = () => {
     setShowContinuarDialog(false);
     resetConteoForm(); // Resetear todo el formulario
-    alert("Conteo guardado exitosamente");
+    toast.success("Conteo guardado exitosamente");
   };
 
   // Resetear el formulario de conteo
@@ -612,7 +613,7 @@ export default function ConteoPage() {
           <div className="space-y-3 mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-600 mb-1 block flex items-center gap-1">
+                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Fecha
                 </label>
@@ -624,7 +625,7 @@ export default function ConteoPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-600 mb-1 block flex items-center gap-1">
+                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Servicio
                 </label>
@@ -644,7 +645,7 @@ export default function ConteoPage() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-600 mb-1 block flex items-center gap-1">
+              <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
                 <User className="w-3 h-3" />
                 Ujier(es) -{" "}
                 {selectedUjieres.length > 0

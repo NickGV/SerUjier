@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface Miembro {
   id: string;
@@ -159,10 +160,10 @@ export default function MiembrosPage() {
       const updatedData = await fetchMiembros();
       setMiembros(updatedData);
       setShowDeleteConfirm(null);
-      alert("Miembro eliminado exitosamente");
+      toast.success("Miembro eliminado exitosamente");
     } catch (error) {
       console.error("Error al eliminar miembro:", error);
-      alert("Error al eliminar el miembro. Intente nuevamente.");
+      toast.error("Error al eliminar el miembro. Intente nuevamente.");
     } finally {
       setIsDeleting(false);
     }
@@ -188,10 +189,10 @@ export default function MiembrosPage() {
       const updatedData = await fetchMiembros();
       setMiembros(updatedData);
       setEditingMiembro(null);
-      alert("Miembro actualizado exitosamente");
+      toast.success("Miembro actualizado exitosamente");
     } catch (error) {
       console.error("Error al actualizar miembro:", error);
-      alert("Error al actualizar el miembro. Intente nuevamente.");
+      toast.error("Error al actualizar el miembro. Intente nuevamente.");
     } finally {
       setIsSaving(false);
     }

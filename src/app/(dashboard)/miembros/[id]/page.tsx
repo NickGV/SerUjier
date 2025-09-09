@@ -5,6 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useUser } from "@/contexts/user-context";
+import { toast } from "sonner";
+import { getMiembroById, updateMiembro, deleteMiembro } from "@/lib/utils";
 import {
   ArrowLeft,
   UserCheck,
@@ -15,6 +26,11 @@ import {
   Users,
   Baby,
   Zap,
+  Edit3,
+  Trash2,
+  Save,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 
 interface Miembro {
@@ -27,6 +43,7 @@ interface Miembro {
 }
 
 const MiembroDetail = () => {
+  const { user } = useUser();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -34,24 +51,18 @@ const MiembroDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Estados para edición y eliminación
+  const [editingMiembro, setEditingMiembro] = useState<Miembro | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     if (id) {
       const fetchMiembro = async () => {
         try {
-          // TODO: Implement getMiembroById from Firebase
-          // const data = await getMiembroById(id);
-          // setMiembro(data);
-
-          // Placeholder data for now
-          const mockData: Miembro = {
-            id,
-            nombre: "Miembro de Ejemplo",
-            telefono: "300-123-4567",
-            categoria: "hermano",
-            notas: "Notas de ejemplo para el miembro",
-            fechaRegistro: new Date().toISOString(),
-          };
-          setMiembro(mockData);
+          const data = await getMiembroById(id);
+          setMiembro(data);
         } catch (err) {
           setError(err instanceof Error ? err.message : "Error desconocido");
         } finally {
@@ -106,6 +117,59 @@ const MiembroDetail = () => {
       default:
         return categoria;
     }
+  };
+
+  // Función para eliminar miembro
+  const handleDeleteMiembro = async () => {
+    if (!miembro) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteMiembro(miembro.id);
+      toast.success("Miembro eliminado exitosamente");
+      router.push("/miembros");
+    } catch (error) {
+      console.error("Error al eliminar miembro:", error);
+      toast.error("Error al eliminar el miembro. Intente nuevamente.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  // Función para iniciar edición
+  const handleEditMiembro = () => {
+    if (miembro) {
+      setEditingMiembro({ ...miembro });
+    }
+  };
+
+  // Función para guardar cambios
+  const handleSaveMiembro = async () => {
+    if (!editingMiembro) return;
+
+    setIsSaving(true);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: miembroId, fechaRegistro, ...updateData } = editingMiembro;
+      // Excluir fechaRegistro del update ya que no debe cambiar
+      await updateMiembro(miembroId, updateData);
+
+      // Actualizar el estado local
+      setMiembro(editingMiembro);
+      setEditingMiembro(null);
+      toast.success("Miembro actualizado exitosamente");
+    } catch (error) {
+      console.error("Error al actualizar miembro:", error);
+      toast.error("Error al actualizar el miembro. Intente nuevamente.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Función para cancelar edición
+  const handleCancelEdit = () => {
+    setEditingMiembro(null);
   };
 
   if (loading) {
@@ -279,16 +343,173 @@ const MiembroDetail = () => {
             >
               Volver a la Lista
             </Button>
-            {/* TODO: Add edit functionality */}
-            {/* <Button 
-              className="flex-1 bg-slate-600 hover:bg-slate-700"
-              onClick={() => router.push(`/miembros/${id}/edit`)}
-            >
-              Editar
-            </Button> */}
+            {user?.rol === "admin" && (
+              <>
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50"
+                  onClick={handleEditMiembro}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent border-red-200 text-red-700 hover:bg-red-50"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Eliminar
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de confirmación de eliminación */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+                Confirmar Eliminación
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-700">
+                ¿Estás seguro de que deseas eliminar a <strong>{miembro?.nombre}</strong>? Esta acción
+                no se puede deshacer.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                  onClick={handleDeleteMiembro}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Modal de edición */}
+      {editingMiembro && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <Card className="w-full max-w-md bg-white max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Edit3 className="w-5 h-5" />
+                Editar Miembro
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Nombre Completo *
+                </label>
+                <Input
+                  placeholder="Nombre del miembro"
+                  value={editingMiembro.nombre}
+                  onChange={(e) =>
+                    setEditingMiembro({
+                      ...editingMiembro,
+                      nombre: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Categoría *
+                </label>
+                <Select
+                  value={editingMiembro.categoria}
+                  onValueChange={(
+                    value: "hermano" | "hermana" | "nino" | "adolescente"
+                  ) =>
+                    setEditingMiembro({ ...editingMiembro, categoria: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hermano">Hermano</SelectItem>
+                    <SelectItem value="hermana">Hermana</SelectItem>
+                    <SelectItem value="nino">Niño</SelectItem>
+                    <SelectItem value="adolescente">Adolescente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Teléfono
+                </label>
+                <Input
+                  placeholder="Número de teléfono"
+                  value={editingMiembro.telefono || ""}
+                  onChange={(e) =>
+                    setEditingMiembro({
+                      ...editingMiembro,
+                      telefono: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Notas
+                </label>
+                <Input
+                  placeholder="Notas adicionales"
+                  value={editingMiembro.notas || ""}
+                  onChange={(e) =>
+                    setEditingMiembro({
+                      ...editingMiembro,
+                      notas: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={handleSaveMiembro}
+                  disabled={isSaving || !editingMiembro.nombre.trim()}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSaving ? "Guardando..." : "Guardar Cambios"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
