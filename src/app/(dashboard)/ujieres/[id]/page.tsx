@@ -39,7 +39,7 @@ interface Ujier {
 
 export default function UjierDetailPage() {
   return (
-    <RoleGuard route="ujieres">
+    <RoleGuard route="ujieres" allowedRoles={["admin", "directiva"]}>
       <UjierDetailContent />
     </RoleGuard>
   );

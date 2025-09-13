@@ -1,11 +1,54 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
+// Interfaces para los tipos de datos
+interface Simpatizante {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+}
+
+interface Miembro {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  categoria: "hermano" | "hermana" | "nino" | "adolescente";
+}
+
+interface MiembroSimplificado {
+  id: string;
+  nombre: string;
+}
+
+interface MiembrosAsistieron {
+  [key: string]: Array<MiembroSimplificado>;
+  hermanos: Array<MiembroSimplificado>;
+  hermanas: Array<MiembroSimplificado>;
+  ninos: Array<MiembroSimplificado>;
+  adolescentes: Array<MiembroSimplificado>;
+}
+
+interface DatosServicioBase {
+  hermanos: number;
+  hermanas: number;
+  ninos: number;
+  adolescentes: number;
+  simpatizantes: number;
+  total: number;
+  servicio: string;
+  simpatizantesAsistieron: Array<MiembroSimplificado>;
+  miembrosAsistieron: MiembrosAsistieron;
+}
+
+// Interfaces removidas porque no se usan actualmente
+// Se pueden volver a agregar cuando sean necesarias
 import {
   fetchSimpatizantes,
   fetchMiembros,
   addSimpatizante,
-  addMiembro,
   saveConteo,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,14 +98,14 @@ export default function ConteoPage() {
   const [ujierSeleccionado, setUjierSeleccionado] = useState("");
   const [ujierPersonalizado, setUjierPersonalizado] = useState("");
   const [modoConsecutivo, setModoConsecutivo] = useState(false);
-  const [datosServicioBase, setDatosServicioBase] = useState<any>(null);
+  const [datosServicioBase, setDatosServicioBase] = useState<DatosServicioBase | null>(null);
 
   // Estados para listas del día
-  const [simpatizantesDelDia, setSimpatizantesDelDia] = useState<any[]>([]);
-  const [hermanosDelDia, setHermanosDelDia] = useState<any[]>([]);
-  const [hermanasDelDia, setHermanasDelDia] = useState<any[]>([]);
-  const [ninosDelDia, setNinosDelDia] = useState<any[]>([]);
-  const [adolescentesDelDia, setAdolescentesDelDia] = useState<any[]>([]);
+  const [simpatizantesDelDia, setSimpatizantesDelDia] = useState<Simpatizante[]>([]);
+  const [hermanosDelDia, setHermanosDelDia] = useState<MiembroSimplificado[]>([]);
+  const [hermanasDelDia, setHermanasDelDia] = useState<MiembroSimplificado[]>([]);
+  const [ninosDelDia, setNinosDelDia] = useState<MiembroSimplificado[]>([]);
+  const [adolescentesDelDia, setAdolescentesDelDia] = useState<MiembroSimplificado[]>([]);
 
   // Estados para edición de contadores
   const [editingCounter, setEditingCounter] = useState<string | null>(null);
@@ -89,8 +132,8 @@ export default function ConteoPage() {
   const [selectedUjieres, setSelectedUjieres] = useState<string[]>([]);
 
   // Estados para datos de Firebase
-  const [simpatizantes, setSimpatizantes] = useState<any[]>([]);
-  const [miembros, setMiembros] = useState<any[]>([]);
+  const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
+  const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
 
   const servicios = [
@@ -202,7 +245,7 @@ export default function ConteoPage() {
     setTempValue("");
   };
 
-  const selectExistingSimpatizante = (simpatizante: any) => {
+  const selectExistingSimpatizante = (simpatizante: Simpatizante) => {
     // Verificar si ya está en la lista del día
     if (simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
       toast.info("Este simpatizante ya fue agregado hoy");
@@ -225,10 +268,10 @@ export default function ConteoPage() {
         });
 
         // Agregar a la lista del día
-        setSimpatizantesDelDia((prev) => [...prev, nuevoSimpatizante]);
+        setSimpatizantesDelDia((prev) => [...prev, nuevoSimpatizante as Simpatizante]);
 
         // Actualizar la lista de simpatizantes disponibles
-        setSimpatizantes((prev) => [...prev, nuevoSimpatizante]);
+        setSimpatizantes((prev) => [...prev, nuevoSimpatizante as Simpatizante]);
 
         // Limpiar formulario
         setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
@@ -242,7 +285,7 @@ export default function ConteoPage() {
     }
   };
 
-  const removeSimpatizanteDelDia = (simpatizanteId: number) => {
+  const removeSimpatizanteDelDia = (simpatizanteId: string) => {
     setSimpatizantesDelDia((prev) =>
       prev.filter((s) => s.id !== simpatizanteId)
     );
@@ -255,8 +298,8 @@ export default function ConteoPage() {
     setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
   };
 
-  const selectMiembro = (miembro: any, categoria: string) => {
-    const setterMap: { [key: string]: (value: any[]) => void } = {
+  const selectMiembro = (miembro: Miembro, categoria: string) => {
+    const setterMap: { [key: string]: (value: (prev: MiembroSimplificado[]) => MiembroSimplificado[]) => void } = {
       hermanos: setHermanosDelDia,
       hermanas: setHermanasDelDia,
       ninos: setNinosDelDia,
@@ -269,27 +312,27 @@ export default function ConteoPage() {
         hermanas: hermanasDelDia,
         ninos: ninosDelDia,
         adolescentes: adolescentesDelDia,
-      }[categoria] as any[]) || [];
+      }[categoria] as MiembroSimplificado[]) || [];
 
-    if (currentList.find((m: any) => m.id === miembro.id)) {
+    if (currentList.find((m: MiembroSimplificado) => m.id === miembro.id)) {
       toast.info("Este miembro ya fue agregado hoy");
       return;
     }
 
-    setterMap[categoria]?.((prev: any[]) => [...prev, miembro]);
+    setterMap[categoria]?.((prev: MiembroSimplificado[]) => [...prev, { id: miembro.id, nombre: miembro.nombre }]);
     setShowMiembrosDialog(false);
   };
 
-  const removeMiembroDelDia = (miembroId: number, categoria: string) => {
-    const setterMap: { [key: string]: (value: any[]) => void } = {
+  const removeMiembroDelDia = (miembroId: string, categoria: string) => {
+    const setterMap: { [key: string]: (value: (prev: MiembroSimplificado[]) => MiembroSimplificado[]) => void } = {
       hermanos: setHermanosDelDia,
       hermanas: setHermanasDelDia,
       ninos: setNinosDelDia,
       adolescentes: setAdolescentesDelDia,
     };
 
-    setterMap[categoria]?.((prev: any[]) =>
-      prev.filter((m: any) => m.id !== miembroId)
+    setterMap[categoria]?.((prev: MiembroSimplificado[]) =>
+      prev.filter((m: MiembroSimplificado) => m.id !== miembroId)
     );
   };
 
@@ -936,12 +979,11 @@ export default function ConteoPage() {
         adolescentesDelDia.length > 0 ||
         simpatizantesDelDia.length > 0 ||
         (modoConsecutivo &&
-          (datosServicioBase?.simpatizantesAsistieron?.length > 0 ||
-            datosServicioBase?.miembrosAsistieron?.hermanos?.length > 0 ||
-            datosServicioBase?.miembrosAsistieron?.hermanas?.length > 0 ||
-            datosServicioBase?.miembrosAsistieron?.ninos?.length > 0 ||
-            datosServicioBase?.miembrosAsistieron?.adolescentes?.length >
-              0))) && (
+          ((datosServicioBase?.simpatizantesAsistieron && datosServicioBase.simpatizantesAsistieron.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.hermanos && datosServicioBase.miembrosAsistieron.hermanos.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.hermanas && datosServicioBase.miembrosAsistieron.hermanas.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.ninos && datosServicioBase.miembrosAsistieron.ninos.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.adolescentes && datosServicioBase.miembrosAsistieron.adolescentes.length > 0)))) && (
         <Button
           variant="outline"
           className="w-full bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl py-3 shadow-lg text-lg font-semibold mb-4"
@@ -954,20 +996,20 @@ export default function ConteoPage() {
             ninosDelDia.length +
             adolescentesDelDia.length +
             simpatizantesDelDia.length +
-            (modoConsecutivo
-              ? datosServicioBase?.miembrosAsistieron?.hermanos?.length || 0
+            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.hermanos
+              ? datosServicioBase.miembrosAsistieron.hermanos.length
               : 0) +
-            (modoConsecutivo
-              ? datosServicioBase?.miembrosAsistieron?.hermanas?.length || 0
+            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.hermanas
+              ? datosServicioBase.miembrosAsistieron.hermanas.length
               : 0) +
-            (modoConsecutivo
-              ? datosServicioBase?.miembrosAsistieron?.ninos?.length || 0
+            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
+              ? datosServicioBase.miembrosAsistieron.ninos.length
               : 0) +
-            (modoConsecutivo
-              ? datosServicioBase?.miembrosAsistieron?.adolescentes?.length || 0
+            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.adolescentes
+              ? datosServicioBase.miembrosAsistieron.adolescentes.length
               : 0) +
-            (modoConsecutivo
-              ? datosServicioBase?.simpatizantesAsistieron?.length || 0
+            (modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
+              ? datosServicioBase.simpatizantesAsistieron.length
               : 0)}
           )
         </Button>
@@ -1223,7 +1265,7 @@ export default function ConteoPage() {
                     </h4>
                     <div className="max-h-24 overflow-y-auto space-y-1">
                       {/* Miembros de la base (si aplica) */}
-                      {baseList.map((miembro: any) => (
+                      {baseList.map((miembro: MiembroSimplificado) => (
                         <div
                           key={`base-${miembro.id}`}
                           className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
@@ -1240,7 +1282,7 @@ export default function ConteoPage() {
                         </div>
                       ))}
                       {/* Miembros agregados en esta sesión */}
-                      {currentList.map((miembro: any) => (
+                      {currentList.map((miembro: MiembroSimplificado) => (
                         <div
                           key={miembro.id}
                           className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
@@ -1300,10 +1342,10 @@ export default function ConteoPage() {
                         .toLowerCase()
                         .includes(searchMiembros.toLowerCase());
                       const noEstaEnActuales = !currentList.find(
-                        (m: any) => m.id === miembro.id
+                        (m: MiembroSimplificado) => m.id === miembro.id
                       );
                       const noEstaEnBase = !baseList.find(
-                        (m: any) => m.id === miembro.id
+                        (m: MiembroSimplificado) => m.id === miembro.id
                       );
                       return nombreMatch && noEstaEnActuales && noEstaEnBase;
                     }
@@ -1394,7 +1436,7 @@ export default function ConteoPage() {
                         <h4 className="font-semibold text-gray-700 mb-2 capitalize">
                           {catKey} ({members.length})
                         </h4>
-                        {members.map((miembro: any) => (
+                        {members.map((miembro: MiembroSimplificado) => (
                           <div
                             key={miembro.id}
                             className="flex items-center justify-between p-2 bg-gray-50 rounded mb-1"
@@ -1413,7 +1455,7 @@ export default function ConteoPage() {
                       {datosServicioBase.simpatizantesAsistieron.length})
                     </h4>
                     {datosServicioBase.simpatizantesAsistieron.map(
-                      (simpatizante: any) => (
+                      (simpatizante: MiembroSimplificado) => (
                         <div
                           key={simpatizante.id}
                           className="flex items-center justify-between p-2 bg-emerald-50 rounded mb-1"

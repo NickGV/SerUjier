@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
+// import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,14 @@ interface Usuario {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [nombre, setNombre] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,8 +42,8 @@ export default function LoginPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const params = useSearchParams();
-  const next = params.get("next") || "/";
+  // const params = useSearchParams();
+  // const next = params.get("next") || "/"; // Comentado por ahora, no se usa
 
   // Cargar usuarios disponibles
   useEffect(() => {
@@ -98,7 +106,7 @@ export default function LoginPage() {
 
       // Usar window.location.href para forzar una recarga completa
       // Esto asegura que el middleware vea las cookies correctamente
-      window.location.href = next;
+      window.location.href = "conteo";
     } catch (err) {
       console.error("Login error:", err);
       setError("Error de conexión. Intente nuevamente.");

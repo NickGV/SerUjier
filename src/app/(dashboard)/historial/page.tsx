@@ -154,7 +154,7 @@ function HistorialContent() {
     // Filtro por rango de fechas
     let fechaMatch = true;
     if (fechaInicio || fechaFin) {
-      const recordDate = new Date(record.fecha);
+      const recordDate = new Date(record.fecha + "T12:00:00");
       if (fechaInicio) {
         const startDate = new Date(fechaInicio);
         fechaMatch = fechaMatch && recordDate >= startDate;
@@ -313,8 +313,8 @@ function HistorialContent() {
 
       // Preparar datos para Excel
       const excelData = filteredData.map((record) => ({
-        Fecha: new Date(record.fecha).toLocaleDateString("es-ES"),
-        "Día de la Semana": new Date(record.fecha).toLocaleDateString("es-ES", {
+        Fecha: new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES"),
+        "Día de la Semana": new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
           weekday: "long",
         }),
         Servicio: record.servicio,
@@ -485,10 +485,10 @@ ESTADÍSTICAS POR CATEGORÍA:
 DETALLE DE REGISTROS:
 =====================
 ${filteredData
-  .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+  .sort((a, b) => new Date(b.fecha + "T12:00:00").getTime() - new Date(a.fecha + "T12:00:00").getTime())
   .map(
     (record, index) => `
-${index + 1}. REGISTRO DEL ${new Date(record.fecha)
+${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
       .toLocaleDateString("es-ES", {
         weekday: "long",
         year: "numeric",
@@ -1021,7 +1021,7 @@ NOTAS FINALES:
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-semibold text-gray-800">
-                      {new Date(record.fecha).toLocaleDateString("es-ES", {
+                      {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
                         weekday: "long",
                         day: "numeric",
                         month: "long",
@@ -1150,7 +1150,7 @@ NOTAS FINALES:
                 <div>
                   <span className="text-gray-600">Fecha:</span>
                   <div className="font-semibold">
-                    {new Date(selectedRecord.fecha).toLocaleDateString("es-ES")}
+                    {new Date(selectedRecord.fecha + "T12:00:00").toLocaleDateString("es-ES")}
                   </div>
                 </div>
                 <div>

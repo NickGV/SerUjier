@@ -50,7 +50,7 @@ interface Ujier {
 
 export default function UjieresPage() {
   return (
-    <RoleGuard route="ujieres">
+    <RoleGuard route="ujieres" allowedRoles={["admin", "directiva"]}>
       <UjieresContent />
     </RoleGuard>
   );
@@ -65,10 +65,14 @@ function UjieresContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("todos");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newUsuario, setNewUsuario] = useState({
+  const [newUsuario, setNewUsuario] = useState<{
+    nombre: string;
+    password: string;
+    rol: "admin" | "directiva" | "ujier";
+  }>({
     nombre: "",
     password: "",
-    rol: "ujier" as const,
+    rol: "ujier",
   });
 
   // Estados para edición y eliminación

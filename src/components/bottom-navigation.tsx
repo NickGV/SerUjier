@@ -8,7 +8,7 @@ import {
   Clock,
   Settings,
   LogOut,
-  Home,
+  // Home,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 

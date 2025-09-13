@@ -60,10 +60,15 @@ export default function MiembrosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("todos");
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newMiembro, setNewMiembro] = useState({
+  const [newMiembro, setNewMiembro] = useState<{
+    nombre: string;
+    telefono: string;
+    categoria: "hermano" | "hermana" | "nino" | "adolescente";
+    notas: string;
+  }>({
     nombre: "",
     telefono: "",
-    categoria: "hermano" as const,
+    categoria: "hermano",
     notas: "",
   });
 
@@ -180,9 +185,8 @@ export default function MiembrosPage() {
 
     setIsSaving(true);
     try {
-      const { id, ...updateData } = editingMiembro;
-      // Excluir fechaRegistro del update ya que no debe cambiar
-      delete updateData.fechaRegistro;
+      const { id, fechaRegistro, ...updateData } = editingMiembro;
+      // Excluir fechaRegistro del update ya que no debe cambiar usando destructuring
       await updateMiembro(id, updateData);
 
       // Recargar los datos
