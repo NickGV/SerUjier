@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { adminDb, adminAuth } from "@/lib/firebase-admin";
 
+// Force dynamic rendering for this API route
+export const dynamic = "force-dynamic";
+
 // TODO: Verificar si se puede usar el hashPassword de utils.ts, arreglar el update de password del ujier para que use esta encriptacion
 // const encryptPassword = (password: string): string => {
 //   // Usando btoa para encoding base64 simple + un salt
