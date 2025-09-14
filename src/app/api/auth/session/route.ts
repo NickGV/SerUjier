@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { Buffer } from "buffer";
 
-// Force dynamic rendering for this API route
-export const dynamic = "force-dynamic";
-
 const SESSION_COOKIE_NAME = "session";
 const SESSION_EXPIRES_MS = 1000 * 60 * 60 * 24 * 5; // 5 días
 

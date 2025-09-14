@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { cookies } from "next/headers";
 
-// Force dynamic rendering for this API route
-export const dynamic = "force-dynamic";
-
 export async function POST(req: Request) {
   debugger;
   try {
