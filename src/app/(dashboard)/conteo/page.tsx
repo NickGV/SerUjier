@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePersistentConteo } from "@/hooks/use-persistent-conteo";
 
 // Interfaces para los tipos de datos
 interface Simpatizante {
@@ -87,32 +88,14 @@ import {
 import { toast } from "sonner";
 
 export default function ConteoPage() {
-  // Estados principales
-  const [hermanos, setHermanos] = useState(0);
-  const [hermanas, setHermanas] = useState(0);
-  const [ninos, setNinos] = useState(0);
-  const [adolescentes, setAdolescentes] = useState(0);
-  const [simpatizantesCount, setSimpatizantesCount] = useState(0);
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
-  const [tipoServicio, setTipoServicio] = useState("dominical");
-  const [ujierSeleccionado, setUjierSeleccionado] = useState("");
-  const [ujierPersonalizado, setUjierPersonalizado] = useState("");
-  const [modoConsecutivo, setModoConsecutivo] = useState(false);
+  // Hook persistente para el conteo
+  const { conteoState, updateConteo, clearDayData, isLoaded } = usePersistentConteo();
+
+  // Estados locales que no necesitan persistencia
   const [datosServicioBase, setDatosServicioBase] = useState<DatosServicioBase | null>(null);
-
-  // Estados para listas del día
-  const [simpatizantesDelDia, setSimpatizantesDelDia] = useState<Simpatizante[]>([]);
-  const [hermanosDelDia, setHermanosDelDia] = useState<MiembroSimplificado[]>([]);
-  const [hermanasDelDia, setHermanasDelDia] = useState<MiembroSimplificado[]>([]);
-  const [ninosDelDia, setNinosDelDia] = useState<MiembroSimplificado[]>([]);
-  const [adolescentesDelDia, setAdolescentesDelDia] = useState<MiembroSimplificado[]>([]);
-
-  // Estados para edición de contadores
   const [editingCounter, setEditingCounter] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
-
-  // Estados para el diálogo de simpatizantes
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewForm, setShowNewForm] = useState(false);
   const [newSimpatizante, setNewSimpatizante] = useState({
@@ -120,21 +103,25 @@ export default function ConteoPage() {
     telefono: "",
     notas: "",
   });
-
-  // Estados para miembros del día por categoría
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
-
   const [showContinuarDialog, setShowContinuarDialog] = useState(false);
-
-  const [searchMiembros, setSearchMiembros] = useState("");
-  const [selectedUjieres, setSelectedUjieres] = useState<string[]>([]);
 
   // Estados para datos de Firebase
   const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Add multiple count entry functionality
+  const [showBulkCountDialog, setShowBulkCountDialog] = useState(false);
+  const [bulkCounts, setBulkCounts] = useState({
+    hermanos: "",
+    hermanas: "",
+    ninos: "",
+    adolescentes: "",
+    simpatizantes: "",
+  });
 
   const servicios = [
     { value: "dominical", label: "Dominical" },
@@ -167,16 +154,6 @@ export default function ConteoPage() {
     "Carolina Caro",
   ];
 
-  // Add multiple count entry functionality
-  const [showBulkCountDialog, setShowBulkCountDialog] = useState(false);
-  const [bulkCounts, setBulkCounts] = useState({
-    hermanos: "",
-    hermanas: "",
-    ninos: "",
-    adolescentes: "",
-    simpatizantes: "",
-  });
-
   // Efecto para cargar datos desde Firebase
   useEffect(() => {
     const loadData = async () => {
@@ -200,22 +177,22 @@ export default function ConteoPage() {
 
   // Efecto para cargar los datos base cuando se entra en modo consecutivo
   useEffect(() => {
-    if (modoConsecutivo && datosServicioBase) {
-      setHermanos(datosServicioBase.hermanos || 0);
-      setHermanas(datosServicioBase.hermanas || 0);
-      setNinos(datosServicioBase.ninos || 0);
-      setAdolescentes(datosServicioBase.adolescentes || 0);
-      setSimpatizantesCount(datosServicioBase.simpatizantes || 0);
-      setSimpatizantesDelDia(datosServicioBase.simpatizantesAsistieron || []);
-      setHermanosDelDia(datosServicioBase.miembrosAsistieron?.hermanos || []);
-      setHermanasDelDia(datosServicioBase.miembrosAsistieron?.hermanas || []);
-      setNinosDelDia(datosServicioBase.miembrosAsistieron?.ninos || []);
-      setAdolescentesDelDia(
-        datosServicioBase.miembrosAsistieron?.adolescentes || []
-      );
-      setTipoServicio("dominical"); // Forzar a dominical
+    if (conteoState.modoConsecutivo && datosServicioBase) {
+      updateConteo({
+        hermanos: datosServicioBase.hermanos || 0,
+        hermanas: datosServicioBase.hermanas || 0,
+        ninos: datosServicioBase.ninos || 0,
+        adolescentes: datosServicioBase.adolescentes || 0,
+        simpatizantesCount: datosServicioBase.simpatizantes || 0,
+        simpatizantesDelDia: datosServicioBase.simpatizantesAsistieron || [],
+        hermanosDelDia: datosServicioBase.miembrosAsistieron?.hermanos || [],
+        hermanasDelDia: datosServicioBase.miembrosAsistieron?.hermanas || [],
+        ninosDelDia: datosServicioBase.miembrosAsistieron?.ninos || [],
+        adolescentesDelDia: datosServicioBase.miembrosAsistieron?.adolescentes || [],
+        tipoServicio: "dominical", // Forzar a dominical
+      });
     }
-  }, [modoConsecutivo, datosServicioBase]);
+  }, [conteoState.modoConsecutivo, datosServicioBase, updateConteo]);
 
   const handleCounterEdit = (type: string, value: number) => {
     setEditingCounter(type);
@@ -224,35 +201,41 @@ export default function ConteoPage() {
 
   const saveCounterEdit = () => {
     const newValue = Number.parseInt(tempValue) || 0;
+    const updates: Partial<typeof conteoState> = {};
+    
     switch (editingCounter) {
       case "hermanos":
-        setHermanos(newValue);
+        updates.hermanos = newValue;
         break;
       case "hermanas":
-        setHermanas(newValue);
+        updates.hermanas = newValue;
         break;
       case "ninos":
-        setNinos(newValue);
+        updates.ninos = newValue;
         break;
       case "adolescentes":
-        setAdolescentes(newValue);
+        updates.adolescentes = newValue;
         break;
       case "simpatizantes":
-        setSimpatizantesCount(newValue);
+        updates.simpatizantesCount = newValue;
         break;
     }
+    
+    updateConteo(updates);
     setEditingCounter(null);
     setTempValue("");
   };
 
   const selectExistingSimpatizante = (simpatizante: Simpatizante) => {
     // Verificar si ya está en la lista del día
-    if (simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
+    if (conteoState.simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
       toast.info("Este simpatizante ya fue agregado hoy");
       return;
     }
 
-    setSimpatizantesDelDia((prev) => [...prev, simpatizante]);
+    updateConteo({
+      simpatizantesDelDia: [...conteoState.simpatizantesDelDia, simpatizante]
+    });
     setShowAddDialog(false);
     setSearchTerm("");
     setShowNewForm(false);
@@ -268,10 +251,15 @@ export default function ConteoPage() {
         });
 
         // Agregar a la lista del día
-        setSimpatizantesDelDia((prev) => [...prev, nuevoSimpatizante as Simpatizante]);
+        updateConteo({
+          simpatizantesDelDia: [...conteoState.simpatizantesDelDia, nuevoSimpatizante as Simpatizante]
+        });
 
         // Actualizar la lista de simpatizantes disponibles
-        setSimpatizantes((prev) => [...prev, nuevoSimpatizante as Simpatizante]);
+        setSimpatizantes((prev) => [
+          ...prev,
+          nuevoSimpatizante as Simpatizante,
+        ]);
 
         // Limpiar formulario
         setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
@@ -286,9 +274,9 @@ export default function ConteoPage() {
   };
 
   const removeSimpatizanteDelDia = (simpatizanteId: string) => {
-    setSimpatizantesDelDia((prev) =>
-      prev.filter((s) => s.id !== simpatizanteId)
-    );
+    updateConteo({
+      simpatizantesDelDia: conteoState.simpatizantesDelDia.filter((s) => s.id !== simpatizanteId)
+    });
   };
 
   const closeDialog = () => {
@@ -299,41 +287,85 @@ export default function ConteoPage() {
   };
 
   const selectMiembro = (miembro: Miembro, categoria: string) => {
-    const setterMap: { [key: string]: (value: (prev: MiembroSimplificado[]) => MiembroSimplificado[]) => void } = {
-      hermanos: setHermanosDelDia,
-      hermanas: setHermanasDelDia,
-      ninos: setNinosDelDia,
-      adolescentes: setAdolescentesDelDia,
-    };
-
-    const currentList =
-      ({
-        hermanos: hermanosDelDia,
-        hermanas: hermanasDelDia,
-        ninos: ninosDelDia,
-        adolescentes: adolescentesDelDia,
-      }[categoria] as MiembroSimplificado[]) || [];
+    let currentList: MiembroSimplificado[] = [];
+    
+    switch (categoria) {
+      case "hermanos":
+        currentList = conteoState.hermanosDelDia;
+        break;
+      case "hermanas":
+        currentList = conteoState.hermanasDelDia;
+        break;
+      case "ninos":
+        currentList = conteoState.ninosDelDia;
+        break;
+      case "adolescentes":
+        currentList = conteoState.adolescentesDelDia;
+        break;
+    }
 
     if (currentList.find((m: MiembroSimplificado) => m.id === miembro.id)) {
       toast.info("Este miembro ya fue agregado hoy");
       return;
     }
 
-    setterMap[categoria]?.((prev: MiembroSimplificado[]) => [...prev, { id: miembro.id, nombre: miembro.nombre }]);
-    setShowMiembrosDialog(false);
+    const updates: Partial<typeof conteoState> = {};
+    switch (categoria) {
+      case "hermanos":
+        updates.hermanosDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
+        break;
+      case "hermanas":
+        updates.hermanasDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
+        break;
+      case "ninos":
+        updates.ninosDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
+        break;
+      case "adolescentes":
+        updates.adolescentesDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
+        break;
+    }
+
+    updateConteo(updates);
+
+    // Mostrar toast de confirmación en lugar de cerrar el diálogo
+    toast.success(`${miembro.nombre} agregado a ${categoria}`);
   };
 
   const removeMiembroDelDia = (miembroId: string, categoria: string) => {
-    const setterMap: { [key: string]: (value: (prev: MiembroSimplificado[]) => MiembroSimplificado[]) => void } = {
-      hermanos: setHermanosDelDia,
-      hermanas: setHermanasDelDia,
-      ninos: setNinosDelDia,
-      adolescentes: setAdolescentesDelDia,
-    };
+    let currentList: MiembroSimplificado[] = [];
+    
+    switch (categoria) {
+      case "hermanos":
+        currentList = conteoState.hermanosDelDia;
+        break;
+      case "hermanas":
+        currentList = conteoState.hermanasDelDia;
+        break;
+      case "ninos":
+        currentList = conteoState.ninosDelDia;
+        break;
+      case "adolescentes":
+        currentList = conteoState.adolescentesDelDia;
+        break;
+    }
+    
+    const updates: Partial<typeof conteoState> = {};
+    switch (categoria) {
+      case "hermanos":
+        updates.hermanosDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        break;
+      case "hermanas":
+        updates.hermanasDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        break;
+      case "ninos":
+        updates.ninosDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        break;
+      case "adolescentes":
+        updates.adolescentesDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        break;
+    }
 
-    setterMap[categoria]?.((prev: MiembroSimplificado[]) =>
-      prev.filter((m: MiembroSimplificado) => m.id !== miembroId)
-    );
+    updateConteo(updates);
   };
 
   const openMiembrosDialog = (categoria: string) => {
@@ -358,11 +390,13 @@ export default function ConteoPage() {
       simpatizantes: Number.parseInt(bulkCounts.simpatizantes) || 0,
     };
 
-    setHermanos((prev) => prev + counts.hermanos);
-    setHermanas((prev) => prev + counts.hermanas);
-    setNinos((prev) => prev + counts.ninos);
-    setAdolescentes((prev) => prev + counts.adolescentes);
-    setSimpatizantesCount((prev) => prev + counts.simpatizantes);
+    updateConteo({
+      hermanos: conteoState.hermanos + counts.hermanos,
+      hermanas: conteoState.hermanas + counts.hermanas,
+      ninos: conteoState.ninos + counts.ninos,
+      adolescentes: conteoState.adolescentes + counts.adolescentes,
+      simpatizantesCount: conteoState.simpatizantesCount + counts.simpatizantes,
+    });
 
     setBulkCounts({
       hermanos: "",
@@ -386,7 +420,7 @@ export default function ConteoPage() {
 
   const handleSaveConteo = async () => {
     // Usar los ujieres seleccionados
-    const ujieresFinal: string[] = selectedUjieres;
+    const ujieresFinal: string[] = conteoState.selectedUjieres;
 
     if (ujieresFinal.length === 0) {
       toast.info("Por favor seleccione al menos un ujier");
@@ -394,28 +428,28 @@ export default function ConteoPage() {
     }
 
     // Calcular totales, sumando la base si estamos en modo consecutivo
-    const baseHermanos = modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0;
-    const baseHermanas = modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0;
-    const baseNinos = modoConsecutivo ? datosServicioBase?.ninos || 0 : 0;
-    const baseAdolescentes = modoConsecutivo
+    const baseHermanos = conteoState.modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0;
+    const baseHermanas = conteoState.modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0;
+    const baseNinos = conteoState.modoConsecutivo ? datosServicioBase?.ninos || 0 : 0;
+    const baseAdolescentes = conteoState.modoConsecutivo
       ? datosServicioBase?.adolescentes || 0
       : 0;
-    const baseSimpatizantes = modoConsecutivo
+    const baseSimpatizantes = conteoState.modoConsecutivo
       ? datosServicioBase?.simpatizantes || 0
       : 0;
 
     const totalSimpatizantes =
-      simpatizantesCount + simpatizantesDelDia.length + baseSimpatizantes;
-    const totalHermanos = hermanos + hermanosDelDia.length + baseHermanos;
-    const totalHermanas = hermanas + hermanasDelDia.length + baseHermanas;
-    const totalNinos = ninos + ninosDelDia.length + baseNinos;
+      conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length + baseSimpatizantes;
+    const totalHermanos = conteoState.hermanos + conteoState.hermanosDelDia.length + baseHermanos;
+    const totalHermanas = conteoState.hermanas + conteoState.hermanasDelDia.length + baseHermanas;
+    const totalNinos = conteoState.ninos + conteoState.ninosDelDia.length + baseNinos;
     const totalAdolescentes =
-      adolescentes + adolescentesDelDia.length + baseAdolescentes;
+      conteoState.adolescentes + conteoState.adolescentesDelDia.length + baseAdolescentes;
 
     const conteoData = {
-      fecha,
+      fecha: conteoState.fecha,
       servicio:
-        servicios.find((s) => s.value === tipoServicio)?.label || tipoServicio,
+        servicios.find((s) => s.value === conteoState.tipoServicio)?.label || conteoState.tipoServicio,
       ujier: ujieresFinal, // Ahora es un array
       hermanos: totalHermanos,
       hermanas: totalHermanas,
@@ -429,47 +463,47 @@ export default function ConteoPage() {
         totalAdolescentes +
         totalSimpatizantes,
       simpatizantesAsistieron: [
-        ...(modoConsecutivo
+        ...(conteoState.modoConsecutivo
           ? datosServicioBase?.simpatizantesAsistieron || []
           : []),
-        ...simpatizantesDelDia.map((s) => ({ id: s.id, nombre: s.nombre })),
+        ...conteoState.simpatizantesDelDia.map((s) => ({ id: s.id, nombre: s.nombre })),
       ],
       miembrosAsistieron: {
         hermanos: [
-          ...(modoConsecutivo
+          ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.hermanos || []
             : []),
-          ...hermanosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.hermanosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
         ],
         hermanas: [
-          ...(modoConsecutivo
+          ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.hermanas || []
             : []),
-          ...hermanasDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.hermanasDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
         ],
         ninos: [
-          ...(modoConsecutivo
+          ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.ninos || []
             : []),
-          ...ninosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.ninosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
         ],
         adolescentes: [
-          ...(modoConsecutivo
+          ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.adolescentes || []
             : []),
-          ...adolescentesDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.adolescentesDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
         ],
       },
     };
 
     // Verificar si es domingo y evangelismo/misionero (y no estamos en modo consecutivo)
-    const fechaObj = new Date(fecha + "T12:00:00"); // Add time to avoid timezone issues
+    const fechaObj = new Date(conteoState.fecha + "T12:00:00"); // Add time to avoid timezone issues
     const esDomingo = fechaObj.getDay() === 0;
     const esServicioBase =
-      tipoServicio === "evangelismo" || tipoServicio === "misionero";
+      conteoState.tipoServicio === "evangelismo" || conteoState.tipoServicio === "misionero";
 
     try {
-      if (esDomingo && esServicioBase && !modoConsecutivo) {
+      if (esDomingo && esServicioBase && !conteoState.modoConsecutivo) {
         // Guardar datos del evangelismo/misionero y preguntar si continuar
         await saveConteo(conteoData);
         setDatosServicioBase(conteoData); // Guardar el conteo actual como base
@@ -477,15 +511,15 @@ export default function ConteoPage() {
         return;
       }
 
-      if (modoConsecutivo) {
+      if (conteoState.modoConsecutivo) {
         // Estamos guardando el dominical después del evangelismo/misionero
         await saveConteo(conteoData);
-        resetConteoForm(); // Resetear todo el formulario
+        clearDayData(); // Limpiar solo los datos del día
         toast.success("Conteo dominical guardado exitosamente");
       } else {
         // Guardado normal
         await saveConteo(conteoData);
-        resetConteoForm(); // Resetear todo el formulario
+        clearDayData(); // Limpiar solo los datos del día
         toast.success("Conteo guardado exitosamente");
       }
     } catch (error) {
@@ -495,8 +529,10 @@ export default function ConteoPage() {
   };
 
   const continuarConDominical = () => {
-    setModoConsecutivo(true);
-    setTipoServicio("dominical");
+    updateConteo({
+      modoConsecutivo: true,
+      tipoServicio: "dominical"
+    });
     setShowContinuarDialog(false);
     // Los contadores y listas ya se habrán cargado desde datosServicioBase en el useEffect
     toast.success(
@@ -506,45 +542,24 @@ export default function ConteoPage() {
 
   const noContinarConDominical = () => {
     setShowContinuarDialog(false);
-    resetConteoForm(); // Resetear todo el formulario
+    clearDayData(); // Limpiar solo los datos del día
     toast.success("Conteo guardado exitosamente");
   };
 
-  // Resetear el formulario de conteo
-  const resetConteoForm = () => {
-    setHermanos(0);
-    setHermanas(0);
-    setNinos(0);
-    setAdolescentes(0);
-    setSimpatizantesCount(0);
-    setSimpatizantesDelDia([]);
-    setHermanosDelDia([]);
-    setHermanasDelDia([]);
-    setNinosDelDia([]);
-    setAdolescentesDelDia([]);
-    setFecha(new Date().toISOString().split("T")[0]);
-    setTipoServicio("dominical");
-    setSelectedUjieres([]); // Limpiar ujieres seleccionados
-    setUjierSeleccionado("");
-    setUjierPersonalizado("");
-    setModoConsecutivo(false);
-    setDatosServicioBase(null);
-    setSearchMiembros(""); // Limpiar búsqueda
-  };
 
   const filteredSimpatizantes = simpatizantes.filter(
     (s) =>
       s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !simpatizantesDelDia.find((sd) => sd.id === s.id)
+      !conteoState.simpatizantesDelDia.find((sd) => sd.id === s.id)
   );
 
   // Calcular el total de asistentes incluyendo la base si estamos en modo consecutivo
   const totalSimpatizantesActual =
-    simpatizantesCount + simpatizantesDelDia.length;
-  const totalHermanosActual = hermanos + hermanosDelDia.length;
-  const totalHermanasActual = hermanas + hermanasDelDia.length;
-  const totalNinosActual = ninos + ninosDelDia.length;
-  const totalAdolescentesActual = adolescentes + adolescentesDelDia.length;
+    conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length;
+  const totalHermanosActual = conteoState.hermanos + conteoState.hermanosDelDia.length;
+  const totalHermanasActual = conteoState.hermanas + conteoState.hermanasDelDia.length;
+  const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length;
+  const totalAdolescentesActual = conteoState.adolescentes + conteoState.adolescentesDelDia.length;
 
   const total =
     totalHermanosActual +
@@ -557,71 +572,71 @@ export default function ConteoPage() {
     {
       key: "hermanos",
       label: "Hermanos",
-      value: hermanos,
-      setter: setHermanos,
+      value: conteoState.hermanos,
+      setter: (value: number) => updateConteo({ hermanos: value }),
       color: "bg-slate-600",
-      miembrosDelDia: hermanosDelDia,
+      miembrosDelDia: conteoState.hermanosDelDia,
       categoria: "hermanos",
-      baseValue: modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0,
-      baseMiembros: modoConsecutivo
+      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0,
+      baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.hermanos || []
         : [],
     },
     {
       key: "hermanas",
       label: "Hermanas",
-      value: hermanas,
-      setter: setHermanas,
+      value: conteoState.hermanas,
+      setter: (value: number) => updateConteo({ hermanas: value }),
       color: "bg-rose-600",
-      miembrosDelDia: hermanasDelDia,
+      miembrosDelDia: conteoState.hermanasDelDia,
       categoria: "hermanas",
-      baseValue: modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0,
-      baseMiembros: modoConsecutivo
+      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0,
+      baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.hermanas || []
         : [],
     },
     {
       key: "ninos",
       label: "Niños",
-      value: ninos,
-      setter: setNinos,
+      value: conteoState.ninos,
+      setter: (value: number) => updateConteo({ ninos: value }),
       color: "bg-amber-600",
-      miembrosDelDia: ninosDelDia,
+      miembrosDelDia: conteoState.ninosDelDia,
       categoria: "ninos",
-      baseValue: modoConsecutivo ? datosServicioBase?.ninos || 0 : 0,
-      baseMiembros: modoConsecutivo
+      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.ninos || 0 : 0,
+      baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.ninos || []
         : [],
     },
     {
       key: "adolescentes",
       label: "Adolescentes",
-      value: adolescentes,
-      setter: setAdolescentes,
+      value: conteoState.adolescentes,
+      setter: (value: number) => updateConteo({ adolescentes: value }),
       color: "bg-purple-600",
-      miembrosDelDia: adolescentesDelDia,
+      miembrosDelDia: conteoState.adolescentesDelDia,
       categoria: "adolescentes",
-      baseValue: modoConsecutivo ? datosServicioBase?.adolescentes || 0 : 0,
-      baseMiembros: modoConsecutivo
+      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.adolescentes || 0 : 0,
+      baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.adolescentes || []
         : [],
     },
     {
       key: "simpatizantes",
       label: "Simpatizantes",
-      value: simpatizantesCount,
-      setter: setSimpatizantesCount,
+      value: conteoState.simpatizantesCount,
+      setter: (value: number) => updateConteo({ simpatizantesCount: value }),
       color: "bg-emerald-600",
       categoria: "simpatizantes",
-      baseValue: modoConsecutivo ? datosServicioBase?.simpatizantes || 0 : 0,
-      baseMiembros: modoConsecutivo
+      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.simpatizantes || 0 : 0,
+      baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.simpatizantesAsistieron || []
         : [],
-      miembrosDelDia: simpatizantesDelDia, // Asegurarse de que esta propiedad exista
+      miembrosDelDia: conteoState.simpatizantesDelDia, // Asegurarse de que esta propiedad exista
     },
   ];
 
-  if (loading) {
+  if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -662,8 +677,8 @@ export default function ConteoPage() {
                 </label>
                 <Input
                   type="date"
-                  value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                  value={conteoState.fecha}
+                  onChange={(e) => updateConteo({ fecha: e.target.value })}
                   className="h-8 sm:h-9 text-xs sm:text-sm"
                 />
               </div>
@@ -672,7 +687,7 @@ export default function ConteoPage() {
                   <Clock className="w-3 h-3" />
                   Servicio
                 </label>
-                <Select value={tipoServicio} onValueChange={setTipoServicio}>
+                <Select value={conteoState.tipoServicio} onValueChange={(value) => updateConteo({ tipoServicio: value })}>
                   <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -691,15 +706,15 @@ export default function ConteoPage() {
               <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
                 <User className="w-3 h-3" />
                 Ujier(es) -{" "}
-                {selectedUjieres.length > 0
-                  ? `${selectedUjieres.length} seleccionados`
+                {conteoState.selectedUjieres.length > 0
+                  ? `${conteoState.selectedUjieres.length} seleccionados`
                   : "Ninguno seleccionado"}
               </label>
 
               {/* Ujieres seleccionados */}
-              {selectedUjieres.length > 0 && (
+              {conteoState.selectedUjieres.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-1">
-                  {selectedUjieres.map((ujier, index) => (
+                  {conteoState.selectedUjieres.map((ujier, index) => (
                     <Badge
                       key={index}
                       variant="outline"
@@ -711,25 +726,30 @@ export default function ConteoPage() {
                         size="sm"
                         className="h-4 w-4 p-0 hover:bg-slate-200"
                         onClick={() => {
-                          setSelectedUjieres((prev) =>
-                            prev.filter((u) => u !== ujier)
-                          );
-                          // Actualizar ujierSeleccionado y ujierPersonalizado
-                          const remaining = selectedUjieres.filter(
+                          const remaining = conteoState.selectedUjieres.filter(
                             (u) => u !== ujier
                           );
+                          updateConteo({ selectedUjieres: remaining });
+                          
+                          // Actualizar ujierSeleccionado y ujierPersonalizado
                           if (remaining.length === 0) {
-                            setUjierSeleccionado("");
-                            setUjierPersonalizado("");
+                            updateConteo({ 
+                              ujierSeleccionado: "",
+                              ujierPersonalizado: ""
+                            });
                           } else if (
                             remaining.length === 1 &&
                             ujieres.includes(remaining[0])
                           ) {
-                            setUjierSeleccionado(remaining[0]);
-                            setUjierPersonalizado("");
+                            updateConteo({
+                              ujierSeleccionado: remaining[0],
+                              ujierPersonalizado: ""
+                            });
                           } else {
-                            setUjierSeleccionado("otro");
-                            setUjierPersonalizado(remaining.join(", "));
+                            updateConteo({
+                              ujierSeleccionado: "otro",
+                              ujierPersonalizado: remaining.join(", ")
+                            });
                           }
                         }}
                       >
@@ -749,22 +769,28 @@ export default function ConteoPage() {
                     const nuevoUjier = prompt("Escriba el nombre del ujier:");
                     if (nuevoUjier && nuevoUjier.trim()) {
                       const ujierLimpio = nuevoUjier.trim();
-                      if (!selectedUjieres.includes(ujierLimpio)) {
-                        const nuevosUjieres = [...selectedUjieres, ujierLimpio];
-                        setSelectedUjieres(nuevosUjieres);
-                        setUjierSeleccionado("otro");
-                        setUjierPersonalizado(nuevosUjieres.join(", "));
+                      if (!conteoState.selectedUjieres.includes(ujierLimpio)) {
+                        const nuevosUjieres = [...conteoState.selectedUjieres, ujierLimpio];
+                        updateConteo({
+                          selectedUjieres: nuevosUjieres,
+                          ujierSeleccionado: "otro",
+                          ujierPersonalizado: nuevosUjieres.join(", ")
+                        });
                       }
                     }
-                  } else if (value && !selectedUjieres.includes(value)) {
-                    const nuevosUjieres = [...selectedUjieres, value];
-                    setSelectedUjieres(nuevosUjieres);
+                  } else if (value && !conteoState.selectedUjieres.includes(value)) {
+                    const nuevosUjieres = [...conteoState.selectedUjieres, value];
+                    updateConteo({ selectedUjieres: nuevosUjieres });
                     if (nuevosUjieres.length === 1) {
-                      setUjierSeleccionado(value);
-                      setUjierPersonalizado("");
+                      updateConteo({
+                        ujierSeleccionado: value,
+                        ujierPersonalizado: ""
+                      });
                     } else {
-                      setUjierSeleccionado("otro");
-                      setUjierPersonalizado(nuevosUjieres.join(", "));
+                      updateConteo({
+                        ujierSeleccionado: "otro",
+                        ujierPersonalizado: nuevosUjieres.join(", ")
+                      });
                     }
                   }
                 }}
@@ -774,7 +800,7 @@ export default function ConteoPage() {
                 </SelectTrigger>
                 <SelectContent className="max-h-48">
                   {ujieres
-                    .filter((ujier) => !selectedUjieres.includes(ujier))
+                    .filter((ujier) => !conteoState.selectedUjieres.includes(ujier))
                     .map((ujier) => (
                       <SelectItem key={ujier} value={ujier}>
                         {ujier}
@@ -787,15 +813,17 @@ export default function ConteoPage() {
               </Select>
 
               {/* Botón para limpiar selección */}
-              {selectedUjieres.length > 0 && (
+              {conteoState.selectedUjieres.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full mt-2 text-xs bg-transparent border-red-200 text-red-600 hover:bg-red-50"
                   onClick={() => {
-                    setSelectedUjieres([]);
-                    setUjierSeleccionado("");
-                    setUjierPersonalizado("");
+                    updateConteo({
+                      selectedUjieres: [],
+                      ujierSeleccionado: "",
+                      ujierPersonalizado: ""
+                    });
                   }}
                 >
                   <Trash2 className="w-3 h-3 mr-1" />
@@ -810,10 +838,10 @@ export default function ConteoPage() {
               variant="outline"
               className="bg-slate-50 text-slate-700 border-slate-200"
             >
-              {servicios.find((s) => s.value === tipoServicio)?.label}
+              {servicios.find((s) => s.value === conteoState.tipoServicio)?.label}
             </Badge>
-            {ujierSeleccionado === "otro" && ujierPersonalizado ? (
-              ujierPersonalizado.split(",").map((name, index) => (
+            {conteoState.ujierSeleccionado === "otro" && conteoState.ujierPersonalizado ? (
+              conteoState.ujierPersonalizado.split(",").map((name, index) => (
                 <Badge
                   key={index}
                   variant="outline"
@@ -822,26 +850,26 @@ export default function ConteoPage() {
                   {name.trim()}
                 </Badge>
               ))
-            ) : ujierSeleccionado && ujierSeleccionado !== "otro" ? (
+            ) : conteoState.ujierSeleccionado && conteoState.ujierSeleccionado !== "otro" ? (
               <Badge
                 variant="outline"
                 className="bg-slate-50 text-slate-700 border-slate-200"
               >
-                {ujierSeleccionado}
+                {conteoState.ujierSeleccionado}
               </Badge>
             ) : null}
           </div>
         </CardHeader>
       </Card>
 
-      {modoConsecutivo && datosServicioBase && (
+      {conteoState.modoConsecutivo && datosServicioBase && (
         <Card className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white border-0 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
               <Calendar className="w-5 h-5" />
               <span className="font-semibold">
                 Modo Consecutivo:{" "}
-                {servicios.find((s) => s.value === tipoServicio)?.label}
+                {servicios.find((s) => s.value === conteoState.tipoServicio)?.label}
               </span>
             </div>
             <div className="text-emerald-100 text-sm">
@@ -873,35 +901,35 @@ export default function ConteoPage() {
             key={counter.key}
             className="bg-white/90 backdrop-blur-sm border-0 shadow-md"
           >
-            <CardContent className="p-3 sm:p-4">
+            <CardContent className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-2 sm:w-3 sm:h-3 ${counter.color} rounded-full`}
+                    className={`w-3 h-3 ${counter.color} rounded-full flex-shrink-0`}
                   ></div>
-                  <span className="font-medium text-gray-800 text-sm sm:text-base">
+                  <span className="font-medium text-gray-800 text-base sm:text-lg">
                     {counter.label}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-2 sm:gap-3">
                   {counter.categoria && (
                     <div className="relative">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
+                        className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                         onClick={() =>
                           counter.categoria === "simpatizantes"
                             ? setShowAddDialog(true)
                             : openMiembrosDialog(counter.categoria)
                         }
                       >
-                        <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
                       {counter.miembrosDelDia.length +
                         counter.baseMiembros.length >
                         0 && (
-                        <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-1 bg-emerald-600 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
+                        <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-emerald-600 text-white text-xs rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center font-medium">
                           {counter.miembrosDelDia.length +
                             counter.baseMiembros.length}
                         </div>
@@ -912,33 +940,34 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
+                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() =>
                       counter.setter(Math.max(0, counter.value - 1))
                     }
                   >
-                    <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
 
                   {editingCounter === counter.key ? (
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <Input
                         value={tempValue}
                         onChange={(e) => setTempValue(e.target.value)}
-                        className="w-12 sm:w-16 h-6 sm:h-8 text-center text-xs sm:text-sm"
+                        className="w-16 sm:w-20 h-8 sm:h-10 text-center text-sm sm:text-base"
                         type="number"
+                        autoFocus
                       />
                       <Button
                         size="sm"
                         onClick={saveCounterEdit}
-                        className="h-6 sm:h-8 bg-slate-600 hover:bg-slate-700 text-xs"
+                        className="h-8 sm:h-10 bg-slate-600 hover:bg-slate-700 text-sm px-3"
                       >
                         ✓
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1">
-                      <span className="text-lg sm:text-xl font-semibold w-6 sm:w-8 text-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl sm:text-2xl font-bold w-8 sm:w-10 text-center min-w-0">
                         {counter.value +
                           counter.miembrosDelDia.length +
                           counter.baseValue +
@@ -947,12 +976,12 @@ export default function ConteoPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-4 h-4 sm:w-6 sm:h-6 p-0"
+                        className="w-6 h-6 sm:w-8 sm:h-8 p-0 hover:bg-gray-100 active:bg-gray-200"
                         onClick={() =>
                           handleCounterEdit(counter.key, counter.value)
                         }
                       >
-                        <Edit3 className="w-2 h-2 sm:w-3 sm:h-3" />
+                        <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   )}
@@ -960,10 +989,10 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-6 h-6 sm:w-8 sm:h-8 p-0 rounded-full bg-transparent border-gray-300"
+                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() => counter.setter(counter.value + 1)}
                   >
-                    <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </div>
               </div>
@@ -973,60 +1002,73 @@ export default function ConteoPage() {
       </div>
 
       {/* Ver Lista Asistentes Button */}
-      {(hermanosDelDia.length > 0 ||
-        hermanasDelDia.length > 0 ||
-        ninosDelDia.length > 0 ||
-        adolescentesDelDia.length > 0 ||
-        simpatizantesDelDia.length > 0 ||
-        (modoConsecutivo &&
-          ((datosServicioBase?.simpatizantesAsistieron && datosServicioBase.simpatizantesAsistieron.length > 0) ||
-            (datosServicioBase?.miembrosAsistieron?.hermanos && datosServicioBase.miembrosAsistieron.hermanos.length > 0) ||
-            (datosServicioBase?.miembrosAsistieron?.hermanas && datosServicioBase.miembrosAsistieron.hermanas.length > 0) ||
-            (datosServicioBase?.miembrosAsistieron?.ninos && datosServicioBase.miembrosAsistieron.ninos.length > 0) ||
-            (datosServicioBase?.miembrosAsistieron?.adolescentes && datosServicioBase.miembrosAsistieron.adolescentes.length > 0)))) && (
+      {(conteoState.hermanosDelDia.length > 0 ||
+        conteoState.hermanasDelDia.length > 0 ||
+        conteoState.ninosDelDia.length > 0 ||
+        conteoState.adolescentesDelDia.length > 0 ||
+        conteoState.simpatizantesDelDia.length > 0 ||
+        (conteoState.modoConsecutivo &&
+          ((datosServicioBase?.simpatizantesAsistieron &&
+            datosServicioBase.simpatizantesAsistieron.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.hermanos &&
+              datosServicioBase.miembrosAsistieron.hermanos.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.hermanas &&
+              datosServicioBase.miembrosAsistieron.hermanas.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.ninos &&
+              datosServicioBase.miembrosAsistieron.ninos.length > 0) ||
+            (datosServicioBase?.miembrosAsistieron?.adolescentes &&
+              datosServicioBase.miembrosAsistieron.adolescentes.length >
+                0)))) && (
         <Button
           variant="outline"
-          className="w-full bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl py-3 shadow-lg text-lg font-semibold mb-4"
+          className="w-full h-12 bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 active:bg-blue-100 rounded-xl py-4 shadow-lg text-base sm:text-lg font-semibold mb-4"
           onClick={() => setShowAsistentesDialog(true)}
         >
           <Eye className="w-5 h-5 mr-2" />
-          Ver Lista de Asistentes (
-          {hermanosDelDia.length +
-            hermanasDelDia.length +
-            ninosDelDia.length +
-            adolescentesDelDia.length +
-            simpatizantesDelDia.length +
-            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.hermanos
-              ? datosServicioBase.miembrosAsistieron.hermanos.length
-              : 0) +
-            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.hermanas
-              ? datosServicioBase.miembrosAsistieron.hermanas.length
-              : 0) +
-            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
-              ? datosServicioBase.miembrosAsistieron.ninos.length
-              : 0) +
-            (modoConsecutivo && datosServicioBase?.miembrosAsistieron?.adolescentes
-              ? datosServicioBase.miembrosAsistieron.adolescentes.length
-              : 0) +
-            (modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
-              ? datosServicioBase.simpatizantesAsistieron.length
-              : 0)}
-          )
+          <span className="flex-1 text-center">Ver Lista de Asistentes</span>
+          <Badge
+            variant="outline"
+            className="bg-blue-100 text-blue-700 border-blue-300 ml-2"
+          >
+            {conteoState.hermanosDelDia.length +
+              conteoState.hermanasDelDia.length +
+              conteoState.ninosDelDia.length +
+              conteoState.adolescentesDelDia.length +
+              conteoState.simpatizantesDelDia.length +
+              (conteoState.modoConsecutivo &&
+              datosServicioBase?.miembrosAsistieron?.hermanos
+                ? datosServicioBase.miembrosAsistieron.hermanos.length
+                : 0) +
+              (conteoState.modoConsecutivo &&
+              datosServicioBase?.miembrosAsistieron?.hermanas
+                ? datosServicioBase.miembrosAsistieron.hermanas.length
+                : 0) +
+              (conteoState.modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
+                ? datosServicioBase.miembrosAsistieron.ninos.length
+                : 0) +
+              (conteoState.modoConsecutivo &&
+              datosServicioBase?.miembrosAsistieron?.adolescentes
+                ? datosServicioBase.miembrosAsistieron.adolescentes.length
+                : 0) +
+              (conteoState.modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
+                ? datosServicioBase.simpatizantesAsistieron.length
+                : 0)}
+          </Badge>
         </Button>
       )}
 
       {/* Simpatizantes del día (solo los añadidos en esta sesión) */}
-      {simpatizantesDelDia.length > 0 && (
+      {conteoState.simpatizantesDelDia.length > 0 && (
         <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
               <Users className="w-4 h-4" />
               Simpatizantes con Nombre (Añadidos hoy:{" "}
-              {simpatizantesDelDia.length})
+              {conteoState.simpatizantesDelDia.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {simpatizantesDelDia.map((simpatizante) => (
+            {conteoState.simpatizantesDelDia.map((simpatizante) => (
               <div
                 key={simpatizante.id}
                 className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
@@ -1057,66 +1099,84 @@ export default function ConteoPage() {
 
       {/* Add Simpatizante Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="sm:max-w-md max-h-[85vh]    flex flex-col mx-2 sm:mx-0">
+          <DialogHeader className="flex-shrink-0 pb-4">
             <div className="flex items-center justify-between">
-              <DialogTitle>Agregar Simpatizante</DialogTitle>
-              <Button variant="ghost" size="sm" onClick={closeDialog}>
+              <DialogTitle className="text-base sm:text-lg">
+                Agregar Simpatizante
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={closeDialog}
+                className="h-8 w-8 p-0"
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="flex-1 overflow-hidden flex flex-col space-y-4">
             {!showNewForm ? (
               <>
                 {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Buscar simpatizante existente..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="flex-shrink-0">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Buscar simpatizante existente..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 h-10 text-sm"
+                    />
+                  </div>
                 </div>
 
                 {/* Lista de simpatizantes existentes */}
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {filteredSimpatizantes.length > 0 ? (
-                    filteredSimpatizantes.map((simpatizante) => (
-                      <div
-                        key={simpatizante.id}
-                        className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                        onClick={() => selectExistingSimpatizante(simpatizante)}
-                      >
-                        <div className="font-medium text-sm">
-                          {simpatizante.nombre}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {simpatizante.telefono}
-                        </div>
-                        {simpatizante.notas && (
-                          <div className="text-xs text-gray-400 mt-1">
-                            {simpatizante.notas}
+                <div className="flex-1 overflow-hidden">
+                  <div className="h-full overflow-y-auto space-y-2 pr-1">
+                    {filteredSimpatizantes.length > 0 ? (
+                      filteredSimpatizantes.map((simpatizante) => (
+                        <div
+                          key={simpatizante.id}
+                          className="p-3 border rounded-lg hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors"
+                          onClick={() =>
+                            selectExistingSimpatizante(simpatizante)
+                          }
+                        >
+                          <div className="font-medium text-sm">
+                            {simpatizante.nombre}
                           </div>
-                        )}
+                          {simpatizante.telefono && (
+                            <div className="text-xs text-gray-500">
+                              {simpatizante.telefono}
+                            </div>
+                          )}
+                          {simpatizante.notas && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              {simpatizante.notas}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm">
+                          {searchTerm
+                            ? "No se encontraron simpatizantes disponibles"
+                            : "No hay simpatizantes disponibles"}
+                        </p>
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-gray-500 py-4">
-                      {searchTerm
-                        ? "No se encontraron simpatizantes disponibles"
-                        : "No hay simpatizantes disponibles"}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Botón para agregar nuevo */}
-                <div className="pt-3 border-t">
+                <div className="flex-shrink-0 pt-3 border-t">
                   <Button
                     variant="outline"
-                    className="w-full bg-transparent"
+                    className="w-full bg-transparent h-10 text-sm"
                     onClick={() => setShowNewForm(true)}
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -1127,9 +1187,9 @@ export default function ConteoPage() {
             ) : (
               <>
                 {/* Formulario para nuevo simpatizante */}
-                <div className="space-y-3">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Nombre Completo *
                     </label>
                     <Input
@@ -1141,11 +1201,12 @@ export default function ConteoPage() {
                           nombre: e.target.value,
                         })
                       }
+                      className="h-10 text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Teléfono
                     </label>
                     <Input
@@ -1157,11 +1218,12 @@ export default function ConteoPage() {
                           telefono: e.target.value,
                         })
                       }
+                      className="h-10 text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Notas
                     </label>
                     <Input
@@ -1173,25 +1235,28 @@ export default function ConteoPage() {
                           notas: e.target.value,
                         })
                       }
+                      className="h-10 text-sm"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1 bg-transparent"
-                    onClick={() => setShowNewForm(false)}
-                  >
-                    Volver
-                  </Button>
-                  <Button
-                    className="flex-1 bg-slate-600 hover:bg-slate-700"
-                    onClick={addNewSimpatizante}
-                    disabled={!newSimpatizante.nombre.trim()}
-                  >
-                    Agregar
-                  </Button>
+                <div className="flex-shrink-0 pt-3 border-t">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 bg-transparent h-10 text-sm"
+                      onClick={() => setShowNewForm(false)}
+                    >
+                      Volver
+                    </Button>
+                    <Button
+                      className="flex-1 bg-slate-600 hover:bg-slate-700 h-10 text-sm"
+                      onClick={addNewSimpatizante}
+                      disabled={!newSimpatizante.nombre.trim()}
+                    >
+                      Agregar
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
@@ -1201,28 +1266,45 @@ export default function ConteoPage() {
 
       {/* Dialog para seleccionar miembros */}
       <Dialog open={showMiembrosDialog} onOpenChange={setShowMiembrosDialog}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="flex items-center justify-between">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+          <DialogHeader className="flex-shrink-0 pb-4">
+            <DialogTitle className="flex items-center justify-between text-base sm:text-lg">
               <span>Seleccionar {categoriaSeleccionada}</span>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+              <div className="flex gap-2">
                 {(() => {
                   const currentList =
                     {
-                      hermanos: hermanosDelDia,
-                      hermanas: hermanasDelDia,
-                      ninos: ninosDelDia,
-                      adolescentes: adolescentesDelDia,
+                      hermanos: conteoState.hermanosDelDia,
+                      hermanas: conteoState.hermanasDelDia,
+                      ninos: conteoState.ninosDelDia,
+                      adolescentes: conteoState.adolescentesDelDia,
                     }[categoriaSeleccionada] || [];
-                  const baseList = modoConsecutivo
+                  const baseList = conteoState.modoConsecutivo
                     ? datosServicioBase?.miembrosAsistieron?.[
                         categoriaSeleccionada
                       ] || []
                     : [];
-                  return currentList.length + baseList.length;
-                })()}{" "}
-                agregados
-              </Badge>
+
+                  return (
+                    <>
+                      {currentList.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200 text-xs sm:text-sm"
+                        >
+                          +{currentList.length} esta sesión
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 text-xs sm:text-sm"
+                      >
+                        {currentList.length + baseList.length} total
+                      </Badge>
+                    </>
+                  );
+                })()}
+              </div>
             </DialogTitle>
           </DialogHeader>
 
@@ -1233,23 +1315,106 @@ export default function ConteoPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   placeholder={`Buscar ${categoriaSeleccionada}...`}
-                  value={searchMiembros}
-                  onChange={(e) => setSearchMiembros(e.target.value)}
-                  className="pl-10"
+                  value={conteoState.searchMiembros}
+                  onChange={(e) => updateConteo({ searchMiembros: e.target.value })}
+                  className="pl-10 h-10 text-sm"
                 />
               </div>
             </div>
 
-            {/* Ya agregados */}
+            {/* Lista de miembros disponibles */}
+            <div className="flex-1 overflow-hidden">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Disponibles para agregar
+              </h4>
+              <div className="h-full overflow-y-auto space-y-2 pr-1">
+                {(() => {
+                  const miembrosDisponibles = getMiembrosPorCategoria(
+                    categoriaSeleccionada
+                  );
+                  const currentList =
+                    {
+                      hermanos: conteoState.hermanosDelDia,
+                      hermanas: conteoState.hermanasDelDia,
+                      ninos: conteoState.ninosDelDia,
+                      adolescentes: conteoState.adolescentesDelDia,
+                    }[categoriaSeleccionada] || [];
+                  const baseList = conteoState.modoConsecutivo
+                    ? datosServicioBase?.miembrosAsistieron?.[
+                        categoriaSeleccionada
+                      ] || []
+                    : [];
+
+                  const filteredMiembros = miembrosDisponibles.filter(
+                    (miembro) => {
+                      const nombreMatch = miembro.nombre
+                        .toLowerCase()
+                        .includes(conteoState.searchMiembros.toLowerCase());
+                      const noEstaEnActuales = !currentList.find(
+                        (m: MiembroSimplificado) => m.id === miembro.id
+                      );
+                      const noEstaEnBase = !baseList.find(
+                        (m: MiembroSimplificado) => m.id === miembro.id
+                      );
+                      return nombreMatch && noEstaEnActuales && noEstaEnBase;
+                    }
+                  );
+
+                  if (filteredMiembros.length === 0) {
+                    return (
+                      <div className="text-center text-gray-500 py-8">
+                        <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm">
+                          {conteoState.searchMiembros
+                            ? "No se encontraron miembros disponibles"
+                            : "Todos los miembros ya están agregados"}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return filteredMiembros.map((miembro) => (
+                    <div
+                      key={miembro.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 hover:shadow-sm active:bg-gray-100"
+                      onClick={() =>
+                        selectMiembro(miembro, categoriaSeleccionada)
+                      }
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {miembro.nombre}
+                        </div>
+                        {miembro.telefono && (
+                          <div className="text-xs text-gray-500 truncate">
+                            {miembro.telefono}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:scale-105 active:scale-95 flex-shrink-0 ml-2 transition-transform"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+
+            {/* Ya agregados - Movido al final */}
             {(() => {
               const currentList =
                 {
-                  hermanos: hermanosDelDia,
-                  hermanas: hermanasDelDia,
-                  ninos: ninosDelDia,
-                  adolescentes: adolescentesDelDia,
+                  hermanos: conteoState.hermanosDelDia,
+                  hermanas: conteoState.hermanasDelDia,
+                  ninos: conteoState.ninosDelDia,
+                  adolescentes: conteoState.adolescentesDelDia,
                 }[categoriaSeleccionada] || [];
-              const baseList = modoConsecutivo
+              const baseList = conteoState.modoConsecutivo
                 ? datosServicioBase?.miembrosAsistieron?.[
                     categoriaSeleccionada
                   ] || []
@@ -1259,23 +1424,55 @@ export default function ConteoPage() {
               if (totalAgregados > 0) {
                 return (
                   <div className="flex-shrink-0">
-                    <h4 className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" />
-                      Ya agregados ({totalAgregados})
-                    </h4>
-                    <div className="max-h-24 overflow-y-auto space-y-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" />
+                        Agregados en esta sesión ({currentList.length})
+                      </h4>
+                      {currentList.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
+                          onClick={() => {
+                            // Limpiar solo los agregados en esta sesión
+                            const updates: Partial<typeof conteoState> = {};
+                            switch (categoriaSeleccionada) {
+                              case "hermanos":
+                                updates.hermanosDelDia = [];
+                                break;
+                              case "hermanas":
+                                updates.hermanasDelDia = [];
+                                break;
+                              case "ninos":
+                                updates.ninosDelDia = [];
+                                break;
+                              case "adolescentes":
+                                updates.adolescentesDelDia = [];
+                                break;
+                            }
+                            updateConteo(updates);
+                            toast.info("Miembros de esta sesión eliminados");
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Limpiar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
                       {/* Miembros de la base (si aplica) */}
                       {baseList.map((miembro: MiembroSimplificado) => (
                         <div
                           key={`base-${miembro.id}`}
-                          className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
+                          className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm border border-blue-200"
                         >
-                          <span className="text-green-800">
+                          <span className="text-blue-800 truncate flex-1 min-w-0">
                             {miembro.nombre}
                           </span>
                           <Badge
                             variant="outline"
-                            className="text-xs bg-green-100 text-green-700 border-green-300"
+                            className="text-xs bg-blue-100 text-blue-700 border-blue-300 flex-shrink-0 ml-2"
                           >
                             Base
                           </Badge>
@@ -1287,13 +1484,13 @@ export default function ConteoPage() {
                           key={miembro.id}
                           className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
                         >
-                          <span className="text-green-800">
+                          <span className="text-green-800 truncate flex-1 min-w-0">
                             {miembro.nombre}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                            className="text-red-500 hover:text-red-700 h-6 w-6 p-0 flex-shrink-0 ml-2"
                             onClick={() =>
                               removeMiembroDelDia(
                                 miembro.id,
@@ -1312,99 +1509,31 @@ export default function ConteoPage() {
               return null;
             })()}
 
-            {/* Lista de miembros disponibles */}
-            <div className="flex-1 overflow-hidden">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                <Plus className="w-4 h-4" />
-                Disponibles para agregar
-              </h4>
-              <div className="h-full overflow-y-auto space-y-2">
-                {(() => {
-                  const miembrosDisponibles = getMiembrosPorCategoria(
-                    categoriaSeleccionada
-                  );
-                  const currentList =
-                    {
-                      hermanos: hermanosDelDia,
-                      hermanas: hermanasDelDia,
-                      ninos: ninosDelDia,
-                      adolescentes: adolescentesDelDia,
-                    }[categoriaSeleccionada] || [];
-                  const baseList = modoConsecutivo
-                    ? datosServicioBase?.miembrosAsistieron?.[
-                        categoriaSeleccionada
-                      ] || []
-                    : [];
-
-                  const filteredMiembros = miembrosDisponibles.filter(
-                    (miembro) => {
-                      const nombreMatch = miembro.nombre
-                        .toLowerCase()
-                        .includes(searchMiembros.toLowerCase());
-                      const noEstaEnActuales = !currentList.find(
-                        (m: MiembroSimplificado) => m.id === miembro.id
-                      );
-                      const noEstaEnBase = !baseList.find(
-                        (m: MiembroSimplificado) => m.id === miembro.id
-                      );
-                      return nombreMatch && noEstaEnActuales && noEstaEnBase;
-                    }
-                  );
-
-                  if (filteredMiembros.length === 0) {
-                    return (
-                      <div className="text-center text-gray-500 py-8">
-                        <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm">
-                          {searchMiembros
-                            ? "No se encontraron miembros disponibles"
-                            : "Todos los miembros ya están agregados"}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  return filteredMiembros.map((miembro) => (
-                    <div
-                      key={miembro.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() =>
-                        selectMiembro(miembro, categoriaSeleccionada)
-                      }
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">
-                          {miembro.nombre}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {miembro.telefono}
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-
             {/* Botones de acción */}
-            <div className="flex-shrink-0 pt-3 border-t">
-              <Button
-                variant="outline"
-                className="w-full bg-transparent"
-                onClick={() => {
-                  setShowMiembrosDialog(false);
-                  setSearchMiembros("");
-                }}
-              >
-                Cerrar
-              </Button>
+            <div className="flex-shrink-0 pt-3 border-t space-y-2">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent text-sm"
+                  onClick={() => {
+                    setShowMiembrosDialog(false);
+                    updateConteo({ searchMiembros: "" });
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-sm"
+                  onClick={() => {
+                    setShowMiembrosDialog(false);
+                    updateConteo({ searchMiembros: "" });
+                    toast.success("Miembros agregados exitosamente");
+                  }}
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Finalizar
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -1415,15 +1544,17 @@ export default function ConteoPage() {
         open={showAsistentesDialog}
         onOpenChange={setShowAsistentesDialog}
       >
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Lista de Asistentes</DialogTitle>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+          <DialogHeader className="flex-shrink-0 pb-4">
+            <DialogTitle className="text-base sm:text-lg">
+              Lista de Asistentes
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             {/* Miembros base del servicio anterior (si aplica) */}
-            {modoConsecutivo && datosServicioBase && (
+            {conteoState.modoConsecutivo && datosServicioBase && (
               <>
-                <h3 className="font-semibold text-gray-800">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
                   Asistentes del Servicio Base ({datosServicioBase.servicio})
                 </h3>
                 {Object.keys(datosServicioBase.miembrosAsistieron).map(
@@ -1433,7 +1564,7 @@ export default function ConteoPage() {
                     if (members.length === 0) return null;
                     return (
                       <div key={`base-${catKey}`}>
-                        <h4 className="font-semibold text-gray-700 mb-2 capitalize">
+                        <h4 className="font-semibold text-gray-700 mb-2 capitalize text-sm">
                           {catKey} ({members.length})
                         </h4>
                         {members.map((miembro: MiembroSimplificado) => (
@@ -1441,7 +1572,9 @@ export default function ConteoPage() {
                             key={miembro.id}
                             className="flex items-center justify-between p-2 bg-gray-50 rounded mb-1"
                           >
-                            <span className="text-sm">{miembro.nombre}</span>
+                            <span className="text-sm truncate flex-1 min-w-0">
+                              {miembro.nombre}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1450,7 +1583,7 @@ export default function ConteoPage() {
                 )}
                 {datosServicioBase.simpatizantesAsistieron.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-emerald-700 mb-2">
+                    <h4 className="font-semibold text-emerald-700 mb-2 text-sm">
                       Simpatizantes (
                       {datosServicioBase.simpatizantesAsistieron.length})
                     </h4>
@@ -1460,34 +1593,38 @@ export default function ConteoPage() {
                           key={simpatizante.id}
                           className="flex items-center justify-between p-2 bg-emerald-50 rounded mb-1"
                         >
-                          <span className="text-sm">{simpatizante.nombre}</span>
+                          <span className="text-sm truncate flex-1 min-w-0">
+                            {simpatizante.nombre}
+                          </span>
                         </div>
                       )
                     )}
                   </div>
                 )}
                 <hr className="my-4 border-t border-gray-200" />
-                <h3 className="font-semibold text-gray-800">
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
                   Asistentes Añadidos en esta Sesión
                 </h3>
               </>
             )}
 
-            {hermanosDelDia.length > 0 && (
+            {conteoState.hermanosDelDia.length > 0 && (
               <div>
-                <h4 className="font-semibold text-slate-700 mb-2">
-                  Hermanos ({hermanosDelDia.length})
+                <h4 className="font-semibold text-slate-700 mb-2 text-sm">
+                  Hermanos ({conteoState.hermanosDelDia.length})
                 </h4>
-                {hermanosDelDia.map((miembro) => (
+                {conteoState.hermanosDelDia.map((miembro) => (
                   <div
                     key={miembro.id}
                     className="flex items-center justify-between p-2 bg-slate-50 rounded mb-1"
                   >
-                    <span className="text-sm">{miembro.nombre}</span>
+                    <span className="text-sm truncate flex-1 min-w-0">
+                      {miembro.nombre}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                       onClick={() =>
                         removeMiembroDelDia(miembro.id, "hermanos")
                       }
@@ -1499,21 +1636,23 @@ export default function ConteoPage() {
               </div>
             )}
 
-            {hermanasDelDia.length > 0 && (
+            {conteoState.hermanasDelDia.length > 0 && (
               <div>
-                <h4 className="font-semibold text-rose-700 mb-2">
-                  Hermanas ({hermanasDelDia.length})
+                <h4 className="font-semibold text-rose-700 mb-2 text-sm">
+                  Hermanas ({conteoState.hermanasDelDia.length})
                 </h4>
-                {hermanasDelDia.map((miembro) => (
+                {conteoState.hermanasDelDia.map((miembro) => (
                   <div
                     key={miembro.id}
                     className="flex items-center justify-between p-2 bg-rose-50 rounded mb-1"
                   >
-                    <span className="text-sm">{miembro.nombre}</span>
+                    <span className="text-sm truncate flex-1 min-w-0">
+                      {miembro.nombre}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                       onClick={() =>
                         removeMiembroDelDia(miembro.id, "hermanas")
                       }
@@ -1525,21 +1664,23 @@ export default function ConteoPage() {
               </div>
             )}
 
-            {ninosDelDia.length > 0 && (
+            {conteoState.ninosDelDia.length > 0 && (
               <div>
-                <h4 className="font-semibold text-amber-700 mb-2">
-                  Niños ({ninosDelDia.length})
+                <h4 className="font-semibold text-amber-700 mb-2 text-sm">
+                  Niños ({conteoState.ninosDelDia.length})
                 </h4>
-                {ninosDelDia.map((miembro) => (
+                {conteoState.ninosDelDia.map((miembro) => (
                   <div
                     key={miembro.id}
                     className="flex items-center justify-between p-2 bg-amber-50 rounded mb-1"
                   >
-                    <span className="text-sm">{miembro.nombre}</span>
+                    <span className="text-sm truncate flex-1 min-w-0">
+                      {miembro.nombre}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                       onClick={() => removeMiembroDelDia(miembro.id, "ninos")}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1549,21 +1690,23 @@ export default function ConteoPage() {
               </div>
             )}
 
-            {adolescentesDelDia.length > 0 && (
+            {conteoState.adolescentesDelDia.length > 0 && (
               <div>
-                <h4 className="font-semibold text-purple-700 mb-2">
-                  Adolescentes ({adolescentesDelDia.length})
+                <h4 className="font-semibold text-purple-700 mb-2 text-sm">
+                  Adolescentes ({conteoState.adolescentesDelDia.length})
                 </h4>
-                {adolescentesDelDia.map((miembro) => (
+                {conteoState.adolescentesDelDia.map((miembro) => (
                   <div
                     key={miembro.id}
                     className="flex items-center justify-between p-2 bg-purple-50 rounded mb-1"
                   >
-                    <span className="text-sm">{miembro.nombre}</span>
+                    <span className="text-sm truncate flex-1 min-w-0">
+                      {miembro.nombre}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                       onClick={() =>
                         removeMiembroDelDia(miembro.id, "adolescentes")
                       }
@@ -1575,21 +1718,23 @@ export default function ConteoPage() {
               </div>
             )}
 
-            {simpatizantesDelDia.length > 0 && (
+            {conteoState.simpatizantesDelDia.length > 0 && (
               <div>
-                <h4 className="font-semibold text-emerald-700 mb-2">
-                  Simpatizantes ({simpatizantesDelDia.length})
+                <h4 className="font-semibold text-emerald-700 mb-2 text-sm">
+                  Simpatizantes ({conteoState.simpatizantesDelDia.length})
                 </h4>
-                {simpatizantesDelDia.map((simpatizante) => (
+                {conteoState.simpatizantesDelDia.map((simpatizante) => (
                   <div
                     key={simpatizante.id}
                     className="flex items-center justify-between p-2 bg-emerald-50 rounded mb-1"
                   >
-                    <span className="text-sm">{simpatizante.nombre}</span>
+                    <span className="text-sm truncate flex-1 min-w-0">
+                      {simpatizante.nombre}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                       onClick={() => removeSimpatizanteDelDia(simpatizante.id)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1604,8 +1749,8 @@ export default function ConteoPage() {
 
       {/* Bulk Count Dialog */}
       <Dialog open={showBulkCountDialog} onOpenChange={setShowBulkCountDialog}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-2">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+          <DialogHeader className="flex-shrink-0 pb-4">
             <DialogTitle className="text-base sm:text-lg">
               Conteo Múltiple
             </DialogTitle>
@@ -1614,10 +1759,10 @@ export default function ConteoPage() {
             </p>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-slate-700 mb-1 block">
+                <label className="text-xs font-medium text-slate-700 mb-2 block">
                   Hermanos
                 </label>
                 <Input
@@ -1627,12 +1772,12 @@ export default function ConteoPage() {
                   onChange={(e) =>
                     setBulkCounts({ ...bulkCounts, hermanos: e.target.value })
                   }
-                  className="h-8 sm:h-9 text-center text-xs sm:text-sm"
+                  className="h-10 text-center text-sm"
                   min="0"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-rose-700 mb-1 block">
+                <label className="text-xs font-medium text-rose-700 mb-2 block">
                   Hermanas
                 </label>
                 <Input
@@ -1642,7 +1787,7 @@ export default function ConteoPage() {
                   onChange={(e) =>
                     setBulkCounts({ ...bulkCounts, hermanas: e.target.value })
                   }
-                  className="h-8 sm:h-9 text-center text-xs sm:text-sm"
+                  className="h-10 text-center text-sm"
                   min="0"
                 />
               </div>
@@ -1650,7 +1795,7 @@ export default function ConteoPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-amber-700 mb-1 block">
+                <label className="text-xs font-medium text-amber-700 mb-2 block">
                   Niños
                 </label>
                 <Input
@@ -1660,12 +1805,12 @@ export default function ConteoPage() {
                   onChange={(e) =>
                     setBulkCounts({ ...bulkCounts, ninos: e.target.value })
                   }
-                  className="h-8 sm:h-9 text-center text-xs sm:text-sm"
+                  className="h-10 text-center text-sm"
                   min="0"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-purple-700 mb-1 block">
+                <label className="text-xs font-medium text-purple-700 mb-2 block">
                   Adolescentes
                 </label>
                 <Input
@@ -1678,14 +1823,14 @@ export default function ConteoPage() {
                       adolescentes: e.target.value,
                     })
                   }
-                  className="h-8 sm:h-9 text-center text-xs sm:text-sm"
+                  className="h-10 text-center text-sm"
                   min="0"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-emerald-700 mb-1 block">
+              <label className="text-xs font-medium text-emerald-700 mb-2 block">
                 Simpatizantes
               </label>
               <Input
@@ -1698,7 +1843,7 @@ export default function ConteoPage() {
                     simpatizantes: e.target.value,
                   })
                 }
-                className="h-8 sm:h-9 text-center text-xs sm:text-sm"
+                className="h-10 text-center text-sm"
                 min="0"
               />
             </div>
@@ -1713,7 +1858,7 @@ export default function ConteoPage() {
                 <div className="text-xs font-medium text-blue-800 mb-2">
                   Vista previa:
                 </div>
-                <div className="text-xs text-blue-700">
+                <div className="text-sm text-blue-700">
                   Total a agregar:{" "}
                   {(Number.parseInt(bulkCounts.hermanos) || 0) +
                     (Number.parseInt(bulkCounts.hermanas) || 0) +
@@ -1724,24 +1869,26 @@ export default function ConteoPage() {
                 </div>
               </div>
             )}
+          </div>
 
-            <div className="flex gap-2 pt-3">
+          <div className="flex-shrink-0 pt-3 border-t">
+            <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 bg-transparent text-xs sm:text-sm"
+                className="flex-1 bg-transparent h-10 text-sm"
                 onClick={resetBulkCounts}
               >
                 Limpiar
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 bg-transparent text-xs sm:text-sm"
+                className="flex-1 bg-transparent h-10 text-sm"
                 onClick={() => setShowBulkCountDialog(false)}
               >
                 Cancelar
               </Button>
               <Button
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 h-10 text-sm"
                 onClick={handleBulkCountSubmit}
               >
                 Agregar
@@ -1754,12 +1901,14 @@ export default function ConteoPage() {
       {/* Save Button */}
       <Button
         onClick={handleSaveConteo}
-        className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-4 shadow-lg text-lg font-semibold mb-4"
+        className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 sm:py-5 shadow-lg text-base sm:text-lg font-semibold mb-4"
       >
         <Save className="w-5 h-5 mr-2" />
-        {modoConsecutivo
-          ? "Guardar Conteo Dominical"
-          : "Guardar Conteo de Asistencia"}
+        <span className="flex-1 text-center">
+          {conteoState.modoConsecutivo
+            ? "Guardar Conteo Dominical"
+            : "Guardar Conteo de Asistencia"}
+        </span>
       </Button>
 
       {/* Dialog para continuar con dominical */}
