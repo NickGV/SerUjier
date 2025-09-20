@@ -90,6 +90,9 @@ function HistorialContent() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Estados para la búsqueda de asistentes
+  const [searchAsistentes, setSearchAsistentes] = useState("");
+
   useEffect(() => {
     const loadHistorial = async () => {
       try {
@@ -645,6 +648,115 @@ NOTAS FINALES:
     setEditingRecord(null);
   };
 
+  // Función para obtener todos los asistentes de un registro
+  const getAllAsistentes = (record: HistorialRecord) => {
+    const asistentes: Array<{
+      id: string;
+      nombre: string;
+      categoria: string;
+    }> = [];
+
+    // Agregar simpatizantes
+    if (record.simpatizantesAsistieron) {
+      record.simpatizantesAsistieron.forEach((simpatizante) => {
+        asistentes.push({
+          id: simpatizante.id,
+          nombre: simpatizante.nombre,
+          categoria: "Simpatizantes",
+        });
+      });
+    }
+
+    // Agregar miembros por categoría
+    if (record.miembrosAsistieron) {
+      if (record.miembrosAsistieron.hermanos) {
+        record.miembrosAsistieron.hermanos.forEach((miembro) => {
+          asistentes.push({
+            id: miembro.id,
+            nombre: miembro.nombre,
+            categoria: "Hermanos",
+          });
+        });
+      }
+
+      if (record.miembrosAsistieron.hermanas) {
+        record.miembrosAsistieron.hermanas.forEach((miembro) => {
+          asistentes.push({
+            id: miembro.id,
+            nombre: miembro.nombre,
+            categoria: "Hermanas",
+          });
+        });
+      }
+
+      if (record.miembrosAsistieron.ninos) {
+        record.miembrosAsistieron.ninos.forEach((miembro) => {
+          asistentes.push({
+            id: miembro.id,
+            nombre: miembro.nombre,
+            categoria: "Niños",
+          });
+        });
+      }
+
+      if (record.miembrosAsistieron.adolescentes) {
+        record.miembrosAsistieron.adolescentes.forEach((miembro) => {
+          asistentes.push({
+            id: miembro.id,
+            nombre: miembro.nombre,
+            categoria: "Adolescentes",
+          });
+        });
+      }
+    }
+
+    return asistentes;
+  };
+
+  // Función para filtrar asistentes por búsqueda
+  const getFilteredAsistentes = (record: HistorialRecord) => {
+    const allAsistentes = getAllAsistentes(record);
+    if (!searchAsistentes) return allAsistentes;
+    
+    return allAsistentes.filter((asistente) =>
+      asistente.nombre.toLowerCase().includes(searchAsistentes.toLowerCase())
+    );
+  };
+
+  // Función para obtener contadores por categoría
+  const getAsistentesCounts = (record: HistorialRecord) => {
+    const allAsistentes = getAllAsistentes(record);
+    const counts = {
+      simpatizantes: 0,
+      hermanos: 0,
+      hermanas: 0,
+      ninos: 0,
+      adolescentes: 0,
+    };
+
+    allAsistentes.forEach((asistente) => {
+      switch (asistente.categoria) {
+        case "Simpatizantes":
+          counts.simpatizantes++;
+          break;
+        case "Hermanos":
+          counts.hermanos++;
+          break;
+        case "Hermanas":
+          counts.hermanas++;
+          break;
+        case "Niños":
+          counts.ninos++;
+          break;
+        case "Adolescentes":
+          counts.adolescentes++;
+          break;
+      }
+    });
+
+    return counts;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -1138,7 +1250,7 @@ NOTAS FINALES:
       {/* Detail Modal */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md bg-white max-h-[85vh] overflow-y-auto">
+          <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
@@ -1206,33 +1318,93 @@ NOTAS FINALES:
                 </div>
               </div>
 
-              {/* Detalle de simpatizantes */}
-              {selectedRecord.simpatizantesAsistieron &&
-                selectedRecord.simpatizantesAsistieron.length > 0 && (
-                  <div className="pt-3 border-t">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      Simpatizantes que Asistieron (
-                      {selectedRecord.simpatizantesAsistieron.length})
-                    </h4>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {selectedRecord.simpatizantesAsistieron.map(
-                        (simpatizante) => (
-                          <div
-                            key={simpatizante.id}
-                            className="text-sm text-gray-700 bg-emerald-50 p-2 rounded border border-emerald-100"
-                          >
-                            {simpatizante.nombre}
-                          </div>
-                        )
-                      )}
-                    </div>
+              {/* Lista completa de asistentes */}
+              <div className="pt-3 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    Lista de Asistentes ({getAllAsistentes(selectedRecord).length})
+                  </h4>
+                  <div className="text-xs text-gray-500">
+                    {getAsistentesCounts(selectedRecord).hermanos}H • {getAsistentesCounts(selectedRecord).hermanas}M • {getAsistentesCounts(selectedRecord).ninos}N • {getAsistentesCounts(selectedRecord).adolescentes}A • {getAsistentesCounts(selectedRecord).simpatizantes}S
                   </div>
+                </div>
+
+                {/* Campo de búsqueda */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Buscar asistentes por nombre..."
+                    value={searchAsistentes}
+                    onChange={(e) => setSearchAsistentes(e.target.value)}
+                    className="pl-10 h-9 text-sm"
+                  />
+                </div>
+
+                {/* Lista de asistentes filtrados */}
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {getFilteredAsistentes(selectedRecord).length === 0 ? (
+                    <div className="text-center py-4 text-gray-500">
+                      {searchAsistentes ? "No se encontraron asistentes" : "No hay asistentes registrados"}
+                    </div>
+                  ) : (
+                    getFilteredAsistentes(selectedRecord).map((asistente) => {
+                      const getCategoriaColor = (categoria: string) => {
+                        switch (categoria) {
+                          case "Hermanos":
+                            return "bg-slate-50 border-slate-200 text-slate-700";
+                          case "Hermanas":
+                            return "bg-rose-50 border-rose-200 text-rose-700";
+                          case "Niños":
+                            return "bg-amber-50 border-amber-200 text-amber-700";
+                          case "Adolescentes":
+                            return "bg-purple-50 border-purple-200 text-purple-700";
+                          case "Simpatizantes":
+                            return "bg-emerald-50 border-emerald-200 text-emerald-700";
+                          default:
+                            return "bg-gray-50 border-gray-200 text-gray-700";
+                        }
+                      };
+
+                      return (
+                        <div
+                          key={asistente.id}
+                          className={`text-sm p-2 rounded border ${getCategoriaColor(asistente.categoria)}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{asistente.nombre}</span>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${getCategoriaColor(asistente.categoria)}`}
+                            >
+                              {asistente.categoria}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Botón para limpiar búsqueda */}
+                {searchAsistentes && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchAsistentes("")}
+                    className="w-full mt-2 text-xs"
+                  >
+                    Limpiar búsqueda
+                  </Button>
                 )}
+              </div>
 
               <Button
                 className="w-full mt-4 bg-slate-600 hover:bg-slate-700"
-                onClick={() => setSelectedRecord(null)}
+                onClick={() => {
+                  setSelectedRecord(null);
+                  setSearchAsistentes("");
+                }}
               >
                 Cerrar
               </Button>
