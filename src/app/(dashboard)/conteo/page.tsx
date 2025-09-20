@@ -107,6 +107,23 @@ export default function ConteoPage() {
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
   const [showContinuarDialog, setShowContinuarDialog] = useState(false);
+  
+  // Estados para selección múltiple de miembros
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  
+  // Estados para búsqueda de simpatizantes
+  const [searchSimpatizantesDebounce, setSearchSimpatizantesDebounce] = useState("");
+  
+  // Estados para búsqueda de asistentes
+  const [searchAsistentes, setSearchAsistentes] = useState("");
+  const [searchAsistentesDebounce, setSearchAsistentesDebounce] = useState("");
+  
+  // Estados para búsqueda de miembros (mejorada)
+  const [searchMiembrosLocal, setSearchMiembrosLocal] = useState("");
+  const [searchMiembrosLocalDebounce, setSearchMiembrosLocalDebounce] = useState("");
+  
+  // Estados para selección múltiple de simpatizantes
+  const [selectedSimpatizantes, setSelectedSimpatizantes] = useState<string[]>([]);
 
   // Estados para datos de Firebase
   const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
@@ -194,6 +211,31 @@ export default function ConteoPage() {
     }
   }, [conteoState.modoConsecutivo, datosServicioBase, updateConteo]);
 
+
+  // Efecto para debounce de búsqueda de simpatizantes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchSimpatizantesDebounce(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Efecto para debounce de búsqueda de asistentes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchAsistentesDebounce(searchAsistentes);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchAsistentes]);
+
+  // Efecto para debounce de búsqueda local de miembros
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchMiembrosLocalDebounce(searchMiembrosLocal);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchMiembrosLocal]);
+
   const handleCounterEdit = (type: string, value: number) => {
     setEditingCounter(type);
     setTempValue(value.toString());
@@ -226,20 +268,6 @@ export default function ConteoPage() {
     setTempValue("");
   };
 
-  const selectExistingSimpatizante = (simpatizante: Simpatizante) => {
-    // Verificar si ya está en la lista del día
-    if (conteoState.simpatizantesDelDia.find((s) => s.id === simpatizante.id)) {
-      toast.info("Este simpatizante ya fue agregado hoy");
-      return;
-    }
-
-    updateConteo({
-      simpatizantesDelDia: [...conteoState.simpatizantesDelDia, simpatizante]
-    });
-    setShowAddDialog(false);
-    setSearchTerm("");
-    setShowNewForm(false);
-  };
 
   const addNewSimpatizante = async () => {
     if (newSimpatizante.nombre.trim()) {
@@ -284,52 +312,9 @@ export default function ConteoPage() {
     setSearchTerm("");
     setShowNewForm(false);
     setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
+    setSelectedSimpatizantes([]); // Limpiar selección al cerrar
   };
 
-  const selectMiembro = (miembro: Miembro, categoria: string) => {
-    let currentList: MiembroSimplificado[] = [];
-    
-    switch (categoria) {
-      case "hermanos":
-        currentList = conteoState.hermanosDelDia;
-        break;
-      case "hermanas":
-        currentList = conteoState.hermanasDelDia;
-        break;
-      case "ninos":
-        currentList = conteoState.ninosDelDia;
-        break;
-      case "adolescentes":
-        currentList = conteoState.adolescentesDelDia;
-        break;
-    }
-
-    if (currentList.find((m: MiembroSimplificado) => m.id === miembro.id)) {
-      toast.info("Este miembro ya fue agregado hoy");
-      return;
-    }
-
-    const updates: Partial<typeof conteoState> = {};
-    switch (categoria) {
-      case "hermanos":
-        updates.hermanosDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
-        break;
-      case "hermanas":
-        updates.hermanasDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
-        break;
-      case "ninos":
-        updates.ninosDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
-        break;
-      case "adolescentes":
-        updates.adolescentesDelDia = [...currentList, { id: miembro.id, nombre: miembro.nombre }];
-        break;
-    }
-
-    updateConteo(updates);
-
-    // Mostrar toast de confirmación en lugar de cerrar el diálogo
-    toast.success(`${miembro.nombre} agregado a ${categoria}`);
-  };
 
   const removeMiembroDelDia = (miembroId: string, categoria: string) => {
     let currentList: MiembroSimplificado[] = [];
@@ -371,6 +356,101 @@ export default function ConteoPage() {
   const openMiembrosDialog = (categoria: string) => {
     setCategoriaSeleccionada(categoria);
     setShowMiembrosDialog(true);
+    setSelectedMembers([]); // Limpiar selección al abrir
+    setSearchMiembrosLocal(""); // Limpiar búsqueda local al abrir
+  };
+
+  // Funciones para selección múltiple
+  const toggleMemberSelection = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
+
+  const selectAllAvailableMembers = () => {
+    const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
+    const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
+    const baseList = conteoState.modoConsecutivo
+      ? datosServicioBase?.miembrosAsistieron?.[categoriaSeleccionada] || []
+      : [];
+
+    const availableIds = miembrosDisponibles
+      .filter(miembro => {
+        const noEstaEnActuales = !currentList.find(m => m.id === miembro.id);
+        const noEstaEnBase = !baseList.find(m => m.id === miembro.id);
+        return noEstaEnActuales && noEstaEnBase;
+      })
+      .map(miembro => miembro.id);
+
+    setSelectedMembers(availableIds);
+  };
+
+  const clearMemberSelection = () => {
+    setSelectedMembers([]);
+  };
+
+  const addSelectedMembers = () => {
+    const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
+    const membersToAdd = miembrosDisponibles.filter(miembro => 
+      selectedMembers.includes(miembro.id)
+    );
+
+    const updates: Partial<typeof conteoState> = {};
+    const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
+    
+    const newMembers = membersToAdd.map(miembro => ({ id: miembro.id, nombre: miembro.nombre }));
+    
+    switch (categoriaSeleccionada) {
+      case "hermanos":
+        updates.hermanosDelDia = [...currentList, ...newMembers];
+        break;
+      case "hermanas":
+        updates.hermanasDelDia = [...currentList, ...newMembers];
+        break;
+      case "ninos":
+        updates.ninosDelDia = [...currentList, ...newMembers];
+        break;
+      case "adolescentes":
+        updates.adolescentesDelDia = [...currentList, ...newMembers];
+        break;
+    }
+
+    updateConteo(updates);
+    setSelectedMembers([]);
+    toast.success(`${membersToAdd.length} miembros agregados exitosamente`);
+  };
+
+  // Funciones para selección múltiple de simpatizantes
+  const toggleSimpatizanteSelection = (simpatizanteId: string) => {
+    setSelectedSimpatizantes(prev => 
+      prev.includes(simpatizanteId) 
+        ? prev.filter(id => id !== simpatizanteId)
+        : [...prev, simpatizanteId]
+    );
+  };
+
+  const selectAllAvailableSimpatizantes = () => {
+    const availableIds = filteredSimpatizantes.map(simpatizante => simpatizante.id);
+    setSelectedSimpatizantes(availableIds);
+  };
+
+  const clearSimpatizanteSelection = () => {
+    setSelectedSimpatizantes([]);
+  };
+
+  const addSelectedSimpatizantes = () => {
+    const simpatizantesToAdd = filteredSimpatizantes.filter(simpatizante => 
+      selectedSimpatizantes.includes(simpatizante.id)
+    );
+
+    updateConteo({
+      simpatizantesDelDia: [...conteoState.simpatizantesDelDia, ...simpatizantesToAdd]
+    });
+    
+    setSelectedSimpatizantes([]);
+    toast.success(`${simpatizantesToAdd.length} simpatizantes agregados exitosamente`);
   };
 
   const getMiembrosPorCategoria = (categoria: string) => {
@@ -549,8 +629,107 @@ export default function ConteoPage() {
 
   const filteredSimpatizantes = simpatizantes.filter(
     (s) =>
-      s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      s.nombre.toLowerCase().includes(searchSimpatizantesDebounce.toLowerCase()) &&
       !conteoState.simpatizantesDelDia.find((sd) => sd.id === s.id)
+  );
+
+  // Función para obtener todos los asistentes y filtrarlos
+  const getAllAsistentes = () => {
+    const asistentes: Array<{
+      id: string;
+      nombre: string;
+      categoria: string;
+      tipo: 'miembro' | 'simpatizante';
+      esBase?: boolean;
+    }> = [];
+
+    // Agregar miembros base (si aplica)
+    if (conteoState.modoConsecutivo && datosServicioBase) {
+      Object.keys(datosServicioBase.miembrosAsistieron).forEach(catKey => {
+        const members = datosServicioBase.miembrosAsistieron[catKey];
+        members.forEach((miembro: MiembroSimplificado) => {
+          asistentes.push({
+            id: `base-${miembro.id}`,
+            nombre: miembro.nombre,
+            categoria: catKey,
+            tipo: 'miembro',
+            esBase: true
+          });
+        });
+      });
+
+      // Agregar simpatizantes base
+      if (datosServicioBase.simpatizantesAsistieron) {
+        datosServicioBase.simpatizantesAsistieron.forEach((simpatizante: MiembroSimplificado) => {
+          asistentes.push({
+            id: `base-simpatizante-${simpatizante.id}`,
+            nombre: simpatizante.nombre,
+            categoria: 'simpatizantes',
+            tipo: 'simpatizante',
+            esBase: true
+          });
+        });
+      }
+    }
+
+    // Agregar miembros de esta sesión
+    conteoState.hermanosDelDia.forEach(miembro => {
+      asistentes.push({
+        id: miembro.id,
+        nombre: miembro.nombre,
+        categoria: 'hermanos',
+        tipo: 'miembro',
+        esBase: false
+      });
+    });
+
+    conteoState.hermanasDelDia.forEach(miembro => {
+      asistentes.push({
+        id: miembro.id,
+        nombre: miembro.nombre,
+        categoria: 'hermanas',
+        tipo: 'miembro',
+        esBase: false
+      });
+    });
+
+    conteoState.ninosDelDia.forEach(miembro => {
+      asistentes.push({
+        id: miembro.id,
+        nombre: miembro.nombre,
+        categoria: 'ninos',
+        tipo: 'miembro',
+        esBase: false
+      });
+    });
+
+    conteoState.adolescentesDelDia.forEach(miembro => {
+      asistentes.push({
+        id: miembro.id,
+        nombre: miembro.nombre,
+        categoria: 'adolescentes',
+        tipo: 'miembro',
+        esBase: false
+      });
+    });
+
+    // Agregar simpatizantes de esta sesión
+    conteoState.simpatizantesDelDia.forEach(simpatizante => {
+      asistentes.push({
+        id: simpatizante.id,
+        nombre: simpatizante.nombre,
+        categoria: 'simpatizantes',
+        tipo: 'simpatizante',
+        esBase: false
+      });
+    });
+
+    return asistentes;
+  };
+
+  // Filtrar asistentes por búsqueda
+  const filteredAsistentes = getAllAsistentes().filter(asistente =>
+    asistente.nombre.toLowerCase().includes(searchAsistentesDebounce.toLowerCase())
   );
 
   // Calcular el total de asistentes incluyendo la base si estamos en modo consecutivo
@@ -1097,29 +1276,21 @@ export default function ConteoPage() {
         </Card>
       )}
 
-      {/* Add Simpatizante Dialog */}
+      {/* Add Simpatizante Dialog - VERSIÓN MEJORADA */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md max-h-[85vh]    flex flex-col mx-2 sm:mx-0">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
           <DialogHeader className="flex-shrink-0 pb-4">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-base sm:text-lg">
                 Agregar Simpatizante
               </DialogTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={closeDialog}
-                className="h-8 w-8 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
             </div>
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden flex flex-col space-y-4">
             {!showNewForm ? (
               <>
-                {/* Search */}
+                {/* Búsqueda mejorada */}
                 <div className="flex-shrink-0">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -1130,64 +1301,206 @@ export default function ConteoPage() {
                       className="pl-10 h-10 text-sm"
                     />
                   </div>
+                  {searchTerm && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      Buscando: &ldquo;{searchTerm}&rdquo;
+                    </div>
+                  )}
                 </div>
 
-                {/* Lista de simpatizantes existentes */}
-                <div className="flex-1 overflow-hidden">
-                  <div className="h-full overflow-y-auto space-y-2 pr-1">
-                    {filteredSimpatizantes.length > 0 ? (
-                      filteredSimpatizantes.map((simpatizante) => (
-                        <div
-                          key={simpatizante.id}
-                          className="p-3 border rounded-lg hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors"
-                          onClick={() =>
-                            selectExistingSimpatizante(simpatizante)
-                          }
+                {/* Controles de selección múltiple para simpatizantes */}
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={selectAllAvailableSimpatizantes}
+                        className="text-xs h-8"
+                      >
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Seleccionar Todos
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearSimpatizanteSelection}
+                        className="text-xs h-8"
+                        disabled={selectedSimpatizantes.length === 0}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Limpiar
+                      </Button>
+                      {searchTerm && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSearchTerm("")}
+                          className="text-xs h-8 bg-blue-50 text-blue-700 border-blue-200"
                         >
-                          <div className="font-medium text-sm">
-                            {simpatizante.nombre}
+                          <Search className="w-3 h-3 mr-1" />
+                          Limpiar Búsqueda
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedSimpatizantes.length > 0 && (
+                        <Badge className="bg-blue-100 text-blue-700">
+                          {selectedSimpatizantes.length} seleccionados
+                        </Badge>
+                      )}
+                      {searchTerm && (
+                        <Badge variant="outline" className="bg-gray-50 text-gray-700 text-xs">
+                          Buscando
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lista de simpatizantes existentes con scroll mejorado */}
+                <div className="flex-1 overflow-hidden">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Simpatizantes Disponibles
+                    {filteredSimpatizantes.length > 0 && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                        {filteredSimpatizantes.length} encontrados
+                      </Badge>
+                    )}
+                  </h4>
+                  <div className="h-80 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
+                    {filteredSimpatizantes.length > 0 ? (
+                      filteredSimpatizantes.map((simpatizante) => {
+                        const isSelected = selectedSimpatizantes.includes(simpatizante.id);
+                        return (
+                          <div
+                            key={simpatizante.id}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 bg-white hover:shadow-sm ${
+                              isSelected 
+                                ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                                : 'hover:bg-gray-50 active:bg-gray-100'
+                            }`}
+                            onClick={() => toggleSimpatizanteSelection(simpatizante.id)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                  isSelected 
+                                    ? 'bg-blue-600 border-blue-600' 
+                                    : 'border-gray-300'
+                                }`}>
+                                  {isSelected && (
+                                    <CheckCircle className="w-3 h-3 text-white" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm text-gray-800">
+                                    {simpatizante.nombre}
+                                  </div>
+                                  {simpatizante.telefono && (
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      📞 {simpatizante.telefono}
+                                    </div>
+                                  )}
+                                  {simpatizante.notas && (
+                                    <div className="text-xs text-gray-400 mt-1 bg-gray-50 p-2 rounded">
+                                      💬 {simpatizante.notas}
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Registrado: {simpatizante.fechaRegistro || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={`flex-shrink-0 ml-2 transition-transform ${
+                                  isSelected
+                                    ? 'bg-blue-100 border-blue-300 text-blue-700'
+                                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSimpatizanteSelection(simpatizante.id);
+                                }}
+                              >
+                                {isSelected ? (
+                                  <X className="w-4 h-4" />
+                                ) : (
+                                  <Plus className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
                           </div>
-                          {simpatizante.telefono && (
-                            <div className="text-xs text-gray-500">
-                              {simpatizante.telefono}
-                            </div>
-                          )}
-                          {simpatizante.notas && (
-                            <div className="text-xs text-gray-400 mt-1">
-                              {simpatizante.notas}
-                            </div>
-                          )}
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <div className="text-center text-gray-500 py-8">
                         <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                         <p className="text-sm">
-                          {searchTerm
-                            ? "No se encontraron simpatizantes disponibles"
+                          {searchSimpatizantesDebounce
+                            ? `No se encontraron simpatizantes que coincidan con "${searchSimpatizantesDebounce}"`
                             : "No hay simpatizantes disponibles"}
                         </p>
+                        {searchSimpatizantesDebounce && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3 text-xs"
+                            onClick={() => setSearchTerm("")}
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Limpiar búsqueda
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Botón para agregar nuevo */}
-                <div className="flex-shrink-0 pt-3 border-t">
-                  <Button
-                    variant="outline"
-                    className="w-full bg-transparent h-10 text-sm"
-                    onClick={() => setShowNewForm(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Nuevo Simpatizante
-                  </Button>
+                {/* Botones de acción */}
+                <div className="flex-shrink-0 pt-3 border-t space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-blue-200 h-10 text-sm"
+                      onClick={() => setShowNewForm(true)}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Nuevo
+                    </Button>
+                    {selectedSimpatizantes.length > 0 && (
+                      <Button
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 h-10 text-sm"
+                        onClick={() => {
+                          addSelectedSimpatizantes();
+                          setShowAddDialog(false);
+                          setSearchTerm("");
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Agregar {selectedSimpatizantes.length} Simpatizantes
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
               <>
                 {/* Formulario para nuevo simpatizante */}
                 <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-2 text-blue-800 text-sm font-medium">
+                      <Plus className="w-4 h-4" />
+                      Nuevo Simpatizante
+                    </div>
+                    <p className="text-blue-600 text-xs mt-1">
+                      Complete la información del simpatizante
+                    </p>
+                  </div>
+
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Nombre Completo *
@@ -1247,13 +1560,18 @@ export default function ConteoPage() {
                       className="flex-1 bg-transparent h-10 text-sm"
                       onClick={() => setShowNewForm(false)}
                     >
+                      <X className="w-4 h-4 mr-1" />
                       Volver
                     </Button>
                     <Button
                       className="flex-1 bg-slate-600 hover:bg-slate-700 h-10 text-sm"
-                      onClick={addNewSimpatizante}
+                      onClick={() => {
+                        addNewSimpatizante();
+                        setSelectedSimpatizantes([]); // Limpiar selección al agregar nuevo
+                      }}
                       disabled={!newSimpatizante.nombre.trim()}
                     >
+                      <Plus className="w-4 h-4 mr-1" />
                       Agregar
                     </Button>
                   </div>
@@ -1264,9 +1582,9 @@ export default function ConteoPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para seleccionar miembros */}
+      {/* Dialog para seleccionar miembros - VERSIÓN MEJORADA */}
       <Dialog open={showMiembrosDialog} onOpenChange={setShowMiembrosDialog}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+        <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
           <DialogHeader className="flex-shrink-0 pb-4">
             <DialogTitle className="flex items-center justify-between text-base sm:text-lg">
               <span>Seleccionar {categoriaSeleccionada}</span>
@@ -1309,26 +1627,99 @@ export default function ConteoPage() {
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden flex flex-col space-y-4">
-            {/* Búsqueda */}
-            <div className="flex-shrink-0">
+            {/* Búsqueda y controles mejorados */}
+            <div className="flex-shrink-0 space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   placeholder={`Buscar ${categoriaSeleccionada}...`}
-                  value={conteoState.searchMiembros}
-                  onChange={(e) => updateConteo({ searchMiembros: e.target.value })}
+                  value={searchMiembrosLocal}
+                  onChange={(e) => setSearchMiembrosLocal(e.target.value)}
                   className="pl-10 h-10 text-sm"
                 />
               </div>
+              {searchMiembrosLocal && (
+                <div className="mt-2 text-xs text-gray-500">
+                  Buscando: &ldquo;{searchMiembrosLocal}&rdquo;
+                </div>
+              )}
+              
+              {/* Controles de selección múltiple */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllAvailableMembers}
+                    className="text-xs h-8"
+                  >
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Seleccionar Todos
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearMemberSelection}
+                    className="text-xs h-8"
+                    disabled={selectedMembers.length === 0}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Limpiar
+                  </Button>
+                  {searchMiembrosLocal && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSearchMiembrosLocal("")}
+                      className="text-xs h-8 bg-blue-50 text-blue-700 border-blue-200"
+                    >
+                      <Search className="w-3 h-3 mr-1" />
+                      Limpiar Búsqueda
+                    </Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedMembers.length > 0 && (
+                    <Badge className="bg-blue-100 text-blue-700">
+                      {selectedMembers.length} seleccionados
+                    </Badge>
+                  )}
+                  {searchMiembrosLocal && (
+                    <Badge variant="outline" className="bg-gray-50 text-gray-700 text-xs">
+                      Buscando
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Lista de miembros disponibles */}
+            {/* Lista de miembros disponibles con scroll mejorado */}
             <div className="flex-1 overflow-hidden">
               <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
                 Disponibles para agregar
+                {(() => {
+                  const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
+                  const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
+                  const baseList = conteoState.modoConsecutivo
+                    ? datosServicioBase?.miembrosAsistieron?.[categoriaSeleccionada] || []
+                    : [];
+                  
+                  const filteredCount = miembrosDisponibles.filter(miembro => {
+                    const nombreMatch = miembro.nombre.toLowerCase().includes(searchMiembrosLocalDebounce.toLowerCase());
+                    const noEstaEnActuales = !currentList.find(m => m.id === miembro.id);
+                    const noEstaEnBase = !baseList.find(m => m.id === miembro.id);
+                    return nombreMatch && noEstaEnActuales && noEstaEnBase;
+                  }).length;
+                  
+                  return filteredCount > 0 && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                      {filteredCount} encontrados
+                    </Badge>
+                  );
+                })()}
               </h4>
-              <div className="h-full overflow-y-auto space-y-2 pr-1">
+              <div className="h-96 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
                 {(() => {
                   const miembrosDisponibles = getMiembrosPorCategoria(
                     categoriaSeleccionada
@@ -1350,7 +1741,7 @@ export default function ConteoPage() {
                     (miembro) => {
                       const nombreMatch = miembro.nombre
                         .toLowerCase()
-                        .includes(conteoState.searchMiembros.toLowerCase());
+                        .includes(searchMiembrosLocalDebounce.toLowerCase());
                       const noEstaEnActuales = !currentList.find(
                         (m: MiembroSimplificado) => m.id === miembro.id
                       );
@@ -1366,46 +1757,85 @@ export default function ConteoPage() {
                       <div className="text-center text-gray-500 py-8">
                         <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                         <p className="text-sm">
-                          {conteoState.searchMiembros
-                            ? "No se encontraron miembros disponibles"
+                          {searchMiembrosLocalDebounce
+                            ? `No se encontraron miembros que coincidan con "${searchMiembrosLocalDebounce}"`
                             : "Todos los miembros ya están agregados"}
                         </p>
+                        {searchMiembrosLocalDebounce && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3 text-xs"
+                            onClick={() => setSearchMiembrosLocal("")}
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Limpiar búsqueda
+                          </Button>
+                        )}
                       </div>
                     );
                   }
 
-                  return filteredMiembros.map((miembro) => (
-                    <div
-                      key={miembro.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 hover:shadow-sm active:bg-gray-100"
-                      onClick={() =>
-                        selectMiembro(miembro, categoriaSeleccionada)
-                      }
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">
-                          {miembro.nombre}
-                        </div>
-                        {miembro.telefono && (
-                          <div className="text-xs text-gray-500 truncate">
-                            {miembro.telefono}
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:scale-105 active:scale-95 flex-shrink-0 ml-2 transition-transform"
+                  return filteredMiembros.map((miembro) => {
+                    const isSelected = selectedMembers.includes(miembro.id);
+                    return (
+                      <div
+                        key={miembro.id}
+                        className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
+                          isSelected 
+                            ? 'bg-blue-50 border-blue-300 shadow-sm' 
+                            : 'hover:bg-gray-50 active:bg-gray-100'
+                        }`}
+                        onClick={() => toggleMemberSelection(miembro.id)}
                       >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ));
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                            isSelected 
+                              ? 'bg-blue-600 border-blue-600' 
+                              : 'border-gray-300'
+                          }`}>
+                            {isSelected && (
+                              <CheckCircle className="w-3 h-3 text-white" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">
+                              {miembro.nombre}
+                            </div>
+                            {miembro.telefono && (
+                              <div className="text-xs text-gray-500 truncate">
+                                {miembro.telefono}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={`flex-shrink-0 ml-2 transition-transform ${
+                            isSelected
+                              ? 'bg-blue-100 border-blue-300 text-blue-700'
+                              : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMemberSelection(miembro.id);
+                          }}
+                        >
+                          {isSelected ? (
+                            <X className="w-4 h-4" />
+                          ) : (
+                            <Plus className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  });
                 })()}
               </div>
             </div>
 
-            {/* Ya agregados - Movido al final */}
+            {/* Ya agregados - Sección compacta */}
             {(() => {
               const currentList =
                 {
@@ -1435,7 +1865,6 @@ export default function ConteoPage() {
                           size="sm"
                           className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
                           onClick={() => {
-                            // Limpiar solo los agregados en esta sesión
                             const updates: Partial<typeof conteoState> = {};
                             switch (categoriaSeleccionada) {
                               case "hermanos":
@@ -1460,24 +1889,7 @@ export default function ConteoPage() {
                         </Button>
                       )}
                     </div>
-                    <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
-                      {/* Miembros de la base (si aplica) */}
-                      {baseList.map((miembro: MiembroSimplificado) => (
-                        <div
-                          key={`base-${miembro.id}`}
-                          className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm border border-blue-200"
-                        >
-                          <span className="text-blue-800 truncate flex-1 min-w-0">
-                            {miembro.nombre}
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className="text-xs bg-blue-100 text-blue-700 border-blue-300 flex-shrink-0 ml-2"
-                          >
-                            Base
-                          </Badge>
-                        </div>
-                      ))}
+                    <div className="max-h-24 overflow-y-auto space-y-1 pr-1">
                       {/* Miembros agregados en esta sesión */}
                       {currentList.map((miembro: MiembroSimplificado) => (
                         <div
@@ -1509,7 +1921,7 @@ export default function ConteoPage() {
               return null;
             })()}
 
-            {/* Botones de acción */}
+            {/* Botones de acción mejorados */}
             <div className="flex-shrink-0 pt-3 border-t space-y-2">
               <div className="flex gap-2">
                 <Button
@@ -1517,232 +1929,211 @@ export default function ConteoPage() {
                   className="flex-1 bg-transparent text-sm"
                   onClick={() => {
                     setShowMiembrosDialog(false);
-                    updateConteo({ searchMiembros: "" });
+                    setSearchMiembrosLocal("");
+                    setSelectedMembers([]);
                   }}
                 >
                   Cancelar
                 </Button>
-                <Button
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-sm"
-                  onClick={() => {
-                    setShowMiembrosDialog(false);
-                    updateConteo({ searchMiembros: "" });
-                    toast.success("Miembros agregados exitosamente");
-                  }}
-                >
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Finalizar
-                </Button>
+                {selectedMembers.length > 0 ? (
+                  <Button
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm"
+                    onClick={() => {
+                      addSelectedMembers();
+                      setShowMiembrosDialog(false);
+                      setSearchMiembrosLocal("");
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Agregar {selectedMembers.length} Miembros
+                  </Button>
+                ) : (
+                  <Button
+                    className="flex-1 bg-slate-600 hover:bg-slate-700 text-sm"
+                    onClick={() => {
+                      setShowMiembrosDialog(false);
+                      setSearchMiembrosLocal("");
+                    }}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Finalizar
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para ver lista de asistentes */}
+      {/* Dialog para ver lista de asistentes - VERSIÓN MEJORADA */}
       <Dialog
         open={showAsistentesDialog}
         onOpenChange={setShowAsistentesDialog}
       >
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
           <DialogHeader className="flex-shrink-0 pb-4">
-            <DialogTitle className="text-base sm:text-lg">
-              Lista de Asistentes
+            <DialogTitle className="text-base sm:text-lg flex items-center justify-between">
+              <span>Lista de Asistentes</span>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                {filteredAsistentes.length} encontrados
+              </Badge>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {/* Miembros base del servicio anterior (si aplica) */}
-            {conteoState.modoConsecutivo && datosServicioBase && (
-              <>
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-                  Asistentes del Servicio Base ({datosServicioBase.servicio})
-                </h3>
-                {Object.keys(datosServicioBase.miembrosAsistieron).map(
-                  (catKey) => {
-                    const members =
-                      datosServicioBase.miembrosAsistieron[catKey];
-                    if (members.length === 0) return null;
+          
+          <div className="flex-1 overflow-hidden flex flex-col space-y-4">
+            {/* Búsqueda de asistentes */}
+            <div className="flex-shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Buscar asistentes por nombre..."
+                  value={searchAsistentes}
+                  onChange={(e) => setSearchAsistentes(e.target.value)}
+                  className="pl-10 h-10 text-sm"
+                />
+              </div>
+              {searchAsistentes && (
+                <div className="mt-2 text-xs text-gray-500">
+                  Buscando: &ldquo;{searchAsistentes}&rdquo;
+                </div>
+              )}
+            </div>
+
+            {/* Lista de asistentes con scroll mejorado */}
+            <div className="flex-1 overflow-hidden">
+              <div className="h-96 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
+                {filteredAsistentes.length > 0 ? (
+                  filteredAsistentes.map((asistente) => {
+                    const getCategoriaColor = (categoria: string) => {
+                      switch (categoria) {
+                        case 'hermanos': return 'bg-slate-50 border-slate-200 text-slate-700';
+                        case 'hermanas': return 'bg-rose-50 border-rose-200 text-rose-700';
+                        case 'ninos': return 'bg-amber-50 border-amber-200 text-amber-700';
+                        case 'adolescentes': return 'bg-purple-50 border-purple-200 text-purple-700';
+                        case 'simpatizantes': return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+                        default: return 'bg-gray-50 border-gray-200 text-gray-700';
+                      }
+                    };
+
+                    const getCategoriaLabel = (categoria: string) => {
+                      switch (categoria) {
+                        case 'hermanos': return 'Hermanos';
+                        case 'hermanas': return 'Hermanas';
+                        case 'ninos': return 'Niños';
+                        case 'adolescentes': return 'Adolescentes';
+                        case 'simpatizantes': return 'Simpatizantes';
+                        default: return categoria;
+                      }
+                    };
+
                     return (
-                      <div key={`base-${catKey}`}>
-                        <h4 className="font-semibold text-gray-700 mb-2 capitalize text-sm">
-                          {catKey} ({members.length})
-                        </h4>
-                        {members.map((miembro: MiembroSimplificado) => (
-                          <div
-                            key={miembro.id}
-                            className="flex items-center justify-between p-2 bg-gray-50 rounded mb-1"
-                          >
-                            <span className="text-sm truncate flex-1 min-w-0">
-                              {miembro.nombre}
-                            </span>
+                      <div
+                        key={asistente.id}
+                        className={`p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 ${
+                          asistente.esBase ? 'border-dashed' : 'border-solid'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm text-gray-800 truncate">
+                                {asistente.nombre}
+                              </span>
+                              {asistente.esBase && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                                  Base
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${getCategoriaColor(asistente.categoria)}`}
+                              >
+                                {getCategoriaLabel(asistente.categoria)}
+                              </Badge>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  asistente.tipo === 'miembro' 
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                    : 'bg-green-50 text-green-700 border-green-200'
+                                }`}
+                              >
+                                {asistente.tipo === 'miembro' ? 'Miembro' : 'Simpatizante'}
+                              </Badge>
+                            </div>
                           </div>
-                        ))}
+                          {!asistente.esBase && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
+                              onClick={() => {
+                                if (asistente.tipo === 'miembro') {
+                                  removeMiembroDelDia(asistente.id, asistente.categoria);
+                                } else {
+                                  removeSimpatizanteDelDia(asistente.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     );
-                  }
-                )}
-                {datosServicioBase.simpatizantesAsistieron.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-emerald-700 mb-2 text-sm">
-                      Simpatizantes (
-                      {datosServicioBase.simpatizantesAsistieron.length})
-                    </h4>
-                    {datosServicioBase.simpatizantesAsistieron.map(
-                      (simpatizante: MiembroSimplificado) => (
-                        <div
-                          key={simpatizante.id}
-                          className="flex items-center justify-between p-2 bg-emerald-50 rounded mb-1"
-                        >
-                          <span className="text-sm truncate flex-1 min-w-0">
-                            {simpatizante.nombre}
-                          </span>
-                        </div>
-                      )
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm">
+                      {searchAsistentesDebounce
+                        ? `No se encontraron asistentes que coincidan con "${searchAsistentesDebounce}"`
+                        : "No hay asistentes registrados"}
+                    </p>
+                    {searchAsistentesDebounce && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 text-xs"
+                        onClick={() => setSearchAsistentes("")}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Limpiar búsqueda
+                      </Button>
                     )}
                   </div>
                 )}
-                <hr className="my-4 border-t border-gray-200" />
-                <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
-                  Asistentes Añadidos en esta Sesión
-                </h3>
-              </>
-            )}
-
-            {conteoState.hermanosDelDia.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-slate-700 mb-2 text-sm">
-                  Hermanos ({conteoState.hermanosDelDia.length})
-                </h4>
-                {conteoState.hermanosDelDia.map((miembro) => (
-                  <div
-                    key={miembro.id}
-                    className="flex items-center justify-between p-2 bg-slate-50 rounded mb-1"
-                  >
-                    <span className="text-sm truncate flex-1 min-w-0">
-                      {miembro.nombre}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                      onClick={() =>
-                        removeMiembroDelDia(miembro.id, "hermanos")
-                      }
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
               </div>
-            )}
+            </div>
 
-            {conteoState.hermanasDelDia.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-rose-700 mb-2 text-sm">
-                  Hermanas ({conteoState.hermanasDelDia.length})
-                </h4>
-                {conteoState.hermanasDelDia.map((miembro) => (
-                  <div
-                    key={miembro.id}
-                    className="flex items-center justify-between p-2 bg-rose-50 rounded mb-1"
+            {/* Botones de acción */}
+            <div className="flex-shrink-0 pt-3 border-t">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent text-sm"
+                  onClick={() => {
+                    setShowAsistentesDialog(false);
+                    setSearchAsistentes("");
+                  }}
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cerrar
+                </Button>
+                {searchAsistentes && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-blue-50 text-blue-700 border-blue-200 text-sm"
+                    onClick={() => setSearchAsistentes("")}
                   >
-                    <span className="text-sm truncate flex-1 min-w-0">
-                      {miembro.nombre}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                      onClick={() =>
-                        removeMiembroDelDia(miembro.id, "hermanas")
-                      }
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                    <Search className="w-4 h-4 mr-1" />
+                    Limpiar Búsqueda
+                  </Button>
+                )}
               </div>
-            )}
-
-            {conteoState.ninosDelDia.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-amber-700 mb-2 text-sm">
-                  Niños ({conteoState.ninosDelDia.length})
-                </h4>
-                {conteoState.ninosDelDia.map((miembro) => (
-                  <div
-                    key={miembro.id}
-                    className="flex items-center justify-between p-2 bg-amber-50 rounded mb-1"
-                  >
-                    <span className="text-sm truncate flex-1 min-w-0">
-                      {miembro.nombre}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                      onClick={() => removeMiembroDelDia(miembro.id, "ninos")}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {conteoState.adolescentesDelDia.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-purple-700 mb-2 text-sm">
-                  Adolescentes ({conteoState.adolescentesDelDia.length})
-                </h4>
-                {conteoState.adolescentesDelDia.map((miembro) => (
-                  <div
-                    key={miembro.id}
-                    className="flex items-center justify-between p-2 bg-purple-50 rounded mb-1"
-                  >
-                    <span className="text-sm truncate flex-1 min-w-0">
-                      {miembro.nombre}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                      onClick={() =>
-                        removeMiembroDelDia(miembro.id, "adolescentes")
-                      }
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {conteoState.simpatizantesDelDia.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-emerald-700 mb-2 text-sm">
-                  Simpatizantes ({conteoState.simpatizantesDelDia.length})
-                </h4>
-                {conteoState.simpatizantesDelDia.map((simpatizante) => (
-                  <div
-                    key={simpatizante.id}
-                    className="flex items-center justify-between p-2 bg-emerald-50 rounded mb-1"
-                  >
-                    <span className="text-sm truncate flex-1 min-w-0">
-                      {simpatizante.nombre}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                      onClick={() => removeSimpatizanteDelDia(simpatizante.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
