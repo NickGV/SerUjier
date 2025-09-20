@@ -51,6 +51,7 @@ import {
   fetchMiembros,
   addSimpatizante,
   saveConteo,
+  fetchUjieres,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,39 +150,27 @@ export default function ConteoPage() {
     { value: "jovenes", label: "Jóvenes" },
   ];
 
-  const ujieres = [
-    "Wilmar Rojas",
-    "Juan Caldera",
-    "Joaquin Velez",
-    "Yarissa Rojas",
-    "Cristian Gomez",
-    "Hector Gaviria",
-    "Ivan Caro",
-    "Jhon echavarria",
-    "Karen Cadavid",
-    "Carolina Monsalve",
-    "Marta Verona",
-    "Nicolas Gömez",
-    "Oraliz Fernåndez",
-    "Santiago Graciano",
-    "Suri Vélez",
-    "Wilmar Vélez",
-    "Diana Suarez",
-    "José perdomo",
-    "Carolina Caro",
-  ];
+  // Lista de ujieres se carga desde Firebase
+  const [ujieres, setUjieres] = useState<string[]>([]);
 
   // Efecto para cargar datos desde Firebase
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [simpatizantesData, miembrosData] = await Promise.all([
+        const [simpatizantesData, miembrosData, ujieresData] = await Promise.all([
           fetchSimpatizantes(),
           fetchMiembros(),
+          fetchUjieres(),
         ]);
         setSimpatizantes(simpatizantesData);
         setMiembros(miembrosData);
+        // Extraer solo los nombres de los ujieres activos
+        const nombresUjieres = ujieresData
+          .filter(ujier => ujier.activo)
+          .map(ujier => ujier.nombre)
+          .sort();
+        setUjieres(nombresUjieres);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -307,13 +296,6 @@ export default function ConteoPage() {
     });
   };
 
-  const closeDialog = () => {
-    setShowAddDialog(false);
-    setSearchTerm("");
-    setShowNewForm(false);
-    setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
-    setSelectedSimpatizantes([]); // Limpiar selección al cerrar
-  };
 
 
   const removeMiembroDelDia = (miembroId: string, categoria: string) => {
@@ -978,13 +960,19 @@ export default function ConteoPage() {
                   <SelectValue placeholder="+ Agregar ujier" />
                 </SelectTrigger>
                 <SelectContent className="max-h-48">
-                  {ujieres
-                    .filter((ujier) => !conteoState.selectedUjieres.includes(ujier))
-                    .map((ujier) => (
-                      <SelectItem key={ujier} value={ujier}>
-                        {ujier}
-                      </SelectItem>
-                    ))}
+                  {ujieres.length > 0 ? (
+                    ujieres
+                      .filter((ujier) => !conteoState.selectedUjieres.includes(ujier))
+                      .map((ujier) => (
+                        <SelectItem key={ujier} value={ujier}>
+                          {ujier}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Cargando ujieres...
+                    </SelectItem>
+                  )}
                   <SelectItem value="otro">
                     + Escribir nombre personalizado
                   </SelectItem>

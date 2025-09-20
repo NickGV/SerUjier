@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@/contexts/user-context";
 
 interface ConteoState {
   hermanos: number;
@@ -51,6 +52,7 @@ const initialState: ConteoState = {
 };
 
 export function usePersistentConteo() {
+  const { user } = useUser();
   const [conteoState, setConteoState] = useState<ConteoState>(initialState);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -78,6 +80,19 @@ export function usePersistentConteo() {
       setIsLoaded(true);
     }
   }, []);
+
+  // Agregar automáticamente el ujier del usuario cuando se carga el estado
+  useEffect(() => {
+    if (isLoaded && user && user.nombre && conteoState.selectedUjieres.length === 0) {
+      // Solo agregar si no hay ujieres seleccionados y el usuario tiene nombre
+      setConteoState(prev => ({
+        ...prev,
+        selectedUjieres: [user.nombre],
+        ujierSeleccionado: user.nombre,
+        ujierPersonalizado: ""
+      }));
+    }
+  }, [isLoaded, user, conteoState.selectedUjieres.length]);
 
   // Guardar estado en localStorage cada vez que cambie
   useEffect(() => {
