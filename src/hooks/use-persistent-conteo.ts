@@ -31,13 +31,22 @@ interface ConteoState {
 
 const STORAGE_KEY = "conteo-persistente";
 
+// Helper that returns the local date in YYYY-MM-DD format to avoid UTC shifts
+const getLocalDate = () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
 const initialState: ConteoState = {
   hermanos: 0,
   hermanas: 0,
   ninos: 0,
   adolescentes: 0,
   simpatizantesCount: 0,
-  fecha: new Date().toISOString().split("T")[0],
+  fecha: getLocalDate(),
   tipoServicio: "dominical",
   ujierSeleccionado: "",
   ujierPersonalizado: "",
@@ -63,15 +72,12 @@ export function usePersistentConteo() {
       if (saved) {
         const parsedState = JSON.parse(saved);
         // Verificar que la fecha guardada sea de hoy, si no, resetear
-        const today = new Date().toISOString().split("T")[0];
+        const today = getLocalDate();
         if (parsedState.fecha === today) {
           setConteoState(parsedState);
         } else {
           // Si es un día diferente, resetear pero mantener la fecha actual
-          setConteoState({
-            ...initialState,
-            fecha: today,
-          });
+          setConteoState({ ...initialState, fecha: today });
         }
       }
     } catch (error) {
@@ -83,13 +89,18 @@ export function usePersistentConteo() {
 
   // Agregar automáticamente el ujier del usuario cuando se carga el estado
   useEffect(() => {
-    if (isLoaded && user && user.nombre && conteoState.selectedUjieres.length === 0) {
+    if (
+      isLoaded &&
+      user &&
+      user.nombre &&
+      conteoState.selectedUjieres.length === 0
+    ) {
       // Solo agregar si no hay ujieres seleccionados y el usuario tiene nombre
-      setConteoState(prev => ({
+      setConteoState((prev) => ({
         ...prev,
         selectedUjieres: [user.nombre],
         ujierSeleccionado: user.nombre,
-        ujierPersonalizado: ""
+        ujierPersonalizado: "",
       }));
     }
   }, [isLoaded, user, conteoState.selectedUjieres.length]);
@@ -107,18 +118,19 @@ export function usePersistentConteo() {
 
   // Función para actualizar el estado
   const updateConteo = useCallback((updates: Partial<ConteoState>) => {
-    setConteoState(prev => ({ ...prev, ...updates }));
+    setConteoState((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // Función para resetear el conteo
   const resetConteo = useCallback(() => {
-    setConteoState(initialState);
+    // Ensure we reset with the current local date (initialState.fecha was computed at module load)
+    setConteoState({ ...initialState, fecha: getLocalDate() });
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   // Función para limpiar solo los datos del día (mantener configuración)
   const clearDayData = useCallback(() => {
-    setConteoState(prev => ({
+    setConteoState((prev) => ({
       ...prev,
       hermanos: 0,
       hermanas: 0,
