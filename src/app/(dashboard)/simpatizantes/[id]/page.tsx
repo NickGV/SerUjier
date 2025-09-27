@@ -168,21 +168,23 @@ const SimpatizanteDetail = () => {
   }
 
   return (
-    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
+    <div className="p-3 md:p-6 space-y-6 md:space-y-8 min-h-screen max-w-full overflow-x-hidden">
       {/* Header with Back Button */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="px-3 sm:px-6">
-          <div className="flex items-center gap-3">
+      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="px-4 md:px-8 py-6">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-800"
+              className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 h-12 w-12 rounded-xl"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5" />
             </Button>
-            <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
+            <CardTitle className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-slate-600 to-slate-700 rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              </div>
               Detalle del Simpatizante
             </CardTitle>
           </div>
@@ -191,48 +193,57 @@ const SimpatizanteDetail = () => {
 
       {/* Profile Card */}
       <Card className="bg-gradient-to-r from-slate-600 to-slate-700 text-white border-0 shadow-lg">
-        <CardContent className="p-3 sm:p-6 text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-2xl font-bold">
+        <CardContent className="p-6 md:p-8 text-center">
+          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl md:text-4xl font-bold">
               {(isEditing ? editedData.nombre : simpatizante.nombre)
                 .charAt(0)
                 .toUpperCase()}
             </span>
           </div>
-          <h2 className="text-xl font-bold mb-1">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
             {isEditing ? editedData.nombre : simpatizante.nombre}
           </h2>
-          <p className="text-slate-200">
-            {isEditing ? editedData.telefono : simpatizante.telefono}
+          <p className="text-slate-200 text-lg">
+            {isEditing ? editedData.telefono : simpatizante.telefono || "Sin teléfono"}
           </p>
         </CardContent>
       </Card>
 
       {/* Simpatizante Information */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="px-3 sm:px-6">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-base font-semibold text-gray-800">
+      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="px-4 md:px-8 py-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
               Información Personal
             </CardTitle>
             {!isEditing ? (
               <Button
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={() => setIsEditing(true)}
+                className="h-12 px-6 rounded-xl font-semibold"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
                 Editar
               </Button>
             ) : (
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleCancel}>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={handleCancel}
+                  className="h-12 px-6 rounded-xl font-semibold"
+                >
                   Cancelar
                 </Button>
                 <Button
-                  size="sm"
+                  size="lg"
                   onClick={handleSave}
-                  className="bg-slate-600 hover:bg-slate-700"
+                  className="bg-slate-600 hover:bg-slate-700 h-12 px-6 rounded-xl font-semibold"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Guardar
@@ -241,11 +252,11 @@ const SimpatizanteDetail = () => {
             )}
           </div>
         </CardHeader>
-        <CardContent className="px-3 sm:px-6 space-y-4">
+        <CardContent className="px-4 md:px-8 space-y-6">
           {/* Name */}
           <div>
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-              <User className="w-4 h-4" />
+            <label className="text-base font-semibold text-gray-700 flex items-center gap-3 mb-3">
+              <User className="w-5 h-5" />
               Nombre Completo
             </label>
             {isEditing ? (
@@ -254,10 +265,10 @@ const SimpatizanteDetail = () => {
                 onChange={(e) =>
                   setEditedData({ ...editedData, nombre: e.target.value })
                 }
-                className="rounded-lg"
+                className="h-12 text-base rounded-xl border-2 border-gray-200 focus:border-slate-400"
               />
             ) : (
-              <p className="text-gray-800 bg-gray-50 p-3 rounded-lg">
+              <p className="text-gray-800 bg-gray-50 p-4 rounded-xl text-base">
                 {simpatizante.nombre}
               </p>
             )}
@@ -265,8 +276,8 @@ const SimpatizanteDetail = () => {
 
           {/* Phone */}
           <div>
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-              <Phone className="w-4 h-4" />
+            <label className="text-base font-semibold text-gray-700 flex items-center gap-3 mb-3">
+              <Phone className="w-5 h-5" />
               Teléfono
             </label>
             {isEditing ? (
@@ -275,10 +286,10 @@ const SimpatizanteDetail = () => {
                 onChange={(e) =>
                   setEditedData({ ...editedData, telefono: e.target.value })
                 }
-                className="rounded-lg"
+                className="h-12 text-base rounded-xl border-2 border-gray-200 focus:border-slate-400"
               />
             ) : (
-              <p className="text-gray-800 bg-gray-50 p-3 rounded-lg">
+              <p className="text-gray-800 bg-gray-50 p-4 rounded-xl text-base">
                 {simpatizante.telefono || "No registrado"}
               </p>
             )}
@@ -286,8 +297,8 @@ const SimpatizanteDetail = () => {
 
           {/* Notes */}
           <div>
-            <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4" />
+            <label className="text-base font-semibold text-gray-700 flex items-center gap-3 mb-3">
+              <FileText className="w-5 h-5" />
               Notas
             </label>
             {isEditing ? (
@@ -296,24 +307,24 @@ const SimpatizanteDetail = () => {
                 onChange={(e) =>
                   setEditedData({ ...editedData, notas: e.target.value })
                 }
-                className="rounded-lg min-h-[100px]"
+                className="rounded-xl min-h-[120px] text-base border-2 border-gray-200 focus:border-slate-400"
                 placeholder="Agregar notas sobre el simpatizante..."
               />
             ) : (
-              <p className="text-gray-800 bg-gray-50 p-3 rounded-lg min-h-[100px]">
+              <p className="text-gray-800 bg-gray-50 p-4 rounded-xl min-h-[120px] text-base">
                 {simpatizante.notas || "Sin notas adicionales"}
               </p>
             )}
           </div>
 
           {/* Registration Date */}
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-gray-500" />
+          <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
+            <Calendar className="w-6 h-6 text-blue-600" />
             <div>
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-base font-semibold text-gray-700">
                 Fecha de Registro
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-base">
                 {new Date(simpatizante.fechaRegistro).toLocaleDateString(
                   "es-ES",
                   {
@@ -329,18 +340,20 @@ const SimpatizanteDetail = () => {
       </Card>
 
       {/* Registration Info */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
-        <CardHeader className="px-3 sm:px-6">
-          <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
+      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="px-4 md:px-8 py-6">
+          <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
             Información de Registro
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-3 sm:px-6">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Fecha de registro:</span>
-              <Badge variant="outline">
+        <CardContent className="px-4 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-3 p-4 bg-gray-50 rounded-xl">
+              <span className="text-base font-semibold text-gray-700">Fecha de registro:</span>
+              <Badge variant="outline" className="text-base px-4 py-2 w-fit">
                 {new Date(simpatizante.fechaRegistro).toLocaleDateString(
                   "es-ES",
                   {
@@ -351,13 +364,13 @@ const SimpatizanteDetail = () => {
                 )}
               </Badge>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
+            <div className="flex flex-col gap-3 p-4 bg-blue-50 rounded-xl">
+              <span className="text-base font-semibold text-gray-700">
                 Días desde registro:
               </span>
               <Badge
                 variant="outline"
-                className="bg-blue-50 text-blue-700 border-blue-200"
+                className="bg-blue-100 text-blue-700 border-blue-300 text-base px-4 py-2 w-fit"
               >
                 {Math.floor(
                   (new Date().getTime() -
@@ -372,23 +385,24 @@ const SimpatizanteDetail = () => {
       </Card>
 
       {/* Action Buttons */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {simpatizante.telefono && (
           <Button
-            className="w-full bg-slate-600 hover:bg-slate-700 text-white rounded-xl py-3"
+            className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold h-14 md:h-16"
             onClick={() => window.open(`tel:${simpatizante.telefono}`, "_self")}
           >
-            <Phone className="w-5 h-5 mr-2" />
+            <Phone className="w-5 h-5 md:w-6 md:h-6 mr-3" />
             Llamar
           </Button>
         )}
 
-        <div className="flex gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button
             variant="outline"
-            className="flex-1 rounded-xl py-3 bg-transparent"
+            className="w-full rounded-xl py-4 md:py-5 bg-transparent h-14 md:h-16 text-base md:text-lg font-semibold"
             onClick={() => router.back()}
           >
+            <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 mr-2" />
             Volver a la Lista
           </Button>
 
@@ -396,27 +410,34 @@ const SimpatizanteDetail = () => {
             <AlertDialogTrigger asChild>
               <Button
                 variant="destructive"
-                className="flex-1 rounded-xl py-3"
+                className="w-full rounded-xl py-4 md:py-5 h-14 md:h-16 text-base md:text-lg font-semibold"
                 disabled={isDeleting}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-5 h-5 md:w-6 md:h-6 mr-2" />
                 {isDeleting ? "Eliminando..." : "Eliminar"}
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Eliminar simpatizante?</AlertDialogTitle>
-                <AlertDialogDescription>
+            <AlertDialogContent className="sm:max-w-md">
+              <AlertDialogHeader className="text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <AlertDialogTitle className="text-xl font-bold text-gray-800">
+                  ¿Eliminar simpatizante?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-base text-gray-600 mt-2">
                   Esta acción no se puede deshacer. Se eliminará permanentemente
-                  la información de <strong>{simpatizante.nombre}</strong> de la
+                  la información de <strong className="text-gray-800">{simpatizante.nombre}</strong> de la
                   base de datos.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-6">
+                <AlertDialogCancel className="w-full sm:w-auto h-12 text-base font-semibold rounded-xl">
+                  Cancelar
+                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 h-12 text-base font-semibold rounded-xl"
                 >
                   Eliminar
                 </AlertDialogAction>
