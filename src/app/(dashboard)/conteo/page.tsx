@@ -2,20 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { usePersistentConteo } from "@/hooks/use-persistent-conteo";
-
+import type { Simpatizante } from "@/app/(dashboard)/simpatizantes/page"; // Importar la interfaz Simpatizante
+// TODO: Crear opcion de poner hermanos apartados
+// TODO: Arreglar modal para agregar simpatizante
 // Interfaces para los tipos de datos
-interface Simpatizante {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-}
 
 interface Miembro {
   id: string;
   nombre: string;
   telefono?: string;
+  notas?: string;
   categoria: "hermano" | "hermana" | "nino" | "adolescente";
 }
 
@@ -90,10 +86,12 @@ import { toast } from "sonner";
 
 export default function ConteoPage() {
   // Hook persistente para el conteo
-  const { conteoState, updateConteo, clearDayData, isLoaded } = usePersistentConteo();
+  const { conteoState, updateConteo, clearDayData, isLoaded } =
+    usePersistentConteo();
 
   // Estados locales que no necesitan persistencia
-  const [datosServicioBase, setDatosServicioBase] = useState<DatosServicioBase | null>(null);
+  const [datosServicioBase, setDatosServicioBase] =
+    useState<DatosServicioBase | null>(null);
   const [editingCounter, setEditingCounter] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -108,23 +106,27 @@ export default function ConteoPage() {
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
   const [showContinuarDialog, setShowContinuarDialog] = useState(false);
-  
+
   // Estados para selección múltiple de miembros
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  
+
   // Estados para búsqueda de simpatizantes
-  const [searchSimpatizantesDebounce, setSearchSimpatizantesDebounce] = useState("");
-  
+  const [searchSimpatizantesDebounce, setSearchSimpatizantesDebounce] =
+    useState("");
+
   // Estados para búsqueda de asistentes
   const [searchAsistentes, setSearchAsistentes] = useState("");
   const [searchAsistentesDebounce, setSearchAsistentesDebounce] = useState("");
-  
+
   // Estados para búsqueda de miembros (mejorada)
   const [searchMiembrosLocal, setSearchMiembrosLocal] = useState("");
-  const [searchMiembrosLocalDebounce, setSearchMiembrosLocalDebounce] = useState("");
-  
+  const [searchMiembrosLocalDebounce, setSearchMiembrosLocalDebounce] =
+    useState("");
+
   // Estados para selección múltiple de simpatizantes
-  const [selectedSimpatizantes, setSelectedSimpatizantes] = useState<string[]>([]);
+  const [selectedSimpatizantes, setSelectedSimpatizantes] = useState<string[]>(
+    []
+  );
 
   // Estados para datos de Firebase
   const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
@@ -158,17 +160,18 @@ export default function ConteoPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [simpatizantesData, miembrosData, ujieresData] = await Promise.all([
-          fetchSimpatizantes(),
-          fetchMiembros(),
-          fetchUjieres(),
-        ]);
+        const [simpatizantesData, miembrosData, ujieresData] =
+          await Promise.all([
+            fetchSimpatizantes(),
+            fetchMiembros(),
+            fetchUjieres(),
+          ]);
         setSimpatizantes(simpatizantesData);
         setMiembros(miembrosData);
         // Extraer solo los nombres de los ujieres activos
         const nombresUjieres = ujieresData
-          .filter(ujier => ujier.activo)
-          .map(ujier => ujier.nombre)
+          .filter((ujier) => ujier.activo)
+          .map((ujier) => ujier.nombre)
           .sort();
         setUjieres(nombresUjieres);
       } catch (error) {
@@ -194,12 +197,12 @@ export default function ConteoPage() {
         hermanosDelDia: datosServicioBase.miembrosAsistieron?.hermanos || [],
         hermanasDelDia: datosServicioBase.miembrosAsistieron?.hermanas || [],
         ninosDelDia: datosServicioBase.miembrosAsistieron?.ninos || [],
-        adolescentesDelDia: datosServicioBase.miembrosAsistieron?.adolescentes || [],
+        adolescentesDelDia:
+          datosServicioBase.miembrosAsistieron?.adolescentes || [],
         tipoServicio: "dominical", // Forzar a dominical
       });
     }
   }, [conteoState.modoConsecutivo, datosServicioBase, updateConteo]);
-
 
   // Efecto para debounce de búsqueda de simpatizantes
   useEffect(() => {
@@ -233,7 +236,7 @@ export default function ConteoPage() {
   const saveCounterEdit = () => {
     const newValue = Number.parseInt(tempValue) || 0;
     const updates: Partial<typeof conteoState> = {};
-    
+
     switch (editingCounter) {
       case "hermanos":
         updates.hermanos = newValue;
@@ -251,32 +254,37 @@ export default function ConteoPage() {
         updates.simpatizantesCount = newValue;
         break;
     }
-    
+
     updateConteo(updates);
     setEditingCounter(null);
     setTempValue("");
   };
 
-
   const addNewSimpatizante = async () => {
     if (newSimpatizante.nombre.trim()) {
       try {
-        // Agregar a Firebase
-        const nuevoSimpatizante = await addSimpatizante({
+        // Agregar a Firebase (devuelve { id })
+        const result = await addSimpatizante({
           ...newSimpatizante,
           fechaRegistro: new Date().toISOString().split("T")[0],
         });
 
+        // Construir el objeto completo del simpatizante usando el id devuelto
+        const creado: Simpatizante = {
+          id: (result as { id: string }).id,
+          nombre: newSimpatizante.nombre,
+          telefono: newSimpatizante.telefono,
+          notas: newSimpatizante.notas,
+          fechaRegistro: new Date().toISOString().split("T")[0],
+        };
+
         // Agregar a la lista del día
         updateConteo({
-          simpatizantesDelDia: [...conteoState.simpatizantesDelDia, nuevoSimpatizante as Simpatizante]
+          simpatizantesDelDia: [...conteoState.simpatizantesDelDia, creado],
         });
 
         // Actualizar la lista de simpatizantes disponibles
-        setSimpatizantes((prev) => [
-          ...prev,
-          nuevoSimpatizante as Simpatizante,
-        ]);
+        setSimpatizantes((prev) => [...prev, creado]);
 
         // Limpiar formulario
         setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
@@ -292,15 +300,15 @@ export default function ConteoPage() {
 
   const removeSimpatizanteDelDia = (simpatizanteId: string) => {
     updateConteo({
-      simpatizantesDelDia: conteoState.simpatizantesDelDia.filter((s) => s.id !== simpatizanteId)
+      simpatizantesDelDia: conteoState.simpatizantesDelDia.filter(
+        (s) => s.id !== simpatizanteId
+      ),
     });
   };
 
-
-
   const removeMiembroDelDia = (miembroId: string, categoria: string) => {
     let currentList: MiembroSimplificado[] = [];
-    
+
     switch (categoria) {
       case "hermanos":
         currentList = conteoState.hermanosDelDia;
@@ -315,20 +323,28 @@ export default function ConteoPage() {
         currentList = conteoState.adolescentesDelDia;
         break;
     }
-    
+
     const updates: Partial<typeof conteoState> = {};
     switch (categoria) {
       case "hermanos":
-        updates.hermanosDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        updates.hermanosDelDia = currentList.filter(
+          (m: MiembroSimplificado) => m.id !== miembroId
+        );
         break;
       case "hermanas":
-        updates.hermanasDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        updates.hermanasDelDia = currentList.filter(
+          (m: MiembroSimplificado) => m.id !== miembroId
+        );
         break;
       case "ninos":
-        updates.ninosDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        updates.ninosDelDia = currentList.filter(
+          (m: MiembroSimplificado) => m.id !== miembroId
+        );
         break;
       case "adolescentes":
-        updates.adolescentesDelDia = currentList.filter((m: MiembroSimplificado) => m.id !== miembroId);
+        updates.adolescentesDelDia = currentList.filter(
+          (m: MiembroSimplificado) => m.id !== miembroId
+        );
         break;
     }
 
@@ -344,27 +360,30 @@ export default function ConteoPage() {
 
   // Funciones para selección múltiple
   const toggleMemberSelection = (memberId: string) => {
-    setSelectedMembers(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId)
+    setSelectedMembers((prev) =>
+      prev.includes(memberId)
+        ? prev.filter((id) => id !== memberId)
         : [...prev, memberId]
     );
   };
 
   const selectAllAvailableMembers = () => {
     const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
-    const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
+    const currentList =
+      (conteoState[
+        `${categoriaSeleccionada}DelDia` as keyof typeof conteoState
+      ] as MiembroSimplificado[]) || [];
     const baseList = conteoState.modoConsecutivo
       ? datosServicioBase?.miembrosAsistieron?.[categoriaSeleccionada] || []
       : [];
 
     const availableIds = miembrosDisponibles
-      .filter(miembro => {
-        const noEstaEnActuales = !currentList.find(m => m.id === miembro.id);
-        const noEstaEnBase = !baseList.find(m => m.id === miembro.id);
+      .filter((miembro) => {
+        const noEstaEnActuales = !currentList.find((m) => m.id === miembro.id);
+        const noEstaEnBase = !baseList.find((m) => m.id === miembro.id);
         return noEstaEnActuales && noEstaEnBase;
       })
-      .map(miembro => miembro.id);
+      .map((miembro) => miembro.id);
 
     setSelectedMembers(availableIds);
   };
@@ -375,15 +394,21 @@ export default function ConteoPage() {
 
   const addSelectedMembers = () => {
     const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
-    const membersToAdd = miembrosDisponibles.filter(miembro => 
+    const membersToAdd = miembrosDisponibles.filter((miembro) =>
       selectedMembers.includes(miembro.id)
     );
 
     const updates: Partial<typeof conteoState> = {};
-    const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
-    
-    const newMembers = membersToAdd.map(miembro => ({ id: miembro.id, nombre: miembro.nombre }));
-    
+    const currentList =
+      (conteoState[
+        `${categoriaSeleccionada}DelDia` as keyof typeof conteoState
+      ] as MiembroSimplificado[]) || [];
+
+    const newMembers = membersToAdd.map((miembro) => ({
+      id: miembro.id,
+      nombre: miembro.nombre,
+    }));
+
     switch (categoriaSeleccionada) {
       case "hermanos":
         updates.hermanosDelDia = [...currentList, ...newMembers];
@@ -406,15 +431,17 @@ export default function ConteoPage() {
 
   // Funciones para selección múltiple de simpatizantes
   const toggleSimpatizanteSelection = (simpatizanteId: string) => {
-    setSelectedSimpatizantes(prev => 
-      prev.includes(simpatizanteId) 
-        ? prev.filter(id => id !== simpatizanteId)
+    setSelectedSimpatizantes((prev) =>
+      prev.includes(simpatizanteId)
+        ? prev.filter((id) => id !== simpatizanteId)
         : [...prev, simpatizanteId]
     );
   };
 
   const selectAllAvailableSimpatizantes = () => {
-    const availableIds = filteredSimpatizantes.map(simpatizante => simpatizante.id);
+    const availableIds = filteredSimpatizantes.map(
+      (simpatizante) => simpatizante.id
+    );
     setSelectedSimpatizantes(availableIds);
   };
 
@@ -423,16 +450,21 @@ export default function ConteoPage() {
   };
 
   const addSelectedSimpatizantes = () => {
-    const simpatizantesToAdd = filteredSimpatizantes.filter(simpatizante => 
+    const simpatizantesToAdd = filteredSimpatizantes.filter((simpatizante) =>
       selectedSimpatizantes.includes(simpatizante.id)
     );
 
     updateConteo({
-      simpatizantesDelDia: [...conteoState.simpatizantesDelDia, ...simpatizantesToAdd]
+      simpatizantesDelDia: [
+        ...conteoState.simpatizantesDelDia,
+        ...simpatizantesToAdd,
+      ],
     });
-    
+
     setSelectedSimpatizantes([]);
-    toast.success(`${simpatizantesToAdd.length} simpatizantes agregados exitosamente`);
+    toast.success(
+      `${simpatizantesToAdd.length} simpatizantes agregados exitosamente`
+    );
   };
 
   const getMiembrosPorCategoria = (categoria: string) => {
@@ -490,9 +522,15 @@ export default function ConteoPage() {
     }
 
     // Calcular totales, sumando la base si estamos en modo consecutivo
-    const baseHermanos = conteoState.modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0;
-    const baseHermanas = conteoState.modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0;
-    const baseNinos = conteoState.modoConsecutivo ? datosServicioBase?.ninos || 0 : 0;
+    const baseHermanos = conteoState.modoConsecutivo
+      ? datosServicioBase?.hermanos || 0
+      : 0;
+    const baseHermanas = conteoState.modoConsecutivo
+      ? datosServicioBase?.hermanas || 0
+      : 0;
+    const baseNinos = conteoState.modoConsecutivo
+      ? datosServicioBase?.ninos || 0
+      : 0;
     const baseAdolescentes = conteoState.modoConsecutivo
       ? datosServicioBase?.adolescentes || 0
       : 0;
@@ -501,17 +539,25 @@ export default function ConteoPage() {
       : 0;
 
     const totalSimpatizantes =
-      conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length + baseSimpatizantes;
-    const totalHermanos = conteoState.hermanos + conteoState.hermanosDelDia.length + baseHermanos;
-    const totalHermanas = conteoState.hermanas + conteoState.hermanasDelDia.length + baseHermanas;
-    const totalNinos = conteoState.ninos + conteoState.ninosDelDia.length + baseNinos;
+      conteoState.simpatizantesCount +
+      conteoState.simpatizantesDelDia.length +
+      baseSimpatizantes;
+    const totalHermanos =
+      conteoState.hermanos + conteoState.hermanosDelDia.length + baseHermanos;
+    const totalHermanas =
+      conteoState.hermanas + conteoState.hermanasDelDia.length + baseHermanas;
+    const totalNinos =
+      conteoState.ninos + conteoState.ninosDelDia.length + baseNinos;
     const totalAdolescentes =
-      conteoState.adolescentes + conteoState.adolescentesDelDia.length + baseAdolescentes;
+      conteoState.adolescentes +
+      conteoState.adolescentesDelDia.length +
+      baseAdolescentes;
 
     const conteoData = {
       fecha: conteoState.fecha,
       servicio:
-        servicios.find((s) => s.value === conteoState.tipoServicio)?.label || conteoState.tipoServicio,
+        servicios.find((s) => s.value === conteoState.tipoServicio)?.label ||
+        conteoState.tipoServicio,
       ujier: ujieresFinal, // Ahora es un array
       hermanos: totalHermanos,
       hermanas: totalHermanas,
@@ -528,32 +574,47 @@ export default function ConteoPage() {
         ...(conteoState.modoConsecutivo
           ? datosServicioBase?.simpatizantesAsistieron || []
           : []),
-        ...conteoState.simpatizantesDelDia.map((s) => ({ id: s.id, nombre: s.nombre })),
+        ...conteoState.simpatizantesDelDia.map((s) => ({
+          id: s.id,
+          nombre: s.nombre,
+        })),
       ],
       miembrosAsistieron: {
         hermanos: [
           ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.hermanos || []
             : []),
-          ...conteoState.hermanosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.hermanosDelDia.map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+          })),
         ],
         hermanas: [
           ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.hermanas || []
             : []),
-          ...conteoState.hermanasDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.hermanasDelDia.map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+          })),
         ],
         ninos: [
           ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.ninos || []
             : []),
-          ...conteoState.ninosDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.ninosDelDia.map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+          })),
         ],
         adolescentes: [
           ...(conteoState.modoConsecutivo
             ? datosServicioBase?.miembrosAsistieron?.adolescentes || []
             : []),
-          ...conteoState.adolescentesDelDia.map((m) => ({ id: m.id, nombre: m.nombre })),
+          ...conteoState.adolescentesDelDia.map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+          })),
         ],
       },
     };
@@ -562,7 +623,8 @@ export default function ConteoPage() {
     const fechaObj = new Date(conteoState.fecha + "T12:00:00"); // Add time to avoid timezone issues
     const esDomingo = fechaObj.getDay() === 0;
     const esServicioBase =
-      conteoState.tipoServicio === "evangelismo" || conteoState.tipoServicio === "misionero";
+      conteoState.tipoServicio === "evangelismo" ||
+      conteoState.tipoServicio === "misionero";
 
     try {
       if (esDomingo && esServicioBase && !conteoState.modoConsecutivo) {
@@ -593,7 +655,7 @@ export default function ConteoPage() {
   const continuarConDominical = () => {
     updateConteo({
       modoConsecutivo: true,
-      tipoServicio: "dominical"
+      tipoServicio: "dominical",
     });
     setShowContinuarDialog(false);
     // Los contadores y listas ya se habrán cargado desde datosServicioBase en el useEffect
@@ -608,10 +670,11 @@ export default function ConteoPage() {
     toast.success("Conteo guardado exitosamente");
   };
 
-
   const filteredSimpatizantes = simpatizantes.filter(
     (s) =>
-      s.nombre.toLowerCase().includes(searchSimpatizantesDebounce.toLowerCase()) &&
+      s.nombre
+        .toLowerCase()
+        .includes(searchSimpatizantesDebounce.toLowerCase()) &&
       !conteoState.simpatizantesDelDia.find((sd) => sd.id === s.id)
   );
 
@@ -621,88 +684,90 @@ export default function ConteoPage() {
       id: string;
       nombre: string;
       categoria: string;
-      tipo: 'miembro' | 'simpatizante';
+      tipo: "miembro" | "simpatizante";
       esBase?: boolean;
     }> = [];
 
     // Agregar miembros base (si aplica)
     if (conteoState.modoConsecutivo && datosServicioBase) {
-      Object.keys(datosServicioBase.miembrosAsistieron).forEach(catKey => {
+      Object.keys(datosServicioBase.miembrosAsistieron).forEach((catKey) => {
         const members = datosServicioBase.miembrosAsistieron[catKey];
         members.forEach((miembro: MiembroSimplificado) => {
           asistentes.push({
             id: `base-${miembro.id}`,
             nombre: miembro.nombre,
             categoria: catKey,
-            tipo: 'miembro',
-            esBase: true
+            tipo: "miembro",
+            esBase: true,
           });
         });
       });
 
       // Agregar simpatizantes base
       if (datosServicioBase.simpatizantesAsistieron) {
-        datosServicioBase.simpatizantesAsistieron.forEach((simpatizante: MiembroSimplificado) => {
-          asistentes.push({
-            id: `base-simpatizante-${simpatizante.id}`,
-            nombre: simpatizante.nombre,
-            categoria: 'simpatizantes',
-            tipo: 'simpatizante',
-            esBase: true
-          });
-        });
+        datosServicioBase.simpatizantesAsistieron.forEach(
+          (simpatizante: MiembroSimplificado) => {
+            asistentes.push({
+              id: `base-simpatizante-${simpatizante.id}`,
+              nombre: simpatizante.nombre,
+              categoria: "simpatizantes",
+              tipo: "simpatizante",
+              esBase: true,
+            });
+          }
+        );
       }
     }
 
     // Agregar miembros de esta sesión
-    conteoState.hermanosDelDia.forEach(miembro => {
+    conteoState.hermanosDelDia.forEach((miembro) => {
       asistentes.push({
         id: miembro.id,
         nombre: miembro.nombre,
-        categoria: 'hermanos',
-        tipo: 'miembro',
-        esBase: false
+        categoria: "hermanos",
+        tipo: "miembro",
+        esBase: false,
       });
     });
 
-    conteoState.hermanasDelDia.forEach(miembro => {
+    conteoState.hermanasDelDia.forEach((miembro) => {
       asistentes.push({
         id: miembro.id,
         nombre: miembro.nombre,
-        categoria: 'hermanas',
-        tipo: 'miembro',
-        esBase: false
+        categoria: "hermanas",
+        tipo: "miembro",
+        esBase: false,
       });
     });
 
-    conteoState.ninosDelDia.forEach(miembro => {
+    conteoState.ninosDelDia.forEach((miembro) => {
       asistentes.push({
         id: miembro.id,
         nombre: miembro.nombre,
-        categoria: 'ninos',
-        tipo: 'miembro',
-        esBase: false
+        categoria: "ninos",
+        tipo: "miembro",
+        esBase: false,
       });
     });
 
-    conteoState.adolescentesDelDia.forEach(miembro => {
+    conteoState.adolescentesDelDia.forEach((miembro) => {
       asistentes.push({
         id: miembro.id,
         nombre: miembro.nombre,
-        categoria: 'adolescentes',
-        tipo: 'miembro',
-        esBase: false
+        categoria: "adolescentes",
+        tipo: "miembro",
+        esBase: false,
       });
     });
 
     // Agregar simpatizantes de esta sesión
-    conteoState.simpatizantesDelDia.forEach(simpatizante => {
+    conteoState.simpatizantesDelDia.forEach((simpatizante) => {
       asistentes.push({
         id: simpatizante.id,
         nombre: simpatizante.nombre,
-        categoria: 'simpatizantes',
-        tipo: 'simpatizante',
-        esBase: false
+        categoria: "simpatizantes",
+        tipo: "simpatizante",
+        esBase: false,
       });
     });
 
@@ -710,17 +775,22 @@ export default function ConteoPage() {
   };
 
   // Filtrar asistentes por búsqueda
-  const filteredAsistentes = getAllAsistentes().filter(asistente =>
-    asistente.nombre.toLowerCase().includes(searchAsistentesDebounce.toLowerCase())
+  const filteredAsistentes = getAllAsistentes().filter((asistente) =>
+    asistente.nombre
+      .toLowerCase()
+      .includes(searchAsistentesDebounce.toLowerCase())
   );
 
   // Calcular el total de asistentes incluyendo la base si estamos en modo consecutivo
   const totalSimpatizantesActual =
     conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length;
-  const totalHermanosActual = conteoState.hermanos + conteoState.hermanosDelDia.length;
-  const totalHermanasActual = conteoState.hermanas + conteoState.hermanasDelDia.length;
+  const totalHermanosActual =
+    conteoState.hermanos + conteoState.hermanosDelDia.length;
+  const totalHermanasActual =
+    conteoState.hermanas + conteoState.hermanasDelDia.length;
   const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length;
-  const totalAdolescentesActual = conteoState.adolescentes + conteoState.adolescentesDelDia.length;
+  const totalAdolescentesActual =
+    conteoState.adolescentes + conteoState.adolescentesDelDia.length;
 
   const total =
     totalHermanosActual +
@@ -738,7 +808,9 @@ export default function ConteoPage() {
       color: "bg-slate-600",
       miembrosDelDia: conteoState.hermanosDelDia,
       categoria: "hermanos",
-      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.hermanos || 0 : 0,
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.hermanos || 0
+        : 0,
       baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.hermanos || []
         : [],
@@ -751,7 +823,9 @@ export default function ConteoPage() {
       color: "bg-rose-600",
       miembrosDelDia: conteoState.hermanasDelDia,
       categoria: "hermanas",
-      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.hermanas || 0 : 0,
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.hermanas || 0
+        : 0,
       baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.hermanas || []
         : [],
@@ -764,7 +838,9 @@ export default function ConteoPage() {
       color: "bg-amber-600",
       miembrosDelDia: conteoState.ninosDelDia,
       categoria: "ninos",
-      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.ninos || 0 : 0,
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.ninos || 0
+        : 0,
       baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.ninos || []
         : [],
@@ -777,7 +853,9 @@ export default function ConteoPage() {
       color: "bg-purple-600",
       miembrosDelDia: conteoState.adolescentesDelDia,
       categoria: "adolescentes",
-      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.adolescentes || 0 : 0,
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.adolescentes || 0
+        : 0,
       baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.miembrosAsistieron?.adolescentes || []
         : [],
@@ -789,7 +867,9 @@ export default function ConteoPage() {
       setter: (value: number) => updateConteo({ simpatizantesCount: value }),
       color: "bg-emerald-600",
       categoria: "simpatizantes",
-      baseValue: conteoState.modoConsecutivo ? datosServicioBase?.simpatizantes || 0 : 0,
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.simpatizantes || 0
+        : 0,
       baseMiembros: conteoState.modoConsecutivo
         ? datosServicioBase?.simpatizantesAsistieron || []
         : [],
@@ -830,26 +910,46 @@ export default function ConteoPage() {
 
           {/* Campos editables */}
           <div className="space-y-3 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+                <label
+                  htmlFor="fecha-input"
+                  className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
                   Fecha
                 </label>
                 <Input
+                  id="fecha-input"
                   type="date"
                   value={conteoState.fecha}
                   onChange={(e) => updateConteo({ fecha: e.target.value })}
-                  className="h-8 sm:h-9 text-xs sm:text-sm"
+                  className="h-10 md:h-12 text-sm md:text-base"
+                  aria-describedby="fecha-help"
                 />
+                <div id="fecha-help" className="text-xs text-gray-500 mt-1">
+                  Seleccione la fecha del servicio
+                </div>
               </div>
               <div>
-                <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
+                <label
+                  htmlFor="servicio-select"
+                  className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
+                >
+                  <Clock className="w-4 h-4" />
                   Servicio
                 </label>
-                <Select value={conteoState.tipoServicio} onValueChange={(value) => updateConteo({ tipoServicio: value })}>
-                  <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
+                <Select
+                  value={conteoState.tipoServicio}
+                  onValueChange={(value) =>
+                    updateConteo({ tipoServicio: value })
+                  }
+                >
+                  <SelectTrigger
+                    id="servicio-select"
+                    className="h-10 md:h-12 text-sm md:text-base"
+                    aria-describedby="servicio-help"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -860,12 +960,18 @@ export default function ConteoPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <div id="servicio-help" className="text-xs text-gray-500 mt-1">
+                  Tipo de servicio a registrar
+                </div>
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-gray-600 mb-1 flex items-center gap-1">
-                <User className="w-3 h-3" />
+              <label
+                htmlFor="ujier-select"
+                className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
                 Ujier(es) -{" "}
                 {conteoState.selectedUjieres.length > 0
                   ? `${conteoState.selectedUjieres.length} seleccionados`
@@ -891,12 +997,12 @@ export default function ConteoPage() {
                             (u) => u !== ujier
                           );
                           updateConteo({ selectedUjieres: remaining });
-                          
+
                           // Actualizar ujierSeleccionado y ujierPersonalizado
                           if (remaining.length === 0) {
-                            updateConteo({ 
+                            updateConteo({
                               ujierSeleccionado: "",
-                              ujierPersonalizado: ""
+                              ujierPersonalizado: "",
                             });
                           } else if (
                             remaining.length === 1 &&
@@ -904,12 +1010,12 @@ export default function ConteoPage() {
                           ) {
                             updateConteo({
                               ujierSeleccionado: remaining[0],
-                              ujierPersonalizado: ""
+                              ujierPersonalizado: "",
                             });
                           } else {
                             updateConteo({
                               ujierSeleccionado: "otro",
-                              ujierPersonalizado: remaining.join(", ")
+                              ujierPersonalizado: remaining.join(", "),
                             });
                           }
                         }}
@@ -931,38 +1037,53 @@ export default function ConteoPage() {
                     if (nuevoUjier && nuevoUjier.trim()) {
                       const ujierLimpio = nuevoUjier.trim();
                       if (!conteoState.selectedUjieres.includes(ujierLimpio)) {
-                        const nuevosUjieres = [...conteoState.selectedUjieres, ujierLimpio];
+                        const nuevosUjieres = [
+                          ...conteoState.selectedUjieres,
+                          ujierLimpio,
+                        ];
                         updateConteo({
                           selectedUjieres: nuevosUjieres,
                           ujierSeleccionado: "otro",
-                          ujierPersonalizado: nuevosUjieres.join(", ")
+                          ujierPersonalizado: nuevosUjieres.join(", "),
                         });
                       }
                     }
-                  } else if (value && !conteoState.selectedUjieres.includes(value)) {
-                    const nuevosUjieres = [...conteoState.selectedUjieres, value];
+                  } else if (
+                    value &&
+                    !conteoState.selectedUjieres.includes(value)
+                  ) {
+                    const nuevosUjieres = [
+                      ...conteoState.selectedUjieres,
+                      value,
+                    ];
                     updateConteo({ selectedUjieres: nuevosUjieres });
                     if (nuevosUjieres.length === 1) {
                       updateConteo({
                         ujierSeleccionado: value,
-                        ujierPersonalizado: ""
+                        ujierPersonalizado: "",
                       });
                     } else {
                       updateConteo({
                         ujierSeleccionado: "otro",
-                        ujierPersonalizado: nuevosUjieres.join(", ")
+                        ujierPersonalizado: nuevosUjieres.join(", "),
                       });
                     }
                   }
                 }}
               >
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger
+                  id="ujier-select"
+                  className="h-10 md:h-12 text-sm md:text-base"
+                  aria-describedby="ujier-help"
+                >
                   <SelectValue placeholder="+ Agregar ujier" />
                 </SelectTrigger>
                 <SelectContent className="max-h-48">
                   {ujieres.length > 0 ? (
                     ujieres
-                      .filter((ujier) => !conteoState.selectedUjieres.includes(ujier))
+                      .filter(
+                        (ujier) => !conteoState.selectedUjieres.includes(ujier)
+                      )
                       .map((ujier) => (
                         <SelectItem key={ujier} value={ujier}>
                           {ujier}
@@ -978,22 +1099,26 @@ export default function ConteoPage() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <div id="ujier-help" className="text-xs text-gray-500 mt-1">
+                Seleccione los ujieres que participaron en el servicio
+              </div>
 
               {/* Botón para limpiar selección */}
               {conteoState.selectedUjieres.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full mt-2 text-xs bg-transparent border-red-200 text-red-600 hover:bg-red-50"
+                  className="w-full mt-2 text-sm bg-transparent border-red-200 text-red-600 hover:bg-red-50 h-10"
                   onClick={() => {
                     updateConteo({
                       selectedUjieres: [],
                       ujierSeleccionado: "",
-                      ujierPersonalizado: ""
+                      ujierPersonalizado: "",
                     });
                   }}
+                  aria-label="Limpiar selección de ujieres"
                 >
-                  <Trash2 className="w-3 h-3 mr-1" />
+                  <Trash2 className="w-4 h-4 mr-2" />
                   Limpiar selección
                 </Button>
               )}
@@ -1005,9 +1130,13 @@ export default function ConteoPage() {
               variant="outline"
               className="bg-slate-50 text-slate-700 border-slate-200"
             >
-              {servicios.find((s) => s.value === conteoState.tipoServicio)?.label}
+              {
+                servicios.find((s) => s.value === conteoState.tipoServicio)
+                  ?.label
+              }
             </Badge>
-            {conteoState.ujierSeleccionado === "otro" && conteoState.ujierPersonalizado ? (
+            {conteoState.ujierSeleccionado === "otro" &&
+            conteoState.ujierPersonalizado ? (
               conteoState.ujierPersonalizado.split(",").map((name, index) => (
                 <Badge
                   key={index}
@@ -1017,7 +1146,8 @@ export default function ConteoPage() {
                   {name.trim()}
                 </Badge>
               ))
-            ) : conteoState.ujierSeleccionado && conteoState.ujierSeleccionado !== "otro" ? (
+            ) : conteoState.ujierSeleccionado &&
+              conteoState.ujierSeleccionado !== "otro" ? (
               <Badge
                 variant="outline"
                 className="bg-slate-50 text-slate-700 border-slate-200"
@@ -1036,7 +1166,10 @@ export default function ConteoPage() {
               <Calendar className="w-5 h-5" />
               <span className="font-semibold">
                 Modo Consecutivo:{" "}
-                {servicios.find((s) => s.value === conteoState.tipoServicio)?.label}
+                {
+                  servicios.find((s) => s.value === conteoState.tipoServicio)
+                    ?.label
+                }
               </span>
             </div>
             <div className="text-emerald-100 text-sm">
@@ -1084,14 +1217,15 @@ export default function ConteoPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                        className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                         onClick={() =>
                           counter.categoria === "simpatizantes"
                             ? setShowAddDialog(true)
                             : openMiembrosDialog(counter.categoria)
                         }
+                        aria-label={`Agregar ${counter.label}`}
                       >
-                        <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <UserPlus className="w-5 h-5 md:w-6 md:h-6" />
                       </Button>
                       {counter.miembrosDelDia.length +
                         counter.baseMiembros.length >
@@ -1107,12 +1241,13 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                    className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() =>
                       counter.setter(Math.max(0, counter.value - 1))
                     }
+                    aria-label={`Decrementar ${counter.label}`}
                   >
-                    <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Minus className="w-5 h-5 md:w-6 md:h-6" />
                   </Button>
 
                   {editingCounter === counter.key ? (
@@ -1120,21 +1255,23 @@ export default function ConteoPage() {
                       <Input
                         value={tempValue}
                         onChange={(e) => setTempValue(e.target.value)}
-                        className="w-16 sm:w-20 h-8 sm:h-10 text-center text-sm sm:text-base"
+                        className="w-20 md:w-24 h-10 md:h-12 text-center text-sm md:text-base"
                         type="number"
                         autoFocus
+                        aria-label={`Editar ${counter.label}`}
                       />
                       <Button
                         size="sm"
                         onClick={saveCounterEdit}
-                        className="h-8 sm:h-10 bg-slate-600 hover:bg-slate-700 text-sm px-3"
+                        className="h-10 md:h-12 bg-slate-600 hover:bg-slate-700 text-sm px-3"
+                        aria-label="Guardar cambios"
                       >
                         ✓
                       </Button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="text-xl sm:text-2xl font-bold w-8 sm:w-10 text-center min-w-0">
+                      <span className="text-xl md:text-2xl font-bold w-10 md:w-12 text-center min-w-0">
                         {counter.value +
                           counter.miembrosDelDia.length +
                           counter.baseValue +
@@ -1143,12 +1280,13 @@ export default function ConteoPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-6 h-6 sm:w-8 sm:h-8 p-0 hover:bg-gray-100 active:bg-gray-200"
+                        className="w-8 h-8 md:w-10 md:h-10 p-0 hover:bg-gray-100 active:bg-gray-200"
                         onClick={() =>
                           handleCounterEdit(counter.key, counter.value)
                         }
+                        aria-label={`Editar ${counter.label}`}
                       >
-                        <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
                       </Button>
                     </div>
                   )}
@@ -1156,10 +1294,11 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                    className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() => counter.setter(counter.value + 1)}
+                    aria-label={`Incrementar ${counter.label}`}
                   >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Plus className="w-5 h-5 md:w-6 md:h-6" />
                   </Button>
                 </div>
               </div>
@@ -1188,14 +1327,15 @@ export default function ConteoPage() {
                 0)))) && (
         <Button
           variant="outline"
-          className="w-full h-12 bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 active:bg-blue-100 rounded-xl py-4 shadow-lg text-base sm:text-lg font-semibold mb-4"
+          className="w-full h-12 md:h-14 bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 active:bg-blue-100 rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4"
           onClick={() => setShowAsistentesDialog(true)}
+          aria-label="Ver lista completa de asistentes"
         >
-          <Eye className="w-5 h-5 mr-2" />
+          <Eye className="w-5 h-5 md:w-6 md:h-6 mr-2" />
           <span className="flex-1 text-center">Ver Lista de Asistentes</span>
           <Badge
             variant="outline"
-            className="bg-blue-100 text-blue-700 border-blue-300 ml-2"
+            className="bg-blue-100 text-blue-700 border-blue-300 ml-2 text-sm"
           >
             {conteoState.hermanosDelDia.length +
               conteoState.hermanasDelDia.length +
@@ -1210,14 +1350,16 @@ export default function ConteoPage() {
               datosServicioBase?.miembrosAsistieron?.hermanas
                 ? datosServicioBase.miembrosAsistieron.hermanas.length
                 : 0) +
-              (conteoState.modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
+              (conteoState.modoConsecutivo &&
+              datosServicioBase?.miembrosAsistieron?.ninos
                 ? datosServicioBase.miembrosAsistieron.ninos.length
                 : 0) +
               (conteoState.modoConsecutivo &&
               datosServicioBase?.miembrosAsistieron?.adolescentes
                 ? datosServicioBase.miembrosAsistieron.adolescentes.length
                 : 0) +
-              (conteoState.modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
+              (conteoState.modoConsecutivo &&
+              datosServicioBase?.simpatizantesAsistieron
                 ? datosServicioBase.simpatizantesAsistieron.length
                 : 0)}
           </Badge>
@@ -1338,7 +1480,10 @@ export default function ConteoPage() {
                         </Badge>
                       )}
                       {searchTerm && (
-                        <Badge variant="outline" className="bg-gray-50 text-gray-700 text-xs">
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-50 text-gray-700 text-xs"
+                        >
                           Buscando
                         </Badge>
                       )}
@@ -1346,13 +1491,69 @@ export default function ConteoPage() {
                   </div>
                 </div>
 
+                {/* Simpatizantes ya agregados */}
+                {conteoState.simpatizantesDelDia.length > 0 && (
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" />
+                        Ya agregados ({conteoState.simpatizantesDelDia.length})
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
+                        onClick={() => {
+                          updateConteo({ simpatizantesDelDia: [] });
+                          toast.info("Simpatizantes eliminados");
+                        }}
+                        aria-label="Eliminar todos los simpatizantes agregados"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Limpiar
+                      </Button>
+                    </div>
+                    <div className="max-h-24 overflow-y-auto space-y-1 pr-1 border rounded-lg p-2 bg-green-50/50">
+                      {conteoState.simpatizantesDelDia.map((simpatizante) => (
+                        <div
+                          key={simpatizante.id}
+                          className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
+                        >
+                          <span className="text-green-800 truncate flex-1 min-w-0">
+                            {simpatizante.nombre}
+                            {simpatizante.telefono && (
+                              <span className="text-green-600 ml-2">
+                                📞 {simpatizante.telefono}
+                              </span>
+                            )}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 h-6 w-6 p-0 flex-shrink-0 ml-2"
+                            onClick={() =>
+                              removeSimpatizanteDelDia(simpatizante.id)
+                            }
+                            aria-label={`Eliminar ${simpatizante.nombre}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Lista de simpatizantes existentes con scroll mejorado */}
                 <div className="flex-1 overflow-hidden">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     Simpatizantes Disponibles
                     {filteredSimpatizantes.length > 0 && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 text-xs"
+                      >
                         {filteredSimpatizantes.length} encontrados
                       </Badge>
                     )}
@@ -1360,24 +1561,30 @@ export default function ConteoPage() {
                   <div className="h-80 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
                     {filteredSimpatizantes.length > 0 ? (
                       filteredSimpatizantes.map((simpatizante) => {
-                        const isSelected = selectedSimpatizantes.includes(simpatizante.id);
+                        const isSelected = selectedSimpatizantes.includes(
+                          simpatizante.id
+                        );
                         return (
                           <div
                             key={simpatizante.id}
                             className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 bg-white hover:shadow-sm ${
-                              isSelected 
-                                ? 'bg-blue-50 border-blue-300 shadow-sm' 
-                                : 'hover:bg-gray-50 active:bg-gray-100'
+                              isSelected
+                                ? "bg-blue-50 border-blue-300 shadow-sm"
+                                : "hover:bg-gray-50 active:bg-gray-100"
                             }`}
-                            onClick={() => toggleSimpatizanteSelection(simpatizante.id)}
+                            onClick={() =>
+                              toggleSimpatizanteSelection(simpatizante.id)
+                            }
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                                  isSelected 
-                                    ? 'bg-blue-600 border-blue-600' 
-                                    : 'border-gray-300'
-                                }`}>
+                                <div
+                                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                    isSelected
+                                      ? "bg-blue-600 border-blue-600"
+                                      : "border-gray-300"
+                                  }`}
+                                >
                                   {isSelected && (
                                     <CheckCircle className="w-3 h-3 text-white" />
                                   )}
@@ -1397,7 +1604,8 @@ export default function ConteoPage() {
                                     </div>
                                   )}
                                   <div className="text-xs text-gray-400 mt-1">
-                                    Registrado: {simpatizante.fechaRegistro || 'N/A'}
+                                    Registrado:{" "}
+                                    {simpatizante.fechaRegistro || "N/A"}
                                   </div>
                                 </div>
                               </div>
@@ -1406,8 +1614,8 @@ export default function ConteoPage() {
                                 size="sm"
                                 className={`flex-shrink-0 ml-2 transition-transform ${
                                   isSelected
-                                    ? 'bg-blue-100 border-blue-300 text-blue-700'
-                                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                                    ? "bg-blue-100 border-blue-300 text-blue-700"
+                                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200"
                                 }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1631,7 +1839,7 @@ export default function ConteoPage() {
                   Buscando: &ldquo;{searchMiembrosLocal}&rdquo;
                 </div>
               )}
-              
+
               {/* Controles de selección múltiple */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1673,7 +1881,10 @@ export default function ConteoPage() {
                     </Badge>
                   )}
                   {searchMiembrosLocal && (
-                    <Badge variant="outline" className="bg-gray-50 text-gray-700 text-xs">
+                    <Badge
+                      variant="outline"
+                      className="bg-gray-50 text-gray-700 text-xs"
+                    >
                       Buscando
                     </Badge>
                   )}
@@ -1687,23 +1898,43 @@ export default function ConteoPage() {
                 <Plus className="w-4 h-4" />
                 Disponibles para agregar
                 {(() => {
-                  const miembrosDisponibles = getMiembrosPorCategoria(categoriaSeleccionada);
-                  const currentList = conteoState[`${categoriaSeleccionada}DelDia` as keyof typeof conteoState] as MiembroSimplificado[] || [];
+                  const miembrosDisponibles = getMiembrosPorCategoria(
+                    categoriaSeleccionada
+                  );
+                  const currentList =
+                    (conteoState[
+                      `${categoriaSeleccionada}DelDia` as keyof typeof conteoState
+                    ] as MiembroSimplificado[]) || [];
                   const baseList = conteoState.modoConsecutivo
-                    ? datosServicioBase?.miembrosAsistieron?.[categoriaSeleccionada] || []
+                    ? datosServicioBase?.miembrosAsistieron?.[
+                        categoriaSeleccionada
+                      ] || []
                     : [];
-                  
-                  const filteredCount = miembrosDisponibles.filter(miembro => {
-                    const nombreMatch = miembro.nombre.toLowerCase().includes(searchMiembrosLocalDebounce.toLowerCase());
-                    const noEstaEnActuales = !currentList.find(m => m.id === miembro.id);
-                    const noEstaEnBase = !baseList.find(m => m.id === miembro.id);
-                    return nombreMatch && noEstaEnActuales && noEstaEnBase;
-                  }).length;
-                  
-                  return filteredCount > 0 && (
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
-                      {filteredCount} encontrados
-                    </Badge>
+
+                  const filteredCount = miembrosDisponibles.filter(
+                    (miembro) => {
+                      const nombreMatch = miembro.nombre
+                        .toLowerCase()
+                        .includes(searchMiembrosLocalDebounce.toLowerCase());
+                      const noEstaEnActuales = !currentList.find(
+                        (m) => m.id === miembro.id
+                      );
+                      const noEstaEnBase = !baseList.find(
+                        (m) => m.id === miembro.id
+                      );
+                      return nombreMatch && noEstaEnActuales && noEstaEnBase;
+                    }
+                  ).length;
+
+                  return (
+                    filteredCount > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 text-xs"
+                      >
+                        {filteredCount} encontrados
+                      </Badge>
+                    )
                   );
                 })()}
               </h4>
@@ -1770,18 +2001,20 @@ export default function ConteoPage() {
                       <div
                         key={miembro.id}
                         className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
-                          isSelected 
-                            ? 'bg-blue-50 border-blue-300 shadow-sm' 
-                            : 'hover:bg-gray-50 active:bg-gray-100'
+                          isSelected
+                            ? "bg-blue-50 border-blue-300 shadow-sm"
+                            : "hover:bg-gray-50 active:bg-gray-100"
                         }`}
                         onClick={() => toggleMemberSelection(miembro.id)}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                            isSelected 
-                              ? 'bg-blue-600 border-blue-600' 
-                              : 'border-gray-300'
-                          }`}>
+                          <div
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                              isSelected
+                                ? "bg-blue-600 border-blue-600"
+                                : "border-gray-300"
+                            }`}
+                          >
                             {isSelected && (
                               <CheckCircle className="w-3 h-3 text-white" />
                             )}
@@ -1795,6 +2028,11 @@ export default function ConteoPage() {
                                 {miembro.telefono}
                               </div>
                             )}
+                            {miembro.notas && (
+                              <div className="text-xs text-gray-400 mt-1 bg-gray-50 p-2 rounded">
+                                💬 {miembro.notas}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <Button
@@ -1802,8 +2040,8 @@ export default function ConteoPage() {
                           size="sm"
                           className={`flex-shrink-0 ml-2 transition-transform ${
                             isSelected
-                              ? 'bg-blue-100 border-blue-300 text-blue-700'
-                              : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
+                              ? "bg-blue-100 border-blue-300 text-blue-700"
+                              : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200"
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1967,7 +2205,7 @@ export default function ConteoPage() {
               </Badge>
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-hidden flex flex-col space-y-4">
             {/* Búsqueda de asistentes */}
             <div className="flex-shrink-0">
@@ -1994,23 +2232,35 @@ export default function ConteoPage() {
                   filteredAsistentes.map((asistente) => {
                     const getCategoriaColor = (categoria: string) => {
                       switch (categoria) {
-                        case 'hermanos': return 'bg-slate-50 border-slate-200 text-slate-700';
-                        case 'hermanas': return 'bg-rose-50 border-rose-200 text-rose-700';
-                        case 'ninos': return 'bg-amber-50 border-amber-200 text-amber-700';
-                        case 'adolescentes': return 'bg-purple-50 border-purple-200 text-purple-700';
-                        case 'simpatizantes': return 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                        default: return 'bg-gray-50 border-gray-200 text-gray-700';
+                        case "hermanos":
+                          return "bg-slate-50 border-slate-200 text-slate-700";
+                        case "hermanas":
+                          return "bg-rose-50 border-rose-200 text-rose-700";
+                        case "ninos":
+                          return "bg-amber-50 border-amber-200 text-amber-700";
+                        case "adolescentes":
+                          return "bg-purple-50 border-purple-200 text-purple-700";
+                        case "simpatizantes":
+                          return "bg-emerald-50 border-emerald-200 text-emerald-700";
+                        default:
+                          return "bg-gray-50 border-gray-200 text-gray-700";
                       }
                     };
 
                     const getCategoriaLabel = (categoria: string) => {
                       switch (categoria) {
-                        case 'hermanos': return 'Hermanos';
-                        case 'hermanas': return 'Hermanas';
-                        case 'ninos': return 'Niños';
-                        case 'adolescentes': return 'Adolescentes';
-                        case 'simpatizantes': return 'Simpatizantes';
-                        default: return categoria;
+                        case "hermanos":
+                          return "Hermanos";
+                        case "hermanas":
+                          return "Hermanas";
+                        case "ninos":
+                          return "Niños";
+                        case "adolescentes":
+                          return "Adolescentes";
+                        case "simpatizantes":
+                          return "Simpatizantes";
+                        default:
+                          return categoria;
                       }
                     };
 
@@ -2018,7 +2268,7 @@ export default function ConteoPage() {
                       <div
                         key={asistente.id}
                         className={`p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 ${
-                          asistente.esBase ? 'border-dashed' : 'border-solid'
+                          asistente.esBase ? "border-dashed" : "border-solid"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -2028,27 +2278,34 @@ export default function ConteoPage() {
                                 {asistente.nombre}
                               </span>
                               {asistente.esBase && (
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                                <Badge
+                                  variant="outline"
+                                  className="bg-blue-50 text-blue-700 text-xs"
+                                >
                                   Base
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs ${getCategoriaColor(asistente.categoria)}`}
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${getCategoriaColor(
+                                  asistente.categoria
+                                )}`}
                               >
                                 {getCategoriaLabel(asistente.categoria)}
                               </Badge>
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className={`text-xs ${
-                                  asistente.tipo === 'miembro' 
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                                    : 'bg-green-50 text-green-700 border-green-200'
+                                  asistente.tipo === "miembro"
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : "bg-green-50 text-green-700 border-green-200"
                                 }`}
                               >
-                                {asistente.tipo === 'miembro' ? 'Miembro' : 'Simpatizante'}
+                                {asistente.tipo === "miembro"
+                                  ? "Miembro"
+                                  : "Simpatizante"}
                               </Badge>
                             </div>
                           </div>
@@ -2058,8 +2315,11 @@ export default function ConteoPage() {
                               size="sm"
                               className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
                               onClick={() => {
-                                if (asistente.tipo === 'miembro') {
-                                  removeMiembroDelDia(asistente.id, asistente.categoria);
+                                if (asistente.tipo === "miembro") {
+                                  removeMiembroDelDia(
+                                    asistente.id,
+                                    asistente.categoria
+                                  );
                                 } else {
                                   removeSimpatizanteDelDia(asistente.id);
                                 }
@@ -2280,9 +2540,10 @@ export default function ConteoPage() {
       {/* Save Button */}
       <Button
         onClick={handleSaveConteo}
-        className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 sm:py-5 shadow-lg text-base sm:text-lg font-semibold mb-4"
+        className="w-full h-12 md:h-14 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4"
+        aria-label="Guardar conteo de asistencia"
       >
-        <Save className="w-5 h-5 mr-2" />
+        <Save className="w-5 h-5 md:w-6 md:h-6 mr-2" />
         <span className="flex-1 text-center">
           {conteoState.modoConsecutivo
             ? "Guardar Conteo Dominical"

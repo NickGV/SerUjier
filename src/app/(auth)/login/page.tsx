@@ -167,84 +167,111 @@ function LoginForm() {
     nombre.length === 0 ? usuariosDisponibles : filteredUsuarios;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-gray-100 p-2 sm:p-4 pt-4 sm:pt-8">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-gray-100 p-4 md:p-6 pt-6 md:pt-12">
       <div className="flex items-start justify-center">
-        <div className="w-full max-w-xs sm:max-w-sm space-y-4 sm:space-y-6">
+        <div className="w-full max-w-sm md:max-w-md lg:max-w-lg space-y-6 md:space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-slate-600 to-slate-700 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-              <LogIn className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-slate-600 to-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-lg">
+              <LogIn className="w-10 h-10 md:w-12 md:h-12 text-white" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
               Bienvenido
             </h1>
-            <p className="text-gray-600 text-xs sm:text-sm">
+            <p className="text-gray-600 text-sm md:text-base">
               Sistema de Conteo de Asistencia
             </p>
           </div>
 
           {/* Login Form */}
           <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 text-center">
+            <CardHeader className="pb-4 md:pb-6 px-6 md:px-8">
+              <CardTitle className="text-lg md:text-xl font-semibold text-gray-800 text-center">
                 Iniciar Sesión
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+            <CardContent className="space-y-4 md:space-y-6 px-6 md:px-8">
               <form onSubmit={onSubmit}>
                 {/* Nombre Field */}
                 <div className="relative" ref={dropdownRef}>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <User className="w-4 h-4" />
+                  <label 
+                    htmlFor="nombre-input"
+                    className="text-base font-medium text-gray-700 mb-2 flex items-center gap-2"
+                  >
+                    <User className="w-5 h-5" />
                     Nombre
                   </label>
                   <div className="relative">
                     <Input
+                      id="nombre-input"
                       ref={inputRef}
                       placeholder="Escriba o seleccione su nombre"
                       value={nombre}
                       onChange={handleInputChange}
                       onFocus={handleInputFocus}
-                      className="h-10 sm:h-12 pr-10 text-sm sm:text-base"
+                      className="h-12 md:h-14 pr-12 text-base md:text-lg"
                       autoComplete="off"
+                      aria-describedby="nombre-help"
+                      aria-expanded={showUserList}
+                      aria-haspopup="listbox"
+                      role="combobox"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0"
                       onClick={() => setShowUserList(!showUserList)}
+                      aria-label={showUserList ? "Cerrar lista de usuarios" : "Abrir lista de usuarios"}
+                      aria-expanded={showUserList}
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
+                        className={`w-5 h-5 transition-transform ${
                           showUserList ? "rotate-180" : ""
                         }`}
                       />
                     </Button>
                   </div>
+                  <div id="nombre-help" className="text-sm text-gray-500 mt-1">
+                    Escriba para buscar o seleccione de la lista
+                  </div>
 
                   {/* User List Dropdown */}
                   {showUserList && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-64 overflow-y-auto">
+                    <div 
+                      className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-64 overflow-y-auto"
+                      role="listbox"
+                      aria-label="Lista de usuarios disponibles"
+                    >
                       {usuariosAMostrar.length > 0 ? (
                         usuariosAMostrar.map((usuario) => (
                           <div
                             key={usuario.id}
-                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                            className="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                             onClick={() => handleNombreSelect(usuario.nombre)}
+                            role="option"
+                            tabIndex={0}
+                            aria-selected="false"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleNombreSelect(usuario.nombre);
+                              }
+                            }}
+                            aria-label={`Seleccionar usuario ${usuario.nombre}, rol ${usuario.rol}`}
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <div className="font-medium text-gray-800 flex items-center gap-2">
+                                <div className="font-medium text-gray-800 flex items-center gap-2 text-base">
                                   {usuario.nombre}
                                   {usuario.nombre === "admin" && (
-                                    <span className="text-yellow-500">⭐</span>
+                                    <span className="text-yellow-500" aria-label="Usuario administrador">⭐</span>
                                   )}
                                 </div>
                               </div>
                               <div className="flex flex-col items-end gap-1">
                                 <Badge
-                                  className={`text-xs ${
+                                  className={`text-sm ${
                                     usuario.rol === "admin"
                                       ? "bg-blue-50 text-blue-700 border-blue-200"
                                       : "bg-green-50 text-green-700 border-green-200"
@@ -253,7 +280,7 @@ function LoginForm() {
                                   {usuario.rol}
                                 </Badge>
                                 {!usuario.activo && usuario.rol !== "admin" && (
-                                  <Badge className="text-xs bg-red-50 text-red-700 border-red-200">
+                                  <Badge className="text-sm bg-red-50 text-red-700 border-red-200">
                                     Inactivo
                                   </Badge>
                                 )}
@@ -262,7 +289,7 @@ function LoginForm() {
                           </div>
                         ))
                       ) : (
-                        <div className="p-3 text-center text-gray-500 text-sm">
+                        <div className="p-4 text-center text-gray-500 text-base">
                           No se encontraron usuarios
                         </div>
                       )}
@@ -272,41 +299,54 @@ function LoginForm() {
 
                 {/* Password Field */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
+                  <label 
+                    htmlFor="password-input"
+                    className="text-base font-medium text-gray-700 mb-2 flex items-center gap-2"
+                  >
+                    <Lock className="w-5 h-5" />
                     Contraseña
                   </label>
                   <div className="relative">
                     <Input
+                      id="password-input"
                       type={showPassword ? "text" : "password"}
                       placeholder="Ingrese su contraseña"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      className="h-10 sm:h-12 pr-12 text-sm sm:text-base"
+                      className="h-12 md:h-14 pr-12 text-base md:text-lg"
                       autoComplete="current-password"
+                      aria-describedby="password-help"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
+                        <EyeOff className="w-5 h-5" />
                       ) : (
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-5 h-5" />
                       )}
                     </Button>
+                  </div>
+                  <div id="password-help" className="text-sm text-gray-500 mt-1">
+                    Use la contraseña asignada por el administrador
                   </div>
                 </div>
 
                 {/* Error Message */}
                 {error && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                    <span className="text-sm text-red-700">{error}</span>
+                  <div 
+                    className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg"
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <span className="text-base text-red-700">{error}</span>
                   </div>
                 )}
 
@@ -314,54 +354,58 @@ function LoginForm() {
                 <Button
                   type="submit"
                   disabled={loading || !nombre.trim() || !password.trim()}
-                  className="w-full h-10 sm:h-12 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-semibold rounded-xl shadow-lg text-sm sm:text-base"
+                  className="w-full h-12 md:h-14 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-semibold rounded-xl shadow-lg text-base md:text-lg"
+                  aria-describedby="login-help"
                 >
                   {loading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Verificando...
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
+                      <span>Verificando...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <LogIn className="w-5 h-5" />
-                      Iniciar Sesión
+                    <div className="flex items-center gap-3">
+                      <LogIn className="w-6 h-6" />
+                      <span>Iniciar Sesión</span>
                     </div>
                   )}
                 </Button>
+                <div id="login-help" className="text-sm text-gray-500 mt-2 text-center">
+                  Complete ambos campos para habilitar el botón
+                </div>
               </form>
             </CardContent>
           </Card>
 
           {/* Info */}
           <div className="text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-sm md:text-base text-gray-500">
               ¿Problemas para acceder? Contacte al administrador
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm text-gray-400 mt-2">
               Admin de emergencia: admin / admin123
             </p>
           </div>
 
           {/* Stats */}
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 gap-4 text-center">
+            <CardContent className="p-6 md:p-8">
+              <div className="grid grid-cols-2 gap-6 text-center">
                 <div>
-                  <div className="text-lg font-bold text-slate-700">
+                  <div className="text-xl md:text-2xl font-bold text-slate-700">
                     {usuariosDisponibles.length}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-sm md:text-base text-gray-500">
                     Usuarios Disponibles
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-blue-700">
+                  <div className="text-xl md:text-2xl font-bold text-blue-700">
                     {
                       usuariosDisponibles.filter((u) => u.rol === "admin")
                         .length
                     }
                   </div>
-                  <div className="text-xs text-gray-500">Administradores</div>
+                  <div className="text-sm md:text-base text-gray-500">Administradores</div>
                 </div>
               </div>
             </CardContent>

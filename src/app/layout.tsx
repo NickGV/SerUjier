@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "@/styles/globals.css";
 import { Toaster } from "sonner";
-
+// TODO: Agregar logo
 export const metadata: Metadata = {
   title: "Ujier App",
   description: "Aplicación para gestión de ujieres y simpatizantes",

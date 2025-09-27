@@ -7,7 +7,7 @@ import {
   deleteSimpatizante,
 } from "@/lib/utils";
 
-interface Simpatizante {
+export interface Simpatizante {
   id: string;
   nombre: string;
   telefono?: string;
