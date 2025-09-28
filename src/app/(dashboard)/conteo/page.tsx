@@ -2,46 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { usePersistentConteo } from "@/hooks/use-persistent-conteo";
-import type { Simpatizante } from "@/app/(dashboard)/simpatizantes/page"; // Importar la interfaz Simpatizante
+import type { Simpatizante } from "@/app/(dashboard)/simpatizantes/page";
 // TODO: Crear opcion de poner hermanos apartados
-// TODO: Arreglar modal para agregar simpatizante
-// Interfaces para los tipos de datos
 
-interface Miembro {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
-}
-
-interface MiembroSimplificado {
-  id: string;
-  nombre: string;
-}
-
-interface MiembrosAsistieron {
-  [key: string]: Array<MiembroSimplificado>;
-  hermanos: Array<MiembroSimplificado>;
-  hermanas: Array<MiembroSimplificado>;
-  ninos: Array<MiembroSimplificado>;
-  adolescentes: Array<MiembroSimplificado>;
-}
-
-interface DatosServicioBase {
-  hermanos: number;
-  hermanas: number;
-  ninos: number;
-  adolescentes: number;
-  simpatizantes: number;
-  total: number;
-  servicio: string;
-  simpatizantesAsistieron: Array<MiembroSimplificado>;
-  miembrosAsistieron: MiembrosAsistieron;
-}
-
-// Interfaces removidas porque no se usan actualmente
-// Se pueden volver a agregar cuando sean necesarias
 import {
   fetchSimpatizantes,
   fetchMiembros,
@@ -83,6 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { DatosServicioBase, Miembro, MiembroSimplificado } from "@/app/types";
 
 export default function ConteoPage() {
   // Hook persistente para el conteo
@@ -1241,13 +1205,13 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                    className="w-8 h-8 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() =>
                       counter.setter(Math.max(0, counter.value - 1))
                     }
                     aria-label={`Decrementar ${counter.label}`}
                   >
-                    <Minus className="w-5 h-5 md:w-6 md:h-6" />
+                    <Minus className="w-4 h-4 md:w-6 md:h-6" />
                   </Button>
 
                   {editingCounter === counter.key ? (
@@ -1294,11 +1258,11 @@ export default function ConteoPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                    className="w-8 h-8 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                     onClick={() => counter.setter(counter.value + 1)}
                     aria-label={`Incrementar ${counter.label}`}
                   >
-                    <Plus className="w-5 h-5 md:w-6 md:h-6" />
+                    <Plus className="w-4 h-4 md:w-6 md:h-6" />
                   </Button>
                 </div>
               </div>
@@ -1368,7 +1332,7 @@ export default function ConteoPage() {
 
       {/* Simpatizantes del día (solo los añadidos en esta sesión) */}
       {conteoState.simpatizantesDelDia.length > 0 && (
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-md">
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -1376,37 +1340,65 @@ export default function ConteoPage() {
               {conteoState.simpatizantesDelDia.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {conteoState.simpatizantesDelDia.map((simpatizante) => (
-              <div
+              <Card
                 key={simpatizante.id}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
               >
-                <div>
-                  <div className="font-medium text-sm">
-                    {simpatizante.nombre}
-                  </div>
-                  {simpatizante.telefono && (
-                    <div className="text-xs text-gray-500">
-                      {simpatizante.telefono}
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {/* Avatar con ícono de persona */}
+                      <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-6 h-6 text-pink-600" />
+                      </div>
+
+                      {/* Información del simpatizante */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-base mb-1">
+                          {simpatizante.nombre}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {simpatizante.telefono || "Sin teléfono"}
+                        </p>
+
+                        {/* Badge y fecha */}
+                        <div className="flex items-center gap-3 mt-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-pink-50 text-pink-700 border-pink-200 text-xs px-2 py-1"
+                          >
+                            Simpatizante
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            Añadido hoy
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => removeSimpatizanteDelDia(simpatizante.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
+
+                    {/* Botón de eliminar */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() =>
+                          removeSimpatizanteDelDia(simpatizante.id)
+                        }
+                      >
+                        🗑️
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </CardContent>
         </Card>
       )}
 
-      {/* Add Simpatizante Dialog - VERSIÓN MEJORADA */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
           <DialogHeader className="flex-shrink-0 pb-4">
@@ -1438,7 +1430,7 @@ export default function ConteoPage() {
                   )}
                 </div>
 
-                {/* Controles de selección múltiple para simpatizantes */}
+                {/* Controles de selección */}
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1565,71 +1557,79 @@ export default function ConteoPage() {
                           simpatizante.id
                         );
                         return (
-                          <div
+                          <Card
                             key={simpatizante.id}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 bg-white hover:shadow-sm ${
+                            className={`cursor-pointer transition-all duration-200 ${
                               isSelected
                                 ? "bg-blue-50 border-blue-300 shadow-sm"
-                                : "hover:bg-gray-50 active:bg-gray-100"
+                                : "bg-white border-gray-200 hover:shadow-md"
                             }`}
                             onClick={() =>
                               toggleSimpatizanteSelection(simpatizante.id)
                             }
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div
-                                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {/* Checkbox */}
+                                  <div
+                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                                      isSelected
+                                        ? "bg-blue-600 border-blue-600"
+                                        : "border-gray-300"
+                                    }`}
+                                  >
+                                    {isSelected && (
+                                      <CheckCircle className="w-3 h-3 text-white" />
+                                    )}
+                                  </div>
+
+                                  {/* Avatar */}
+                                  <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <User className="w-5 h-5 text-pink-600" />
+                                  </div>
+
+                                  {/* Información */}
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                                      {simpatizante.nombre}
+                                    </h3>
+                                    <p className="text-xs text-gray-600">
+                                      {simpatizante.telefono || "Sin teléfono"}
+                                    </p>
+                                    {simpatizante.notas && (
+                                      <p className="text-xs text-gray-500 mt-1 truncate">
+                                        {simpatizante.notas}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Botón de selección */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`h-8 w-8 p-0 ${
                                     isSelected
-                                      ? "bg-blue-600 border-blue-600"
-                                      : "border-gray-300"
+                                      ? "bg-blue-100 border-blue-300 text-blue-700"
+                                      : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50"
                                   }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSimpatizanteSelection(
+                                      simpatizante.id
+                                    );
+                                  }}
                                 >
-                                  {isSelected && (
-                                    <CheckCircle className="w-3 h-3 text-white" />
+                                  {isSelected ? (
+                                    <X className="w-4 h-4" />
+                                  ) : (
+                                    <Plus className="w-4 h-4" />
                                   )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm text-gray-800">
-                                    {simpatizante.nombre}
-                                  </div>
-                                  {simpatizante.telefono && (
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      📞 {simpatizante.telefono}
-                                    </div>
-                                  )}
-                                  {simpatizante.notas && (
-                                    <div className="text-xs text-gray-400 mt-1 bg-gray-50 p-2 rounded">
-                                      💬 {simpatizante.notas}
-                                    </div>
-                                  )}
-                                  <div className="text-xs text-gray-400 mt-1">
-                                    Registrado:{" "}
-                                    {simpatizante.fechaRegistro || "N/A"}
-                                  </div>
-                                </div>
+                                </Button>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={`flex-shrink-0 ml-2 transition-transform ${
-                                  isSelected
-                                    ? "bg-blue-100 border-blue-300 text-blue-700"
-                                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200"
-                                }`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleSimpatizanteSelection(simpatizante.id);
-                                }}
-                              >
-                                {isSelected ? (
-                                  <X className="w-4 h-4" />
-                                ) : (
-                                  <Plus className="w-4 h-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         );
                       })
                     ) : (
@@ -1998,63 +1998,75 @@ export default function ConteoPage() {
                   return filteredMiembros.map((miembro) => {
                     const isSelected = selectedMembers.includes(miembro.id);
                     return (
-                      <div
+                      <Card
                         key={miembro.id}
-                        className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
+                        className={`cursor-pointer transition-all duration-200 ${
                           isSelected
                             ? "bg-blue-50 border-blue-300 shadow-sm"
-                            : "hover:bg-gray-50 active:bg-gray-100"
+                            : "bg-white border-gray-200 hover:shadow-md"
                         }`}
                         onClick={() => toggleMemberSelection(miembro.id)}
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                              isSelected
-                                ? "bg-blue-600 border-blue-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {isSelected && (
-                              <CheckCircle className="w-3 h-3 text-white" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">
-                              {miembro.nombre}
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {/* Checkbox */}
+                              <div
+                                className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                                  isSelected
+                                    ? "bg-blue-600 border-blue-600"
+                                    : "border-gray-300"
+                                }`}
+                              >
+                                {isSelected && (
+                                  <CheckCircle className="w-3 h-3 text-white" />
+                                )}
+                              </div>
+
+                              {/* Avatar */}
+                              <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <User className="w-5 h-5 text-pink-600" />
+                              </div>
+
+                              {/* Información */}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                                  {miembro.nombre}
+                                </h3>
+                                <p className="text-xs text-gray-600">
+                                  {miembro.telefono || "Sin teléfono"}
+                                </p>
+                                {miembro.notas && (
+                                  <p className="text-xs text-gray-500 mt-1 truncate">
+                                    {miembro.notas}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                            {miembro.telefono && (
-                              <div className="text-xs text-gray-500 truncate">
-                                {miembro.telefono}
-                              </div>
-                            )}
-                            {miembro.notas && (
-                              <div className="text-xs text-gray-400 mt-1 bg-gray-50 p-2 rounded">
-                                💬 {miembro.notas}
-                              </div>
-                            )}
+
+                            {/* Botón de selección */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={`h-8 w-8 p-0 ${
+                                isSelected
+                                  ? "bg-blue-100 border-blue-300 text-blue-700"
+                                  : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleMemberSelection(miembro.id);
+                              }}
+                            >
+                              {isSelected ? (
+                                <X className="w-4 h-4" />
+                              ) : (
+                                <Plus className="w-4 h-4" />
+                              )}
+                            </Button>
                           </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={`flex-shrink-0 ml-2 transition-transform ${
-                            isSelected
-                              ? "bg-blue-100 border-blue-300 text-blue-700"
-                              : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200"
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleMemberSelection(miembro.id);
-                          }}
-                        >
-                          {isSelected ? (
-                            <X className="w-4 h-4" />
-                          ) : (
-                            <Plus className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
+                        </CardContent>
+                      </Card>
                     );
                   });
                 })()}
@@ -2265,71 +2277,83 @@ export default function ConteoPage() {
                     };
 
                     return (
-                      <div
+                      <Card
                         key={asistente.id}
-                        className={`p-3 border rounded-lg bg-white hover:shadow-sm transition-all duration-200 ${
+                        className={`bg-white border-gray-200 hover:shadow-md transition-all duration-200 ${
                           asistente.esBase ? "border-dashed" : "border-solid"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-sm text-gray-800 truncate">
-                                {asistente.nombre}
-                              </span>
-                              {asistente.esBase && (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-blue-50 text-blue-700 text-xs"
-                                >
-                                  Base
-                                </Badge>
-                              )}
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {/* Avatar */}
+                              <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <User className="w-5 h-5 text-pink-600" />
+                              </div>
+
+                              {/* Información */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold text-gray-900 text-sm truncate">
+                                    {asistente.nombre}
+                                  </h3>
+                                  {asistente.esBase && (
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-blue-50 text-blue-700 text-xs"
+                                    >
+                                      Base
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${getCategoriaColor(
+                                      asistente.categoria
+                                    )}`}
+                                  >
+                                    {getCategoriaLabel(asistente.categoria)}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${
+                                      asistente.tipo === "miembro"
+                                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                                        : "bg-green-50 text-green-700 border-green-200"
+                                    }`}
+                                  >
+                                    {asistente.tipo === "miembro"
+                                      ? "Miembro"
+                                      : "Simpatizante"}
+                                  </Badge>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${getCategoriaColor(
-                                  asistente.categoria
-                                )}`}
+
+                            {/* Botón de eliminar */}
+                            {!asistente.esBase && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-700 h-8 w-8 p-0"
+                                onClick={() => {
+                                  if (asistente.tipo === "miembro") {
+                                    removeMiembroDelDia(
+                                      asistente.id,
+                                      asistente.categoria
+                                    );
+                                  } else {
+                                    removeSimpatizanteDelDia(asistente.id);
+                                  }
+                                }}
                               >
-                                {getCategoriaLabel(asistente.categoria)}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${
-                                  asistente.tipo === "miembro"
-                                    ? "bg-blue-50 text-blue-700 border-blue-200"
-                                    : "bg-green-50 text-green-700 border-green-200"
-                                }`}
-                              >
-                                {asistente.tipo === "miembro"
-                                  ? "Miembro"
-                                  : "Simpatizante"}
-                              </Badge>
-                            </div>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
-                          {!asistente.esBase && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2 h-8 w-8 p-0"
-                              onClick={() => {
-                                if (asistente.tipo === "miembro") {
-                                  removeMiembroDelDia(
-                                    asistente.id,
-                                    asistente.categoria
-                                  );
-                                } else {
-                                  removeSimpatizanteDelDia(asistente.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     );
                   })
                 ) : (

@@ -41,15 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-
-interface Miembro {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
-  notas?: string;
-  fechaRegistro: string;
-}
+import { Miembro } from "@/app/types";
 
 export default function MiembrosPage() {
   const { user } = useUser();
