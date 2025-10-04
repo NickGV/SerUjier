@@ -5,8 +5,11 @@ import "@/styles/globals.css";
 import { Toaster } from "sonner";
 // TODO: Agregar logo
 export const metadata: Metadata = {
-  title: "Ujier App",
+  title: "SerUjier",
   description: "Aplicación para gestión de ujieres y simpatizantes",
+  icons: {
+    icon: "./favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -14,7 +17,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="es" suppressHydrationWarning>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
-        <Toaster position="bottom-center" offset="10vh" duration={3000} richColors={true} closeButton={true}/>
+        <Toaster
+          position="bottom-center"
+          offset="10vh"
+          duration={3000}
+          richColors={true}
+          closeButton={true}
+        />
       </body>
     </html>
   );

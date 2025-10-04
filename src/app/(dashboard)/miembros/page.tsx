@@ -177,7 +177,7 @@ export default function MiembrosPage() {
 
     setIsSaving(true);
     try {
-      const { id, fechaRegistro, ...updateData } = editingMiembro;
+      const { id, ...updateData } = editingMiembro; // fechaRegistro se excluye implícitamente
       // Excluir fechaRegistro del update ya que no debe cambiar usando destructuring
       await updateMiembro(id, updateData);
 
