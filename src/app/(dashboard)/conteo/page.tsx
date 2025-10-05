@@ -48,6 +48,7 @@ import {
   SimpatizantesDialog,
   MiembrosDialog,
   AsistentesDialog,
+  HermanosVisitasDialog,
   servicios,
   getAllAsistentes,
 } from "@/components/conteo";
@@ -83,6 +84,7 @@ export default function ConteoPage() {
   const [showSimpatizantesDialog, setShowSimpatizantesDialog] = useState(false);
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
+  const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
     CategoriaPlural | ""
   >("");
@@ -134,12 +136,17 @@ export default function ConteoPage() {
         ninos: datosServicioBase.ninos || 0,
         adolescentes: datosServicioBase.adolescentes || 0,
         simpatizantesCount: datosServicioBase.simpatizantes || 0,
+        hermanosApartados: datosServicioBase.hermanosApartados || 0,
+        hermanosVisitasCount: datosServicioBase.hermanosVisitas || 0,
         simpatizantesDelDia: datosServicioBase.simpatizantesAsistieron || [],
         hermanosDelDia: datosServicioBase.miembrosAsistieron?.hermanos || [],
         hermanasDelDia: datosServicioBase.miembrosAsistieron?.hermanas || [],
         ninosDelDia: datosServicioBase.miembrosAsistieron?.ninos || [],
         adolescentesDelDia:
           datosServicioBase.miembrosAsistieron?.adolescentes || [],
+        hermanosApartadosDelDia:
+          datosServicioBase.miembrosAsistieron?.hermanosApartados || [],
+        hermanosVisitasDelDia: datosServicioBase.hermanosVisitasAsistieron || [],
         tipoServicio: "dominical", // Forzar a dominical
       });
     }
@@ -228,6 +235,32 @@ export default function ConteoPage() {
     setShowSimpatizantesDialog(true);
   };
 
+  const openHermanosVisitasDialog = () => {
+    setShowHermanosVisitasDialog(true);
+  };
+
+  const handleAddHermanoVisita = (nuevoHermano: { nombre: string }) => {
+    const hermanoVisita = {
+      id: Date.now().toString(), // ID simple basado en timestamp
+      nombre: nuevoHermano.nombre,
+    };
+
+    updateConteo({
+      hermanosVisitasDelDia: [
+        ...conteoState.hermanosVisitasDelDia,
+        hermanoVisita,
+      ],
+    });
+  };
+
+  const handleRemoveHermanoVisita = (hermanoId: string) => {
+    updateConteo({
+      hermanosVisitasDelDia: conteoState.hermanosVisitasDelDia.filter(
+        (h) => h.id !== hermanoId
+      ),
+    });
+  };
+
   const handleCounterIncrement = (counter: CounterData) => {
     counter.setter(counter.value + 1);
   };
@@ -239,6 +272,8 @@ export default function ConteoPage() {
   const handleOpenDialog = (categoria: string) => {
     if (categoria === "simpatizantes") {
       openSimpatizantesDialog();
+    } else if (categoria === "hermanosVisitas") {
+      openHermanosVisitasDialog();
     } else {
       openMiembrosDialog(categoria as CategoriaPlural);
     }
@@ -270,6 +305,12 @@ export default function ConteoPage() {
     const baseSimpatizantes = conteoState.modoConsecutivo
       ? datosServicioBase?.simpatizantes || 0
       : 0;
+    const baseHermanosApartados = conteoState.modoConsecutivo
+      ? datosServicioBase?.hermanosApartados || 0
+      : 0;
+    const baseHermanosVisitas = conteoState.modoConsecutivo
+      ? datosServicioBase?.hermanosVisitas || 0
+      : 0;
 
     const totalSimpatizantes =
       conteoState.simpatizantesCount +
@@ -285,6 +326,14 @@ export default function ConteoPage() {
       conteoState.adolescentes +
       conteoState.adolescentesDelDia.length +
       baseAdolescentes;
+    const totalHermanosApartados =
+      conteoState.hermanosApartados +
+      conteoState.hermanosApartadosDelDia.length +
+      baseHermanosApartados;
+    const totalHermanosVisitas =
+      conteoState.hermanosVisitasCount +
+      conteoState.hermanosVisitasDelDia.length +
+      baseHermanosVisitas;
 
     const conteoData = {
       fecha: conteoState.fecha,
@@ -297,12 +346,16 @@ export default function ConteoPage() {
       ninos: totalNinos,
       adolescentes: totalAdolescentes,
       simpatizantes: totalSimpatizantes,
+      hermanosApartados: totalHermanosApartados,
+      hermanosVisitas: totalHermanosVisitas,
       total:
         totalHermanos +
         totalHermanas +
         totalNinos +
         totalAdolescentes +
-        totalSimpatizantes,
+        totalSimpatizantes +
+        totalHermanosApartados +
+        totalHermanosVisitas,
       simpatizantesAsistieron: [
         ...(conteoState.modoConsecutivo
           ? datosServicioBase?.simpatizantesAsistieron || []
@@ -349,7 +402,25 @@ export default function ConteoPage() {
             nombre: m.nombre,
           })),
         ],
+        hermanosApartados: [
+          ...(conteoState.modoConsecutivo
+            ? datosServicioBase?.miembrosAsistieron?.hermanosApartados || []
+            : []),
+          ...conteoState.hermanosApartadosDelDia.map((m) => ({
+            id: m.id,
+            nombre: m.nombre,
+          })),
+        ],
       },
+      hermanosVisitasAsistieron: [
+        ...(conteoState.modoConsecutivo
+          ? datosServicioBase?.hermanosVisitasAsistieron || []
+          : []),
+        ...conteoState.hermanosVisitasDelDia.map((h) => ({
+          id: h.id,
+          nombre: h.nombre,
+        })),
+      ],
     };
 
     // Verificar si es domingo y evangelismo/misionero (y no estamos en modo consecutivo)
@@ -413,13 +484,19 @@ export default function ConteoPage() {
   const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length;
   const totalAdolescentesActual =
     conteoState.adolescentes + conteoState.adolescentesDelDia.length;
+  const totalHermanosApartadosActual =
+    conteoState.hermanosApartados + conteoState.hermanosApartadosDelDia.length;
+  const totalHermanosVisitasActual =
+    conteoState.hermanosVisitasCount + conteoState.hermanosVisitasDelDia.length;
 
   const total =
     totalHermanosActual +
     totalHermanasActual +
     totalNinosActual +
     totalAdolescentesActual +
-    totalSimpatizantesActual;
+    totalSimpatizantesActual +
+    totalHermanosApartadosActual +
+    totalHermanosVisitasActual;
 
   // Obtener lista de asistentes para el diálogo
   const asistentes = getAllAsistentes(
@@ -876,11 +953,13 @@ export default function ConteoPage() {
         onRemoveAsistente={(id, categoria, tipo) => {
           if (
             tipo === "miembro" &&
-            ["hermanos", "hermanas", "ninos", "adolescentes"].includes(
+            ["hermanos", "hermanas", "ninos", "adolescentes", "hermanosApartados"].includes(
               categoria
             )
           ) {
             handleRemoveMiembro(categoria as CategoriaPlural, id);
+          } else if (categoria === "hermanosVisitas") {
+            handleRemoveHermanoVisita(id);
           } else {
             handleRemoveSimpatizante(id);
           }
@@ -894,6 +973,14 @@ export default function ConteoPage() {
         onBulkCountsChange={setBulkCounts}
         onSubmit={handleBulkCountSubmit}
         onReset={resetBulkCounts}
+      />
+
+      <HermanosVisitasDialog
+        isOpen={showHermanosVisitasDialog}
+        onClose={() => setShowHermanosVisitasDialog(false)}
+        hermanosVisitasDelDia={conteoState.hermanosVisitasDelDia}
+        onAddHermanoVisita={handleAddHermanoVisita}
+        onRemoveHermanoVisita={handleRemoveHermanoVisita}
       />
 
       {/* Save Button */}

@@ -37,8 +37,7 @@ export interface MiembrosAsistieron {
   hermanas: Array<MiembroSimplificado>;
   ninos: Array<MiembroSimplificado>;
   adolescentes: Array<MiembroSimplificado>;
-  // hermanosApartados: Array<MiembroSimplificado>;
-  // hemanosDeOtraIglesia: Array<MiembroSimplificado>;
+  hermanosApartados: Array<MiembroSimplificado>;
 }
 
 export interface DatosServicioBase {
@@ -47,10 +46,13 @@ export interface DatosServicioBase {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  hermanosApartados: number;
+  hermanosVisitas: number;
   total: number;
   servicio: string;
   simpatizantesAsistieron: Array<MiembroSimplificado>;
   miembrosAsistieron: MiembrosAsistieron;
+  hermanosVisitasAsistieron: Array<MiembroSimplificado>;
 }
 
 export type ApiResponse<T> = {

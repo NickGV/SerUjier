@@ -10,6 +10,12 @@ export interface SimpatizanteLite {
   fechaRegistro?: string;
 }
 
+// Tipo para hermanos visitas (solo nombre, son de otra iglesia)
+export interface HermanoVisita {
+  id: string;
+  nombre: string;
+}
+
 // Estado persistente del conteo (refleja use-persistent-conteo)
 export interface ConteoStateBase {
   hermanos: number;
@@ -17,6 +23,8 @@ export interface ConteoStateBase {
   ninos: number;
   adolescentes: number;
   simpatizantesCount: number;
+  hermanosApartados: number;
+  hermanosVisitasCount: number;
   fecha: string;
   tipoServicio: string;
   ujierSeleccionado: string;
@@ -27,6 +35,8 @@ export interface ConteoStateBase {
   hermanasDelDia: MiembroSimplificado[];
   ninosDelDia: MiembroSimplificado[];
   adolescentesDelDia: MiembroSimplificado[];
+  hermanosApartadosDelDia: MiembroSimplificado[];
+  hermanosVisitasDelDia: HermanoVisita[];
   selectedUjieres: string[];
   searchMiembros: string;
 }
@@ -44,6 +54,8 @@ export interface BulkCounts {
   ninos: string;
   adolescentes: string;
   simpatizantes: string;
+  hermanosApartados: string;
+  hermanosVisitas: string;
 }
 
 export interface CounterData {
@@ -79,7 +91,7 @@ export interface SimpatizantesDialogProps extends ConteoDialogProps {
   onRemoveSimpatizante: (id: string) => void;
 }
 
-export type CategoriaPlural = "hermanos" | "hermanas" | "ninos" | "adolescentes";
+export type CategoriaPlural = "hermanos" | "hermanas" | "ninos" | "adolescentes" | "hermanosApartados";
 
 export interface MiembrosDialogProps extends ConteoDialogProps {
   categoria: CategoriaPlural; // hermanos | hermanas | ninos | adolescentes
@@ -101,4 +113,10 @@ export interface MiembroExtended extends MiembroSimplificado {
 export interface AsistentesDialogProps extends ConteoDialogProps {
   asistentes: AsistenteInfo[];
   onRemoveAsistente: (id: string, categoria: string, tipo: "miembro" | "simpatizante") => void;
+}
+
+export interface HermanosVisitasDialogProps extends ConteoDialogProps {
+  hermanosVisitasDelDia: HermanoVisita[];
+  onAddHermanoVisita: (hermano: Omit<HermanoVisita, 'id'>) => void;
+  onRemoveHermanoVisita: (id: string) => void;
 }

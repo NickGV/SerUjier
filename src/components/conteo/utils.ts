@@ -12,6 +12,11 @@ export const getMiembrosPorCategoria = (
   miembros: MiembroConCategoria[],
   categoria: string
 ): MiembroConCategoria[] => {
+  // Para hermanos apartados, incluir todos los miembros
+  if (categoria === "hermanosApartados") {
+    return miembros;
+  }
+  
   return miembros.filter((m) => {
     if (categoria === "ninos") return m.categoria === "nino";
     if (categoria === "adolescentes") return m.categoria === "adolescente";
@@ -31,6 +36,10 @@ export const getCategoriaColor = (categoria: string) => {
       return "bg-purple-50 border-purple-200 text-purple-700";
     case "simpatizantes":
       return "bg-emerald-50 border-emerald-200 text-emerald-700";
+    case "hermanosApartados":
+      return "bg-orange-50 border-orange-200 text-orange-700";
+    case "hermanosVisitas":
+      return "bg-indigo-50 border-indigo-200 text-indigo-700";
     default:
       return "bg-gray-50 border-gray-200 text-gray-700";
   }
@@ -48,6 +57,10 @@ export const getCategoriaLabel = (categoria: string) => {
       return "Adolescentes";
     case "simpatizantes":
       return "Simpatizantes";
+    case "hermanosApartados":
+      return "Hermanos Apartados";
+    case "hermanosVisitas":
+      return "Hermanos Visitas";
     default:
       return categoria;
   }
@@ -65,6 +78,8 @@ export const getAllAsistentes = (
     hermanasDelDia: MiembroSimplificado[];
     ninosDelDia: MiembroSimplificado[];
     adolescentesDelDia: MiembroSimplificado[];
+    hermanosApartadosDelDia: MiembroSimplificado[];
+    hermanosVisitasDelDia: { id: string; nombre: string }[];
     // Acceso dinámico via index (usamos assertion al leer):
     [key: string]: unknown;
   },
@@ -104,7 +119,7 @@ export const getAllAsistentes = (
   }
 
   // Agregar miembros de esta sesión
-  const categorias = ["hermanos", "hermanas", "ninos", "adolescentes"] as const;
+  const categorias = ["hermanos", "hermanas", "ninos", "adolescentes", "hermanosApartados"] as const;
 
   categorias.forEach((categoria) => {
     const miembrosDelDia = conteoState[`${categoria}DelDia`] || [];
@@ -116,6 +131,17 @@ export const getAllAsistentes = (
         tipo: "miembro",
         esBase: false,
       });
+    });
+  });
+
+  // Agregar hermanos visitas de esta sesión
+  conteoState.hermanosVisitasDelDia.forEach((hermanoVisita) => {
+    asistentes.push({
+      id: hermanoVisita.id,
+      nombre: hermanoVisita.nombre,
+      categoria: "hermanosVisitas",
+      tipo: "miembro", // Los tratamos como miembros en la lógica
+      esBase: false,
     });
   });
 

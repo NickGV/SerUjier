@@ -14,13 +14,17 @@ interface UseConteoCountersProps {
     ninos?: number;
     adolescentes?: number;
     simpatizantes?: number;
+    hermanosApartados?: number;
+    hermanosVisitas?: number;
     miembrosAsistieron?: {
       hermanos?: MiembroSimplificado[];
       hermanas?: MiembroSimplificado[];
       ninos?: MiembroSimplificado[];
       adolescentes?: MiembroSimplificado[];
+      hermanosApartados?: MiembroSimplificado[];
     };
     simpatizantesAsistieron?: { id: string; nombre: string }[];
+    hermanosVisitasAsistieron?: { id: string; nombre: string }[];
   } | null;
 }
 
@@ -56,6 +60,12 @@ export function useConteoCounters({
         break;
       case "simpatizantes":
         updates.simpatizantesCount = newValue;
+        break;
+      case "hermanosApartados":
+        updates.hermanosApartados = newValue;
+        break;
+      case "hermanosVisitas":
+        updates.hermanosVisitasCount = newValue;
         break;
     }
 
@@ -126,6 +136,21 @@ export function useConteoCounters({
         : [],
     },
     {
+      key: "hermanosApartados",
+      label: "Hermanos Apartados",
+      value: conteoState.hermanosApartados,
+      setter: (value: number) => updateConteo({ hermanosApartados: value }),
+      color: CATEGORIA_COLORS.hermanosApartados,
+      miembrosDelDia: conteoState.hermanosApartadosDelDia,
+      categoria: "hermanosApartados",
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.hermanosApartados || 0
+        : 0,
+      baseMiembros: conteoState.modoConsecutivo
+        ? datosServicioBase?.miembrosAsistieron?.hermanosApartados || []
+        : [],
+    },
+    {
       key: "simpatizantes",
       label: "Simpatizantes",
       value: conteoState.simpatizantesCount,
@@ -139,6 +164,21 @@ export function useConteoCounters({
         ? datosServicioBase?.simpatizantesAsistieron || []
         : [],
       miembrosDelDia: conteoState.simpatizantesDelDia,
+    },
+    {
+      key: "hermanosVisitas",
+      label: "Hermanos Visitas",
+      value: conteoState.hermanosVisitasCount,
+      setter: (value: number) => updateConteo({ hermanosVisitasCount: value }),
+      color: CATEGORIA_COLORS.hermanosVisitas,
+      categoria: "hermanosVisitas",
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.hermanosVisitas || 0
+        : 0,
+      baseMiembros: conteoState.modoConsecutivo
+        ? datosServicioBase?.hermanosVisitasAsistieron || []
+        : [],
+      miembrosDelDia: conteoState.hermanosVisitasDelDia,
     },
   ];
 

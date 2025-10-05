@@ -9,6 +9,8 @@ interface ConteoState {
   ninos: number;
   adolescentes: number;
   simpatizantesCount: number;
+  hermanosApartados: number;
+  hermanosVisitasCount: number;
   fecha: string;
   tipoServicio: string;
   ujierSeleccionado: string;
@@ -25,6 +27,8 @@ interface ConteoState {
   hermanasDelDia: Array<{ id: string; nombre: string }>;
   ninosDelDia: Array<{ id: string; nombre: string }>;
   adolescentesDelDia: Array<{ id: string; nombre: string }>;
+  hermanosApartadosDelDia: Array<{ id: string; nombre: string }>;
+  hermanosVisitasDelDia: Array<{ id: string; nombre: string }>;
   selectedUjieres: string[];
   searchMiembros: string;
 }
@@ -37,6 +41,8 @@ const initialState: ConteoState = {
   ninos: 0,
   adolescentes: 0,
   simpatizantesCount: 0,
+  hermanosApartados: 0,
+  hermanosVisitasCount: 0,
   fecha: new Date().toISOString().split("T")[0],
   tipoServicio: "dominical",
   ujierSeleccionado: "",
@@ -47,6 +53,8 @@ const initialState: ConteoState = {
   hermanasDelDia: [],
   ninosDelDia: [],
   adolescentesDelDia: [],
+  hermanosApartadosDelDia: [],
+  hermanosVisitasDelDia: [],
   selectedUjieres: [],
   searchMiembros: "",
 };
@@ -125,11 +133,15 @@ export function usePersistentConteo() {
       ninos: 0,
       adolescentes: 0,
       simpatizantesCount: 0,
+      hermanosApartados: 0,
+      hermanosVisitasCount: 0,
       simpatizantesDelDia: [],
       hermanosDelDia: [],
       hermanasDelDia: [],
       ninosDelDia: [],
       adolescentesDelDia: [],
+      hermanosApartadosDelDia: [],
+      hermanosVisitasDelDia: [],
       selectedUjieres: [],
       ujierSeleccionado: "",
       ujierPersonalizado: "",
