@@ -35,6 +35,15 @@ interface ConteoState {
 
 const STORAGE_KEY = "conteo-persistente";
 
+// Función para obtener la fecha local en formato YYYY-MM-DD
+const getLocalDateString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const initialState: ConteoState = {
   hermanos: 0,
   hermanas: 0,
@@ -43,7 +52,7 @@ const initialState: ConteoState = {
   simpatizantesCount: 0,
   hermanosApartados: 0,
   hermanosVisitasCount: 0,
-  fecha: new Date().toISOString().split("T")[0],
+  fecha: getLocalDateString(), // Usar función local en lugar de toISOString()
   tipoServicio: "dominical",
   ujierSeleccionado: "",
   ujierPersonalizado: "",
@@ -71,14 +80,14 @@ export function usePersistentConteo() {
       if (saved) {
         const parsedState = JSON.parse(saved);
         // Verificar que la fecha guardada sea de hoy, si no, resetear
-        const today = new Date().toISOString().split("T")[0];
+        const today = getLocalDateString(); // Usar función local
         if (parsedState.fecha === today) {
           setConteoState(parsedState);
         } else {
           // Si es un día diferente, resetear pero mantener la fecha actual
           setConteoState({
             ...initialState,
-            fecha: today,
+            fecha: today, // Usar función local
           });
         }
       }
@@ -140,6 +149,7 @@ export function usePersistentConteo() {
       hermanasDelDia: [],
       ninosDelDia: [],
       adolescentesDelDia: [],
+
       hermanosApartadosDelDia: [],
       hermanosVisitasDelDia: [],
       selectedUjieres: [],

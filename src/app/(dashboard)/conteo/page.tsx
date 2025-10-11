@@ -543,7 +543,7 @@ export default function ConteoPage() {
                   htmlFor="fecha-input"
                   className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
                 >
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5" />
                   Fecha
                 </label>
                 <Input
@@ -563,7 +563,7 @@ export default function ConteoPage() {
                   htmlFor="servicio-select"
                   className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
                 >
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-4 h-4 md:w-5 md:h-5" />
                   Servicio
                 </label>
                 <Select
@@ -579,7 +579,7 @@ export default function ConteoPage() {
                   >
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-64 md:max-h-80">
                     {servicios.map((servicio) => (
                       <SelectItem key={servicio.value} value={servicio.value}>
                         {servicio.label}
@@ -598,7 +598,7 @@ export default function ConteoPage() {
                 htmlFor="ujier-select"
                 className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
               >
-                <User className="w-4 h-4" />
+                <User className="w-4 h-4 md:w-5 md:h-5" />
                 Ujier(es) -{" "}
                 {conteoState.selectedUjieres.length > 0
                   ? `${conteoState.selectedUjieres.length} seleccionados`
@@ -705,7 +705,7 @@ export default function ConteoPage() {
                 >
                   <SelectValue placeholder="+ Agregar ujier" />
                 </SelectTrigger>
-                <SelectContent className="max-h-48">
+                <SelectContent className="max-h-64 md:max-h-80">
                   {ujieres.length > 0 ? (
                     ujieres
                       .filter(

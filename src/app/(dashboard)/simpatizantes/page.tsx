@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   fetchSimpatizantes,
@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, Search, Plus, User, Trash2, Edit3 } from "lucide-react";
+import { Users, Search, Plus, User, Trash2, Edit3, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +44,7 @@ const SimpatizantesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [simpatizanteToDelete, setSimpatizanteToDelete] =
@@ -55,8 +56,19 @@ const SimpatizantesPage = () => {
     notas: "",
   });
 
-  const filteredSimpatizantes = simpatizantes.filter((simpatizante) =>
-    simpatizante.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(handle);
+  }, [searchTerm]);
+
+  const filteredSimpatizantes = useMemo(
+    () =>
+      simpatizantes.filter((simpatizante) =>
+        simpatizante.nombre
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())
+      ),
+    [simpatizantes, debouncedSearchTerm]
   );
 
   const addNewSimpatizante = async () => {
@@ -130,7 +142,7 @@ const SimpatizantesPage = () => {
   if (error) return <div>Error loading simpatizantes: {error}</div>;
 
   return (
-    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
+    <div className="p-2 sm:p-4 pb-24 md:pb-28 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
       {/* Header */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader className="px-3 sm:px-6">
@@ -173,16 +185,27 @@ const SimpatizantesPage = () => {
       </Card>
 
       {/* Filters */}
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md sticky top-0 z-40">
         <CardContent className="p-4 space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Buscar simpatizante..."
+              aria-label="Buscar simpatizante"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 rounded-lg"
+              className="pl-10 pr-10 rounded-lg"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                aria-label="Limpiar búsqueda"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           {searchTerm && (
             <div className="text-xs text-gray-600">
@@ -322,11 +345,11 @@ const SimpatizantesPage = () => {
                 </div>
 
                 {/* Botones de acción */}
-                <div className="flex gap-1 flex-shrink-0">
+                <div className="flex gap-2 flex-shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-3   hover:bg-blue-50"
+                    className="h-10 px-4 hover:bg-blue-50"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/simpatizantes/${simpatizante.id}`);
@@ -338,24 +361,26 @@ const SimpatizantesPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    aria-label="Editar simpatizante"
+                    className="h-10 w-10 p-0 text-blue-600 border-blue-200 hover:bg-blue-50"
                     onClick={(e) => {
                       e.stopPropagation();
                     }}
                   >
-                    <Edit3 className="w-4 h-4" />
+                    <Edit3 className="w-5 h-5" />
                   </Button>
 
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50"
+                    aria-label="Eliminar simpatizante"
+                    className="h-10 w-10 p-0 text-red-600 border-red-200 hover:bg-red-50"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteClick(simpatizante);
                     }}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
