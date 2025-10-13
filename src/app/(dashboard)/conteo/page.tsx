@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { usePersistentConteo } from "@/hooks/use-persistent-conteo";
 import { useConteoCounters } from "@/hooks/use-conteo-counters";
 import { useBulkCount } from "@/hooks/use-bulk-count";
@@ -14,6 +15,8 @@ import {
   addSimpatizante,
   saveConteo,
   fetchUjieres,
+  getHistorialRecordById,
+  updateHistorialRecord,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +31,7 @@ import {
   Eye,
   Trash2,
   X,
+  Edit3,
 } from "lucide-react";
 import {
   Select,
@@ -54,13 +58,22 @@ import {
 } from "@/components/conteo";
 
 export default function ConteoPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const editId = searchParams.get("editId");
+  
   // Hook persistente para el conteo
-  const { conteoState, updateConteo, clearDayData, isLoaded } =
+  const { conteoState, updateConteo, clearDayData, loadHistorialData, isLoaded } =
     usePersistentConteo();
 
   // Estados locales que no necesitan persistencia (definidos antes de hooks que los usan)
   const [datosServicioBase, setDatosServicioBase] =
     useState<DatosServicioBase | null>(null);
+  
+  // Estados para modo edición
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
 
   // Hook para los contadores (después de definir datosServicioBase)
   const {
@@ -126,6 +139,30 @@ export default function ConteoPage() {
 
     loadData();
   }, []);
+
+  // Efecto para cargar datos de historial cuando estamos en modo edición
+  useEffect(() => {
+    const loadEditData = async () => {
+      if (editId && isLoaded && !loading) {
+        try {
+          setLoadingEdit(true);
+          const historialRecord = await getHistorialRecordById(editId);
+          loadHistorialData(historialRecord);
+          setIsEditMode(true);
+          setEditingRecordId(editId);
+          toast.success("Datos cargados para edición");
+        } catch (error) {
+          console.error("Error cargando registro para edición:", error);
+          toast.error("Error al cargar el registro para edición");
+          router.push("/historial");
+        } finally {
+          setLoadingEdit(false);
+        }
+      }
+    };
+
+    loadEditData();
+  }, [editId, isLoaded, loading, loadHistorialData, router]);
 
   // Nota: En modo consecutivo NO copiamos la base al estado. La base sólo se
   // toma en cuenta al calcular totales y al mostrar asistentes, evitando
@@ -415,6 +452,31 @@ export default function ConteoPage() {
       ],
     };
 
+    // Si estamos en modo edición, actualizar el registro existente
+    if (isEditMode && editingRecordId) {
+      try {
+        await updateHistorialRecord(editingRecordId, conteoData);
+        
+        // Limpiar todo y resetear estados
+        setDatosServicioBase(null);
+        clearDayData();
+        
+        // Resetear modo consecutivo si estaba activo
+        updateConteo({
+          modoConsecutivo: false,
+          tipoServicio: "dominical", // Volver al servicio por defecto
+        });
+        
+        toast.success("Registro actualizado exitosamente");
+        router.push("/historial");
+        return;
+      } catch (error) {
+        console.error("Error actualizando registro:", error);
+        toast.error("Error al actualizar el registro. Intente nuevamente.");
+        return;
+      }
+    }
+
     // Verificar si es evangelismo/misionero (y no estamos en modo consecutivo)
     const esServicioBase =
       conteoState.tipoServicio === "evangelismo" ||
@@ -432,8 +494,18 @@ export default function ConteoPage() {
       if (conteoState.modoConsecutivo) {
         // Estamos guardando el dominical después del evangelismo/misionero
         await saveConteo(conteoData);
+        
+        // Resetear completamente el modo consecutivo y limpiar todo
+        setDatosServicioBase(null);
         clearDayData(); // Limpiar solo los datos del día
-        toast.success("Conteo dominical guardado exitosamente");
+        
+        // Resetear el modo consecutivo
+        updateConteo({
+          modoConsecutivo: false,
+          tipoServicio: "dominical", // Volver al servicio por defecto
+        });
+        
+        toast.success("Conteo dominical guardado exitosamente. Modo consecutivo finalizado.");
       } else {
         // Guardado normal
         await saveConteo(conteoData);
@@ -476,24 +548,39 @@ export default function ConteoPage() {
 
   const noContinarConDominical = () => {
     setShowContinuarDialog(false);
+    setDatosServicioBase(null); // Limpiar los datos base
     clearDayData(); // Limpiar solo los datos del día
+    
+    // Asegurar que no quede en modo consecutivo
+    updateConteo({
+      modoConsecutivo: false,
+    });
+    
     toast.success("Conteo guardado exitosamente");
   };
 
-  // Calcular el total de asistentes
+  // Calcular el total de asistentes (incluyendo base si estamos en modo consecutivo)
+  const baseHermanosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanos || 0) : 0;
+  const baseHermanasDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanas || 0) : 0;
+  const baseNinosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.ninos || 0) : 0;
+  const baseAdolescentesDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.adolescentes || 0) : 0;
+  const baseSimpatizantesDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.simpatizantes || 0) : 0;
+  const baseHermanosApartadosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanosApartados || 0) : 0;
+  const baseHermanosVisitasDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanosVisitas || 0) : 0;
+
   const totalSimpatizantesActual =
-    conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length;
+    conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length + baseSimpatizantesDisplay;
   const totalHermanosActual =
-    conteoState.hermanos + conteoState.hermanosDelDia.length;
+    conteoState.hermanos + conteoState.hermanosDelDia.length + baseHermanosDisplay;
   const totalHermanasActual =
-    conteoState.hermanas + conteoState.hermanasDelDia.length;
-  const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length;
+    conteoState.hermanas + conteoState.hermanasDelDia.length + baseHermanasDisplay;
+  const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length + baseNinosDisplay;
   const totalAdolescentesActual =
-    conteoState.adolescentes + conteoState.adolescentesDelDia.length;
+    conteoState.adolescentes + conteoState.adolescentesDelDia.length + baseAdolescentesDisplay;
   const totalHermanosApartadosActual =
-    conteoState.hermanosApartados + conteoState.hermanosApartadosDelDia.length;
+    conteoState.hermanosApartados + conteoState.hermanosApartadosDelDia.length + baseHermanosApartadosDisplay;
   const totalHermanosVisitasActual =
-    conteoState.hermanosVisitasCount + conteoState.hermanosVisitasDelDia.length;
+    conteoState.hermanosVisitasCount + conteoState.hermanosVisitasDelDia.length + baseHermanosVisitasDisplay;
 
   const total =
     totalHermanosActual +
@@ -510,12 +597,14 @@ export default function ConteoPage() {
     datosServicioBase
   );
 
-  if (loading || !isLoaded) {
+  if (loading || !isLoaded || loadingEdit) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Cargando datos...</p>
+          <p className="text-slate-600">
+            {loadingEdit ? "Cargando datos para edición..." : "Cargando datos..."}
+          </p>
         </div>
       </div>
     );
@@ -523,6 +612,52 @@ export default function ConteoPage() {
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
+      {/* Banner de modo edición */}
+      {isEditMode && (
+        <Card className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-full">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-semibold text-base sm:text-lg">
+                    Modo Edición
+                  </div>
+                  <div className="text-orange-100 text-xs sm:text-sm">
+                    Está editando un registro existente del historial
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (confirm("¿Desea cancelar la edición? Los cambios no guardados se perderán.")) {
+                    // Limpiar todo y resetear estados
+                    setDatosServicioBase(null);
+                    clearDayData();
+                    
+                    // Resetear modo consecutivo si estaba activo
+                    updateConteo({
+                      modoConsecutivo: false,
+                      tipoServicio: "dominical", // Volver al servicio por defecto
+                    });
+                    
+                    router.push("/historial");
+                  }
+                }}
+                className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader className="pb-3 px-3 sm:px-6">
@@ -990,13 +1125,19 @@ export default function ConteoPage() {
       {/* Save Button */}
       <Button
         onClick={handleSaveConteo}
-        className="w-full h-12 md:h-14 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4"
-        aria-label="Guardar conteo de asistencia"
+        className={`w-full h-12 md:h-14 ${
+          isEditMode
+            ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+            : "bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
+        } active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4`}
+        aria-label={isEditMode ? "Actualizar registro" : "Guardar conteo de asistencia"}
       >
         <Save className="w-5 h-5 md:w-6 md:h-6 mr-2" />
         <span className="flex-1 text-center">
-          {conteoState.modoConsecutivo
-            ? "Guardar Conteo Dominical"
+          {isEditMode
+            ? "Actualizar Registro"
+            : conteoState.modoConsecutivo
+            ? "Guardar Conteo de Asistencia"
             : "Guardar Conteo de Asistencia"}
         </span>
       </Button>

@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@/contexts/user-context";
 import {
   getHistorialRecordById,
-  updateHistorialRecord,
   fetchMiembros,
 } from "@/lib/utils";
 import { RoleGuard } from "@/components/role-guard";
@@ -28,8 +27,6 @@ import {
   UserCheck,
   UserX,
   Edit3,
-  Save,
-  X,
   Search,
   Filter,
   AlertCircle,
@@ -37,9 +34,8 @@ import {
   Zap,
   Heart,
 } from "lucide-react";
-import { toast } from "sonner";
 
-interface HistorialRecord {
+interface HistorialRecordAPI {
   id: string;
   fecha: string;
   servicio: string;
@@ -56,7 +52,16 @@ interface HistorialRecord {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
+    hermanosApartados?: Array<{ id: string; nombre: string }>;
   };
+  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+  hermanosApartados?: number;
+  hermanosVisitas?: number;
+}
+
+interface HistorialRecord extends HistorialRecordAPI {
+  hermanosApartados: number;
+  hermanosVisitas: number;
 }
 
 interface Miembro {
@@ -99,9 +104,6 @@ function ServicioHistorialContent() {
   const [allMembers, setAllMembers] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editData, setEditData] = useState<HistorialRecord | null>(null);
 
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,8 +120,13 @@ function ServicioHistorialContent() {
           getHistorialRecordById(recordId),
           fetchMiembros(),
         ]);
-        setRecord(recordData);
-        setEditData(recordData);
+        // Ensure new fields exist with default values
+        const normalizedRecord: HistorialRecord = {
+          ...recordData,
+          hermanosApartados: (recordData as HistorialRecordAPI).hermanosApartados || 0,
+          hermanosVisitas: (recordData as HistorialRecordAPI).hermanosVisitas || 0,
+        };
+        setRecord(normalizedRecord);
         setAllMembers(membersData);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Error cargando datos";
@@ -158,35 +165,6 @@ function ServicioHistorialContent() {
     );
   }
 
-  const handleSaveChanges = async () => {
-    if (!editData) return;
-
-    setIsSaving(true);
-    try {
-      const { id, ...updateData } = editData;
-      // Asegurar que ujier sea un array
-      const dataToUpdate = {
-        ...updateData,
-        ujier: Array.isArray(updateData.ujier) ? updateData.ujier : [updateData.ujier],
-      };
-      
-      await updateHistorialRecord(id, dataToUpdate);
-      setRecord(editData);
-      setIsEditing(false);
-      toast.success("Registro actualizado exitosamente");
-    } catch (error) {
-      console.error("Error al actualizar registro:", error);
-      toast.error("Error al actualizar el registro. Intente nuevamente.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditData(record);
-    setIsEditing(false);
-  };
-
   // Obtener todos los asistentes
   const getAllAsistentes = (): AsistenteInfo[] => {
     if (!record) return [];
@@ -221,6 +199,18 @@ function ServicioHistorialContent() {
       });
     }
 
+    // Agregar hermanos visitas
+    if (record.hermanosVisitasAsistieron) {
+      record.hermanosVisitasAsistieron.forEach((hermanoVisita) => {
+        asistentes.push({
+          id: hermanoVisita.id,
+          nombre: hermanoVisita.nombre,
+          categoria: "Hermanos Visitas",
+          tipo: "miembro",
+        });
+      });
+    }
+
     return asistentes;
   };
 
@@ -237,7 +227,8 @@ function ServicioHistorialContent() {
         ...miembro,
         categoria_display: miembro.categoria === "hermano" ? "Hermanos" :
                           miembro.categoria === "hermana" ? "Hermanas" :
-                          miembro.categoria === "nino" ? "Niños" : "Adolescentes"
+                          miembro.categoria === "nino" ? "Niños" : 
+                          miembro.categoria === "adolescente" ? "Adolescentes" : "Hermanos Apartados"
       }));
   };
 
@@ -298,7 +289,9 @@ function ServicioHistorialContent() {
       "hermanas": "rose", 
       "niños": "amber",
       "adolescentes": "purple",
-      "simpatizantes": "emerald"
+      "simpatizantes": "emerald",
+      "hermanos apartados": "orange",
+      "hermanos visitas": "indigo"
     }[categoria.toLowerCase()] || "gray";
 
     return `bg-${baseColor}-50 border-${baseColor}-200 text-${baseColor}-700`;
@@ -321,6 +314,10 @@ function ServicioHistorialContent() {
           return <Zap className={`${iconSize} text-red-600`} />;
         case "simpatizantes":
           return <Users className={`${iconSize} text-red-600`} />;
+        case "hermanos apartados":
+          return <User className={`${iconSize} text-red-600`} />;
+        case "hermanos visitas":
+          return <Users className={`${iconSize} text-red-600`} />;
         default:
           return <UserX className={`${iconSize} text-red-600`} />;
       }
@@ -338,6 +335,10 @@ function ServicioHistorialContent() {
         return <Zap className={`${iconSize} text-purple-600`} />;
       case "simpatizantes":
         return <Users className={`${iconSize} text-emerald-600`} />;
+      case "hermanos apartados":
+        return <User className={`${iconSize} text-orange-600`} />;
+      case "hermanos visitas":
+        return <Users className={`${iconSize} text-indigo-600`} />;
       default:
         return <User className={`${iconSize} text-gray-600`} />;
     }
@@ -360,6 +361,10 @@ function ServicioHistorialContent() {
         return "bg-purple-100";
       case "simpatizantes":
         return "bg-emerald-100";
+      case "hermanos apartados":
+        return "bg-orange-100";
+      case "hermanos visitas":
+        return "bg-indigo-100";
       default:
         return "bg-gray-100";
     }
@@ -414,40 +419,15 @@ function ServicioHistorialContent() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver al Historial
             </Button>
-            <div className="flex gap-2">
-              {!isEditing ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Editar
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                    disabled={isSaving}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveChanges}
-                    disabled={isSaving}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {isSaving ? "Guardando..." : "Guardar"}
-                  </Button>
-                </>
-              )}
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/conteo?editId=${recordId}`)}
+              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+            >
+              <Edit3 className="w-4 h-4 mr-2" />
+              Editar en Conteo
+            </Button>
           </div>
           <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -464,147 +444,8 @@ function ServicioHistorialContent() {
       {/* Información del Servicio */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
         <CardContent className="p-4 space-y-4">
-          {isEditing && editData ? (
-            // Modo de edición
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Fecha
-                </label>
-                <Input
-                  type="date"
-                  value={editData.fecha}
-                  onChange={(e) =>
-                    setEditData({ ...editData, fecha: e.target.value })
-                  }
-                  className="h-9"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Servicio
-                </label>
-                <Select
-                  value={editData.servicio}
-                  onValueChange={(value) =>
-                    setEditData({ ...editData, servicio: value })
-                  }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dominical">Dominical</SelectItem>
-                    <SelectItem value="oración y enseñanza">Oración y Enseñanza</SelectItem>
-                    <SelectItem value="hermanas dorcas">Hermanas Dorcas</SelectItem>
-                    <SelectItem value="evangelismo">Evangelismo</SelectItem>
-                    <SelectItem value="misionero">Misionero</SelectItem>
-                    <SelectItem value="jóvenes">Jóvenes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:col-span-2">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Hermanos
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={editData.hermanos}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        hermanos: parseInt(e.target.value) || 0,
-                        total: (parseInt(e.target.value) || 0) + editData.hermanas + editData.ninos + editData.adolescentes + editData.simpatizantes,
-                      })
-                    }
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Hermanas
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={editData.hermanas}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        hermanas: parseInt(e.target.value) || 0,
-                        total: editData.hermanos + (parseInt(e.target.value) || 0) + editData.ninos + editData.adolescentes + editData.simpatizantes,
-                      })
-                    }
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Niños
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={editData.ninos}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        ninos: parseInt(e.target.value) || 0,
-                        total: editData.hermanos + editData.hermanas + (parseInt(e.target.value) || 0) + editData.adolescentes + editData.simpatizantes,
-                      })
-                    }
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Adolescentes
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={editData.adolescentes}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        adolescentes: parseInt(e.target.value) || 0,
-                        total: editData.hermanos + editData.hermanas + editData.ninos + (parseInt(e.target.value) || 0) + editData.simpatizantes,
-                      })
-                    }
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Simpatizantes
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={editData.simpatizantes}
-                    onChange={(e) =>
-                      setEditData({
-                        ...editData,
-                        simpatizantes: parseInt(e.target.value) || 0,
-                        total: editData.hermanos + editData.hermanas + editData.ninos + editData.adolescentes + (parseInt(e.target.value) || 0),
-                      })
-                    }
-                    className="h-9"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-slate-50 p-3 rounded-lg md:col-span-2">
-                <div className="text-sm text-gray-600 mb-1">Total Calculado:</div>
-                <div className="text-2xl font-bold text-slate-700">{editData.total}</div>
-              </div>
-            </div>
-          ) : (
-            // Modo de vista
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          {/* Vista de información */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Fecha:</span>
                 <div className="font-semibold">
@@ -626,10 +467,9 @@ function ServicioHistorialContent() {
                 <div className="font-semibold text-xl text-slate-700">{record.total}</div>
               </div>
             </div>
-          )}
 
-          {!isEditing && (
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-3 border-t">
+          {/* Categorías detalladas */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-3 border-t">
               <div className="text-center p-3 bg-slate-50 rounded-lg">
                 <div className="text-lg font-bold text-slate-600">{record.hermanos}</div>
                 <div className="text-xs text-gray-500">Hermanos</div>
@@ -650,8 +490,15 @@ function ServicioHistorialContent() {
                 <div className="text-lg font-bold text-emerald-600">{record.simpatizantes}</div>
                 <div className="text-xs text-gray-500">Simpat.</div>
               </div>
+              <div className="text-center p-3 bg-orange-50 rounded-lg">
+                <div className="text-lg font-bold text-orange-600">{record.hermanosApartados || 0}</div>
+                <div className="text-xs text-gray-500">H. Apart.</div>
+              </div>
+              <div className="text-center p-3 bg-indigo-50 rounded-lg">
+                <div className="text-lg font-bold text-indigo-600">{record.hermanosVisitas || 0}</div>
+                <div className="text-xs text-gray-500">H. Visitas</div>
+              </div>
             </div>
-          )}
         </CardContent>
       </Card>
 
@@ -732,6 +579,8 @@ function ServicioHistorialContent() {
                 <SelectItem value="niños">Niños</SelectItem>
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
                 <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
+                <SelectItem value="hermanos apartados">Hermanos Apartados</SelectItem>
+                <SelectItem value="hermanos visitas">Hermanos Visitas</SelectItem>
               </SelectContent>
             </Select>
           </div>

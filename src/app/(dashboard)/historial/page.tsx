@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-interface HistorialRecord {
+interface HistorialRecordAPI {
   id: string;
   fecha: string;
   servicio: string;
@@ -51,7 +51,16 @@ interface HistorialRecord {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
+    hermanosApartados?: Array<{ id: string; nombre: string }>;
   };
+  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+  hermanosApartados?: number;
+  hermanosVisitas?: number;
+}
+
+interface HistorialRecord extends HistorialRecordAPI {
+  hermanosApartados: number;
+  hermanosVisitas: number;
 }
 
 export default function HistorialPage() {
@@ -85,7 +94,13 @@ function HistorialContent() {
     const loadHistorial = async () => {
       try {
         const data = await fetchHistorial();
-        setHistorial(data);
+        // Ensure new fields exist with default values
+        const normalizedData: HistorialRecord[] = data.map((record: HistorialRecordAPI) => ({
+          ...record,
+          hermanosApartados: record.hermanosApartados || 0,
+          hermanosVisitas: record.hermanosVisitas || 0,
+        }));
+        setHistorial(normalizedData);
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "Error cargando historial";
@@ -194,12 +209,22 @@ function HistorialContent() {
     (sum, record) => sum + record.simpatizantes,
     0
   );
+  const totalHermanosApartados = filteredData.reduce(
+    (sum, record) => sum + (record.hermanosApartados || 0),
+    0
+  );
+  const totalHermanosVisitas = filteredData.reduce(
+    (sum, record) => sum + (record.hermanosVisitas || 0),
+    0
+  );
   const granTotal =
     totalHermanos +
     totalHermanas +
     totalNinos +
     totalAdolescentes +
-    totalSimpatizantes;
+    totalSimpatizantes +
+    totalHermanosApartados +
+    totalHermanosVisitas;
 
   const clearDateFilters = () => {
     setFechaInicio("");
@@ -233,12 +258,16 @@ function HistorialContent() {
       "Niños",
       "Adolescentes",
       "Simpatizantes",
+      "Hermanos Apartados",
+      "Hermanos Visitas",
       "Total",
       "Simpatizantes Asistieron",
       "Hermanos Asistieron",
       "Hermanas Asistieron",
       "Niños Asistieron",
       "Adolescentes Asistieron",
+      "Hermanos Apartados Asistieron",
+      "Hermanos Visitas Asistieron",
     ];
 
     const csvContent = [
@@ -255,6 +284,8 @@ function HistorialContent() {
           record.ninos,
           record.adolescentes,
           record.simpatizantes,
+          record.hermanosApartados || 0,
+          record.hermanosVisitas || 0,
           record.total,
           `"${
             record.simpatizantesAsistieron?.map((s) => s.nombre).join("; ") ||
@@ -278,6 +309,15 @@ function HistorialContent() {
             record.miembrosAsistieron?.adolescentes
               ?.map((m) => m.nombre)
               .join("; ") || ""
+          }"`,
+          `"${
+            record.miembrosAsistieron?.hermanosApartados
+              ?.map((m) => m.nombre)
+              .join("; ") || ""
+          }"`,
+          `"${
+            record.hermanosVisitasAsistieron?.map((h) => h.nombre).join("; ") ||
+            ""
           }"`,
         ].join(",")
       ),
@@ -317,6 +357,8 @@ function HistorialContent() {
         Niños: record.ninos,
         Adolescentes: record.adolescentes,
         Simpatizantes: record.simpatizantes,
+        "Hermanos Apartados": record.hermanosApartados || 0,
+        "Hermanos Visitas": record.hermanosVisitas || 0,
         "Total Asistentes": record.total,
         "Simpatizantes que Asistieron":
           record.simpatizantesAsistieron?.map((s) => s.nombre).join(", ") || "",
@@ -335,6 +377,12 @@ function HistorialContent() {
           record.miembrosAsistieron?.adolescentes
             ?.map((m) => m.nombre)
             .join(", ") || "",
+        "Hermanos Apartados que Asistieron":
+          record.miembrosAsistieron?.hermanosApartados
+            ?.map((m) => m.nombre)
+            .join(", ") || "",
+        "Hermanos Visitas que Asistieron":
+          record.hermanosVisitasAsistieron?.map((h) => h.nombre).join(", ") || "",
       }));
 
       // Estadísticas resumidas para segunda hoja
@@ -350,6 +398,8 @@ function HistorialContent() {
         { Concepto: "Total Niños", Valor: totalNinos },
         { Concepto: "Total Adolescentes", Valor: totalAdolescentes },
         { Concepto: "Total Simpatizantes", Valor: totalSimpatizantes },
+        { Concepto: "Total Hermanos Apartados", Valor: totalHermanosApartados },
+        { Concepto: "Total Hermanos Visitas", Valor: totalHermanosVisitas },
         { Concepto: "GRAN TOTAL", Valor: granTotal },
       ];
 
@@ -586,7 +636,12 @@ NOTAS FINALES:
       await deleteHistorialRecord(recordId);
       // Recargar los datos
       const updatedData = await fetchHistorial();
-      setHistorial(updatedData);
+      const normalizedData: HistorialRecord[] = updatedData.map((record: HistorialRecordAPI) => ({
+        ...record,
+        hermanosApartados: record.hermanosApartados || 0,
+        hermanosVisitas: record.hermanosVisitas || 0,
+      }));
+      setHistorial(normalizedData);
       setShowDeleteConfirm(null);
       toast.success("Registro eliminado exitosamente");
     } catch (error) {
@@ -864,7 +919,7 @@ NOTAS FINALES:
               <div className="text-xs text-slate-200 mb-2 text-center">
                 Total General: {granTotal} asistentes
               </div>
-              <div className="grid grid-cols-5 gap-1 text-center">
+              <div className="grid grid-cols-7 gap-1 text-center">
                 <div>
                   <div className="text-sm font-semibold">{totalHermanos}</div>
                   <div className="text-xs text-slate-300">H</div>
@@ -888,6 +943,18 @@ NOTAS FINALES:
                     {totalSimpatizantes}
                   </div>
                   <div className="text-xs text-slate-300">S</div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">
+                    {totalHermanosApartados}
+                  </div>
+                  <div className="text-xs text-slate-300">HA</div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">
+                    {totalHermanosVisitas}
+                  </div>
+                  <div className="text-xs text-slate-300">HV</div>
                 </div>
               </div>
             </div>
@@ -963,10 +1030,10 @@ NOTAS FINALES:
               </p>
             </CardContent>
           </Card>
-        ) : (
+        ) : ( 
           filteredData.map((record) => (
             <Card
-              key={record.id}
+              key={record.id + record.fecha}
               className="bg-white/80 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-shadow"
             >
               <CardContent className="p-4">
@@ -999,7 +1066,7 @@ NOTAS FINALES:
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-3">
                   <div className="text-center p-2 bg-slate-50 rounded-lg">
                     <div className="text-sm font-semibold text-slate-600">
                       {record.hermanos}
@@ -1029,6 +1096,18 @@ NOTAS FINALES:
                       {record.simpatizantes}
                     </div>
                     <div className="text-xs text-gray-500">Simpat.</div>
+                  </div>
+                  <div className="text-center p-2 bg-orange-50 rounded-lg">
+                    <div className="text-sm font-semibold text-orange-600">
+                      {record.hermanosApartados || 0}
+                    </div>
+                    <div className="text-xs text-gray-500">H. Apart.</div>
+                  </div>
+                  <div className="text-center p-2 bg-indigo-50 rounded-lg">
+                    <div className="text-sm font-semibold text-indigo-600">
+                      {record.hermanosVisitas || 0}
+                    </div>
+                    <div className="text-xs text-gray-500">H. Visitas</div>
                   </div>
                 </div>
 

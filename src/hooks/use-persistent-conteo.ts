@@ -159,11 +159,68 @@ export function usePersistentConteo() {
     }));
   }, []);
 
+  // Función para cargar datos desde un registro de historial para edición
+  const loadHistorialData = useCallback((historialData: {
+    fecha: string;
+    servicio: string;
+    ujier: string | string[];
+    hermanos: number;
+    hermanas: number;
+    ninos: number;
+    adolescentes: number;
+    simpatizantes: number;
+    hermanosApartados?: number;
+    hermanosVisitas?: number;
+    simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+    miembrosAsistieron?: {
+      hermanos?: Array<{ id: string; nombre: string }>;
+      hermanas?: Array<{ id: string; nombre: string }>;
+      ninos?: Array<{ id: string; nombre: string }>;
+      adolescentes?: Array<{ id: string; nombre: string }>;
+      hermanosApartados?: Array<{ id: string; nombre: string }>;
+    };
+    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+  }) => {
+    // Convertir el servicio al valor correcto
+    const servicioValue = historialData.servicio.toLowerCase();
+    
+    // Normalizar ujieres a array
+    const ujieresArray = Array.isArray(historialData.ujier) 
+      ? historialData.ujier 
+      : [historialData.ujier];
+
+    // Cargar los datos del historial en el estado de conteo
+    setConteoState({
+      hermanos: 0, // Los contadores se ponen en 0, los datos están en las listas
+      hermanas: 0,
+      ninos: 0,
+      adolescentes: 0,
+      simpatizantesCount: 0,
+      hermanosApartados: 0,
+      hermanosVisitasCount: 0,
+      fecha: historialData.fecha,
+      tipoServicio: servicioValue,
+      ujierSeleccionado: ujieresArray.length === 1 ? ujieresArray[0] : "otro",
+      ujierPersonalizado: ujieresArray.length > 1 ? ujieresArray.join(", ") : "",
+      selectedUjieres: ujieresArray,
+      modoConsecutivo: false,
+      simpatizantesDelDia: historialData.simpatizantesAsistieron || [],
+      hermanosDelDia: historialData.miembrosAsistieron?.hermanos || [],
+      hermanasDelDia: historialData.miembrosAsistieron?.hermanas || [],
+      ninosDelDia: historialData.miembrosAsistieron?.ninos || [],
+      adolescentesDelDia: historialData.miembrosAsistieron?.adolescentes || [],
+      hermanosApartadosDelDia: historialData.miembrosAsistieron?.hermanosApartados || [],
+      hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
+      searchMiembros: "",
+    });
+  }, []);
+
   return {
     conteoState,
     updateConteo,
     resetConteo,
     clearDayData,
+    loadHistorialData,
     isLoaded,
   };
 }
