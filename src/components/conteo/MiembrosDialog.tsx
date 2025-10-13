@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { MiembrosDialogProps } from "./types";
 import { MiembroSimplificado } from "@/app/types";
-import { getMiembrosPorCategoria } from "./utils";
+import { getCategoriaColor, getMiembrosPorCategoria } from "./utils";
 
 export function MiembrosDialog({
   isOpen,
@@ -34,6 +34,7 @@ export function MiembrosDialog({
   baseMiembros,
   onAddMiembros,
   onRemoveMiembro,
+  onClearAllMiembros,
 }: MiembrosDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDebounce, setSearchDebounce] = useState("");
@@ -99,7 +100,7 @@ export function MiembrosDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+      <DialogContent className="sm:max-w-4xl lg:max-w-5xl max-h-[95vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="flex items-center justify-between text-base sm:text-lg">
             <span>Seleccionar {categoria}</span>
@@ -198,7 +199,7 @@ export function MiembrosDialog({
                 </Badge>
               )}
             </h4>
-            <div className="h-96 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
+            <div className="h-[500px] sm:h-[600px] overflow-y-auto space-y-2 pr-1 border rounded-lg p-3 bg-gray-50/50">
               {filteredMembers.length > 0 ? (
                 filteredMembers.map((miembro) => {
                   const isSelected = selectedMembers.includes(miembro.id);
@@ -229,8 +230,8 @@ export function MiembrosDialog({
                             </div>
 
                             {/* Avatar */}
-                            <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <User className="w-5 h-5 text-pink-600" />
+                            <div className={`w-10 h-10 ${getCategoriaColor(categoria)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                              <User className="w-5 h-5" />
                             </div>
 
                             {/* Información */}
@@ -311,7 +312,7 @@ export function MiembrosDialog({
                   size="sm"
                   className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
                   onClick={() => {
-                    miembrosDelDia.forEach((m) => onRemoveMiembro(m.id));
+                    onClearAllMiembros();
                     toast.info("Miembros de esta sesión eliminados");
                   }}
                 >
@@ -319,7 +320,7 @@ export function MiembrosDialog({
                   Limpiar
                 </Button>
               </div>
-              <div className="max-h-24 overflow-y-auto space-y-1 pr-1">
+              <div className="max-h-56 h-56 overflow-y-auto space-y-1 pr-1">
                 {miembrosDelDia.map((miembro: MiembroSimplificado) => (
                   <div
                     key={miembro.id}

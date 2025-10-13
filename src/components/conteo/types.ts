@@ -89,6 +89,7 @@ export interface SimpatizantesDialogProps extends ConteoDialogProps {
   onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
   onAddNewSimpatizante: (simpatizante: Omit<SimpatizanteLite, 'id'>) => Promise<void>;
   onRemoveSimpatizante: (id: string) => void;
+  onClearAllSimpatizantes: () => void;
 }
 
 export type CategoriaPlural = "hermanos" | "hermanas" | "ninos" | "adolescentes" | "hermanosApartados";
@@ -100,6 +101,7 @@ export interface MiembrosDialogProps extends ConteoDialogProps {
   baseMiembros: MiembroSimplificado[];
   onAddMiembros: (miembros: MiembroExtended[]) => void;
   onRemoveMiembro: (id: string) => void;
+  onClearAllMiembros: () => void;
 }
 
 // Representa un miembro completo disponible para seleccionar (subset del modelo Miembro)

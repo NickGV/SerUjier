@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SimpatizantesDialogProps } from "./types";
+import { getCategoriaColor } from "./utils";
 
 export function SimpatizantesDialog({
   isOpen,
@@ -31,6 +32,7 @@ export function SimpatizantesDialog({
   onAddSimpatizantes,
   onAddNewSimpatizante,
   onRemoveSimpatizante,
+  onClearAllSimpatizantes,
 }: SimpatizantesDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDebounce, setSearchDebounce] = useState("");
@@ -115,7 +117,7 @@ export function SimpatizantesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+      <DialogContent className="sm:max-w-4xl lg:max-w-5xl max-h-[95vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
         <DialogHeader className="flex-shrink-0 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base sm:text-lg">
@@ -190,56 +192,7 @@ export function SimpatizantesDialog({
                 </div>
               </div>
 
-              {/* Simpatizantes ya agregados */}
-              {simpatizantesDelDia.length > 0 && (
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" />
-                      Ya agregados ({simpatizantesDelDia.length})
-                    </h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
-                      onClick={() => {
-                        simpatizantesDelDia.forEach((s) =>
-                          onRemoveSimpatizante(s.id)
-                        );
-                        toast.info("Simpatizantes eliminados");
-                      }}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Limpiar
-                    </Button>
-                  </div>
-                  <div className="max-h-24 overflow-y-auto space-y-1 pr-1 border rounded-lg p-2 bg-green-50/50">
-                    {simpatizantesDelDia.map((simpatizante) => (
-                      <div
-                        key={simpatizante.id}
-                        className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
-                      >
-                        <span className="text-green-800 truncate flex-1 min-w-0">
-                          {simpatizante.nombre}
-                          {simpatizante.telefono && (
-                            <span className="text-green-600 ml-2">
-                              📞 {simpatizante.telefono}
-                            </span>
-                          )}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 h-6 w-6 p-0 flex-shrink-0 ml-2"
-                          onClick={() => onRemoveSimpatizante(simpatizante.id)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+             
 
               {/* Lista de simpatizantes disponibles */}
               <div className="flex-1 overflow-hidden">
@@ -255,7 +208,7 @@ export function SimpatizantesDialog({
                     </Badge>
                   )}
                 </h4>
-                <div className="h-80 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
+                <div className="h-[500px] sm:h-[600px] overflow-y-auto space-y-2 pr-1 border rounded-lg p-3 bg-gray-50/50">
                   {filteredSimpatizantes.length > 0 ? (
                     filteredSimpatizantes.map((simpatizante) => {
                       const isSelected = selectedSimpatizantes.includes(
@@ -290,8 +243,8 @@ export function SimpatizantesDialog({
                                 </div>
 
                                 {/* Avatar */}
-                                <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <User className="w-5 h-5 text-pink-600" />
+                                <div className={`w-10 h-10 ${getCategoriaColor("simpatizantes")} rounded-full flex items-center justify-center flex-shrink-0`}>
+                                  <User className="w-5 h-5" />
                                 </div>
 
                                 {/* Información */}
@@ -358,6 +311,54 @@ export function SimpatizantesDialog({
                   )}
                 </div>
               </div>
+               {/* Simpatizantes ya agregados */}
+               {simpatizantesDelDia.length > 0 && (
+                <div className="flex-shrink-0 ">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Ya agregados ({simpatizantesDelDia.length})
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
+                      onClick={() => {
+                        onClearAllSimpatizantes();
+                        toast.info("Simpatizantes eliminados");
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Limpiar
+                    </Button>
+                  </div>
+                  <div className="max-h-56 h-56 overflow-y-auto space-y-1 pr-1 border rounded-lg p-3 bg-green-50/50">
+                    {simpatizantesDelDia.map((simpatizante) => (
+                      <div
+                        key={simpatizante.id}
+                        className="flex items-center justify-between p-2 bg-green-50 rounded text-sm border border-green-200"
+                      >
+                        <span className="text-green-800 truncate flex-1 min-w-0">
+                          {simpatizante.nombre}
+                          {simpatizante.telefono && (
+                            <span className="text-green-600 ml-2">
+                              📞 {simpatizante.telefono}
+                            </span>
+                          )}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 h-6 w-6 p-0 flex-shrink-0 ml-2"
+                          onClick={() => onRemoveSimpatizante(simpatizante.id)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Botones de acción */}
               <div className="flex-shrink-0 pt-3 border-t space-y-2">

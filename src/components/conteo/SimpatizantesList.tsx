@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Users } from "lucide-react";
+import { User, Users, Trash2 } from "lucide-react";
 import { SimpatizanteLite } from "./types";
+import { getCategoriaColor } from "./utils";
 
 interface SimpatizantesListProps {
   simpatizantesDelDia: SimpatizanteLite[];
@@ -37,8 +38,8 @@ export function SimpatizantesList({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {/* Avatar con ícono de persona */}
-                  <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-6 h-6 text-pink-600" />
+                  <div className={`w-12 h-12 ${getCategoriaColor("simpatizantes")} rounded-full flex items-center justify-center flex-shrink-0`}>
+                    <User className="w-6 h-6" />
                   </div>
 
                   {/* Información del simpatizante */}
@@ -71,7 +72,7 @@ export function SimpatizantesList({
                     className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50"
                     onClick={() => onRemoveSimpatizante(simpatizante.id)}
                   >
-                    🗑️
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

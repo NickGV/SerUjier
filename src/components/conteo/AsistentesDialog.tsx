@@ -51,7 +51,7 @@ export function AsistentesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
+      <DialogContent className="sm:max-w-4xl lg:max-w-5xl max-h-[95vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-base sm:text-lg flex items-center justify-between">
             <span>Lista de Asistentes</span>
@@ -82,7 +82,7 @@ export function AsistentesDialog({
 
           {/* Lista de asistentes */}
           <div className="flex-1 overflow-hidden">
-            <div className="h-96 overflow-y-auto space-y-2 pr-1 border rounded-lg p-2 bg-gray-50/50">
+            <div className="h-[500px] sm:h-[600px] overflow-y-auto space-y-2 pr-1 border rounded-lg p-3 bg-gray-50/50">
               {filteredAsistentes.length > 0 ? (
                 filteredAsistentes.map((asistente) => (
                   <Card
@@ -95,8 +95,8 @@ export function AsistentesDialog({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {/* Avatar */}
-                          <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-5 h-5 text-pink-600" />
+                          <div className={`w-10 h-10 ${getCategoriaColor(asistente.categoria)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                            <User className="w-5 h-5" />
                           </div>
 
                           {/* Información */}

@@ -127,30 +127,9 @@ export default function ConteoPage() {
     loadData();
   }, []);
 
-  // Efecto para cargar los datos base cuando se entra en modo consecutivo
-  useEffect(() => {
-    if (conteoState.modoConsecutivo && datosServicioBase) {
-      updateConteo({
-        hermanos: datosServicioBase.hermanos || 0,
-        hermanas: datosServicioBase.hermanas || 0,
-        ninos: datosServicioBase.ninos || 0,
-        adolescentes: datosServicioBase.adolescentes || 0,
-        simpatizantesCount: datosServicioBase.simpatizantes || 0,
-        hermanosApartados: datosServicioBase.hermanosApartados || 0,
-        hermanosVisitasCount: datosServicioBase.hermanosVisitas || 0,
-        simpatizantesDelDia: datosServicioBase.simpatizantesAsistieron || [],
-        hermanosDelDia: datosServicioBase.miembrosAsistieron?.hermanos || [],
-        hermanasDelDia: datosServicioBase.miembrosAsistieron?.hermanas || [],
-        ninosDelDia: datosServicioBase.miembrosAsistieron?.ninos || [],
-        adolescentesDelDia:
-          datosServicioBase.miembrosAsistieron?.adolescentes || [],
-        hermanosApartadosDelDia:
-          datosServicioBase.miembrosAsistieron?.hermanosApartados || [],
-        hermanosVisitasDelDia: datosServicioBase.hermanosVisitasAsistieron || [],
-        tipoServicio: "dominical", // Forzar a dominical
-      });
-    }
-  }, [conteoState.modoConsecutivo, datosServicioBase, updateConteo]);
+  // Nota: En modo consecutivo NO copiamos la base al estado. La base sólo se
+  // toma en cuenta al calcular totales y al mostrar asistentes, evitando
+  // duplicaciones.
 
   // Funciones simplificadas para manejar los diálogos
   const handleAddSimpatizantes = (newSimpatizantes: SimpatizanteLite[]) => {
@@ -193,6 +172,12 @@ export default function ConteoPage() {
     });
   };
 
+  const handleClearAllSimpatizantes = () => {
+    updateConteo({
+      simpatizantesDelDia: [],
+    });
+  };
+
   const categoriaKey = (c: CategoriaPlural) => `${c}DelDia` as const;
 
   const handleAddMiembros = (
@@ -223,6 +208,13 @@ export default function ConteoPage() {
     (updates as ConteoStateWithIndex)[key] = currentList.filter(
       (m) => m.id !== miembroId
     );
+    updateConteo(updates);
+  };
+
+  const handleClearAllMiembros = (categoria: CategoriaPlural) => {
+    const key = categoriaKey(categoria);
+    const updates: Partial<ConteoStateWithIndex> = {};
+    (updates as ConteoStateWithIndex)[key] = [];
     updateConteo(updates);
   };
 
@@ -423,15 +415,13 @@ export default function ConteoPage() {
       ],
     };
 
-    // Verificar si es domingo y evangelismo/misionero (y no estamos en modo consecutivo)
-    const fechaObj = new Date(conteoState.fecha + "T12:00:00"); // Add time to avoid timezone issues
-    const esDomingo = fechaObj.getDay() === 0;
+    // Verificar si es evangelismo/misionero (y no estamos en modo consecutivo)
     const esServicioBase =
       conteoState.tipoServicio === "evangelismo" ||
       conteoState.tipoServicio === "misionero";
 
     try {
-      if (esDomingo && esServicioBase && !conteoState.modoConsecutivo) {
+      if (esServicioBase && !conteoState.modoConsecutivo) {
         // Guardar datos del evangelismo/misionero y preguntar si continuar
         await saveConteo(conteoData);
         setDatosServicioBase(conteoData); // Guardar el conteo actual como base
@@ -457,14 +447,30 @@ export default function ConteoPage() {
   };
 
   const continuarConDominical = () => {
+    // Activar modo consecutivo y reiniciar contadores/listas del día.
+    // Conservamos los ujieres seleccionados.
     updateConteo({
       modoConsecutivo: true,
       tipoServicio: "dominical",
+      hermanos: 0,
+      hermanas: 0,
+      ninos: 0,
+      adolescentes: 0,
+      simpatizantesCount: 0,
+      hermanosApartados: 0,
+      hermanosVisitasCount: 0,
+      simpatizantesDelDia: [],
+      hermanosDelDia: [],
+      hermanasDelDia: [],
+      ninosDelDia: [],
+      adolescentesDelDia: [],
+      hermanosApartadosDelDia: [],
+      hermanosVisitasDelDia: [],
+      // selectedUjieres y campos de ujier se mantienen tal cual
     });
     setShowContinuarDialog(false);
-    // Los contadores y listas ya se habrán cargado desde datosServicioBase en el useEffect
     toast.success(
-      "Continuando con el servicio dominical. Los asistentes del servicio base se mantienen."
+      "Continuando con el servicio dominical. La base se mantiene y los contadores se reinician."
     );
   };
 
@@ -898,12 +904,6 @@ export default function ConteoPage() {
         </Button>
       )}
 
-      {/* Simpatizantes del día */}
-      <SimpatizantesList
-        simpatizantesDelDia={conteoState.simpatizantesDelDia}
-        onRemoveSimpatizante={handleRemoveSimpatizante}
-      />
-
       {/* Diálogos modulares */}
       <SimpatizantesDialog
         isOpen={showSimpatizantesDialog}
@@ -913,6 +913,7 @@ export default function ConteoPage() {
         onAddSimpatizantes={handleAddSimpatizantes}
         onAddNewSimpatizante={handleAddNewSimpatizante}
         onRemoveSimpatizante={handleRemoveSimpatizante}
+        onClearAllSimpatizantes={handleClearAllSimpatizantes}
       />
 
       {categoriaSeleccionada && (
@@ -942,6 +943,9 @@ export default function ConteoPage() {
               categoriaSeleccionada as CategoriaPlural,
               miembroId
             )
+          }
+          onClearAllMiembros={() =>
+            handleClearAllMiembros(categoriaSeleccionada as CategoriaPlural)
           }
         />
       )}
@@ -996,6 +1000,12 @@ export default function ConteoPage() {
             : "Guardar Conteo de Asistencia"}
         </span>
       </Button>
+
+      {/* Simpatizantes del día */}
+      <SimpatizantesList
+        simpatizantesDelDia={conteoState.simpatizantesDelDia}
+        onRemoveSimpatizante={handleRemoveSimpatizante}
+      />
 
       {/* Dialog para continuar con dominical */}
       {showContinuarDialog && (

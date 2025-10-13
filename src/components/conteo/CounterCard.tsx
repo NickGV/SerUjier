@@ -29,13 +29,12 @@ export function CounterCard({
   onIncrement,
   onDecrement,
 }: CounterCardProps) {
-  const totalValue =
-    counter.value +
-    counter.miembrosDelDia.length +
-    counter.baseValue +
-    counter.baseMiembros.length;
-  const totalAddedMembers =
-    counter.miembrosDelDia.length + counter.baseMiembros.length;
+  // Evitar duplicación al mostrar: en modo consecutivo, la base puede venir
+  // como número (baseValue) y/o como lista (baseMiembros). Consideramos sólo
+  // uno de ellos, el mayor, para no sumar dos veces la misma base.
+  const baseCount = Math.max(counter.baseValue || 0, counter.baseMiembros?.length || 0);
+  const totalValue = counter.value + counter.miembrosDelDia.length + baseCount;
+  const totalAddedMembers = counter.miembrosDelDia.length + (counter.baseMiembros?.length || 0);
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-md">
