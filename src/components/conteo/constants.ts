@@ -5,6 +5,7 @@ export const servicios = [
   { value: "evangelismo", label: "Evangelismo" },
   { value: "misionero", label: "Misionero" },
   { value: "jovenes", label: "Jóvenes" },
+  { value: "intercesion", label: "Intercesión" },
 ];
 
 export const CATEGORIA_COLORS = {

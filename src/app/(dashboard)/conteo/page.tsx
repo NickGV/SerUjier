@@ -5,10 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { usePersistentConteo } from "@/hooks/use-persistent-conteo";
 import { useConteoCounters } from "@/hooks/use-conteo-counters";
 import { useBulkCount } from "@/hooks/use-bulk-count";
-// Usamos la versión Lite definida en componentes de conteo para evitar dependencia circular
 import type { SimpatizanteLite, CounterData } from "@/components/conteo";
-// TODO: Crear opcion de poner hermanos apartados
-
 import {
   fetchSimpatizantes,
   fetchMiembros,
@@ -58,18 +55,26 @@ import {
 } from "@/components/conteo";
 
 export default function ConteoPage() {
+  // Estado para servicio manual
+  const [showServicioInput, setShowServicioInput] = useState(false);
+  const [servicioManual, setServicioManual] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
   const editId = searchParams.get("editId");
-  
+
   // Hook persistente para el conteo
-  const { conteoState, updateConteo, clearDayData, loadHistorialData, isLoaded } =
-    usePersistentConteo();
+  const {
+    conteoState,
+    updateConteo,
+    clearDayData,
+    loadHistorialData,
+    isLoaded,
+  } = usePersistentConteo();
 
   // Estados locales que no necesitan persistencia (definidos antes de hooks que los usan)
   const [datosServicioBase, setDatosServicioBase] =
     useState<DatosServicioBase | null>(null);
-  
+
   // Estados para modo edición
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
@@ -97,7 +102,8 @@ export default function ConteoPage() {
   const [showSimpatizantesDialog, setShowSimpatizantesDialog] = useState(false);
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
-  const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] = useState(false);
+  const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] =
+    useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
     CategoriaPlural | ""
   >("");
@@ -456,17 +462,17 @@ export default function ConteoPage() {
     if (isEditMode && editingRecordId) {
       try {
         await updateHistorialRecord(editingRecordId, conteoData);
-        
+
         // Limpiar todo y resetear estados
         setDatosServicioBase(null);
         clearDayData();
-        
+
         // Resetear modo consecutivo si estaba activo
         updateConteo({
           modoConsecutivo: false,
           tipoServicio: "dominical", // Volver al servicio por defecto
         });
-        
+
         toast.success("Registro actualizado exitosamente");
         router.push("/historial");
         return;
@@ -494,18 +500,20 @@ export default function ConteoPage() {
       if (conteoState.modoConsecutivo) {
         // Estamos guardando el dominical después del evangelismo/misionero
         await saveConteo(conteoData);
-        
+
         // Resetear completamente el modo consecutivo y limpiar todo
         setDatosServicioBase(null);
         clearDayData(); // Limpiar solo los datos del día
-        
+
         // Resetear el modo consecutivo
         updateConteo({
           modoConsecutivo: false,
           tipoServicio: "dominical", // Volver al servicio por defecto
         });
-        
-        toast.success("Conteo dominical guardado exitosamente. Modo consecutivo finalizado.");
+
+        toast.success(
+          "Conteo dominical guardado exitosamente. Modo consecutivo finalizado."
+        );
       } else {
         // Guardado normal
         await saveConteo(conteoData);
@@ -550,37 +558,64 @@ export default function ConteoPage() {
     setShowContinuarDialog(false);
     setDatosServicioBase(null); // Limpiar los datos base
     clearDayData(); // Limpiar solo los datos del día
-    
+
     // Asegurar que no quede en modo consecutivo
     updateConteo({
       modoConsecutivo: false,
     });
-    
+
     toast.success("Conteo guardado exitosamente");
   };
 
   // Calcular el total de asistentes (incluyendo base si estamos en modo consecutivo)
-  const baseHermanosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanos || 0) : 0;
-  const baseHermanasDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanas || 0) : 0;
-  const baseNinosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.ninos || 0) : 0;
-  const baseAdolescentesDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.adolescentes || 0) : 0;
-  const baseSimpatizantesDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.simpatizantes || 0) : 0;
-  const baseHermanosApartadosDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanosApartados || 0) : 0;
-  const baseHermanosVisitasDisplay = conteoState.modoConsecutivo ? (datosServicioBase?.hermanosVisitas || 0) : 0;
+  const baseHermanosDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.hermanos || 0
+    : 0;
+  const baseHermanasDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.hermanas || 0
+    : 0;
+  const baseNinosDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.ninos || 0
+    : 0;
+  const baseAdolescentesDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.adolescentes || 0
+    : 0;
+  const baseSimpatizantesDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.simpatizantes || 0
+    : 0;
+  const baseHermanosApartadosDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.hermanosApartados || 0
+    : 0;
+  const baseHermanosVisitasDisplay = conteoState.modoConsecutivo
+    ? datosServicioBase?.hermanosVisitas || 0
+    : 0;
 
   const totalSimpatizantesActual =
-    conteoState.simpatizantesCount + conteoState.simpatizantesDelDia.length + baseSimpatizantesDisplay;
+    conteoState.simpatizantesCount +
+    conteoState.simpatizantesDelDia.length +
+    baseSimpatizantesDisplay;
   const totalHermanosActual =
-    conteoState.hermanos + conteoState.hermanosDelDia.length + baseHermanosDisplay;
+    conteoState.hermanos +
+    conteoState.hermanosDelDia.length +
+    baseHermanosDisplay;
   const totalHermanasActual =
-    conteoState.hermanas + conteoState.hermanasDelDia.length + baseHermanasDisplay;
-  const totalNinosActual = conteoState.ninos + conteoState.ninosDelDia.length + baseNinosDisplay;
+    conteoState.hermanas +
+    conteoState.hermanasDelDia.length +
+    baseHermanasDisplay;
+  const totalNinosActual =
+    conteoState.ninos + conteoState.ninosDelDia.length + baseNinosDisplay;
   const totalAdolescentesActual =
-    conteoState.adolescentes + conteoState.adolescentesDelDia.length + baseAdolescentesDisplay;
+    conteoState.adolescentes +
+    conteoState.adolescentesDelDia.length +
+    baseAdolescentesDisplay;
   const totalHermanosApartadosActual =
-    conteoState.hermanosApartados + conteoState.hermanosApartadosDelDia.length + baseHermanosApartadosDisplay;
+    conteoState.hermanosApartados +
+    conteoState.hermanosApartadosDelDia.length +
+    baseHermanosApartadosDisplay;
   const totalHermanosVisitasActual =
-    conteoState.hermanosVisitasCount + conteoState.hermanosVisitasDelDia.length + baseHermanosVisitasDisplay;
+    conteoState.hermanosVisitasCount +
+    conteoState.hermanosVisitasDelDia.length +
+    baseHermanosVisitasDisplay;
 
   const total =
     totalHermanosActual +
@@ -603,7 +638,9 @@ export default function ConteoPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
           <p className="text-slate-600">
-            {loadingEdit ? "Cargando datos para edición..." : "Cargando datos..."}
+            {loadingEdit
+              ? "Cargando datos para edición..."
+              : "Cargando datos..."}
           </p>
         </div>
       </div>
@@ -634,17 +671,21 @@ export default function ConteoPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (confirm("¿Desea cancelar la edición? Los cambios no guardados se perderán.")) {
+                  if (
+                    confirm(
+                      "¿Desea cancelar la edición? Los cambios no guardados se perderán."
+                    )
+                  ) {
                     // Limpiar todo y resetear estados
                     setDatosServicioBase(null);
                     clearDayData();
-                    
+
                     // Resetear modo consecutivo si estaba activo
                     updateConteo({
                       modoConsecutivo: false,
                       tipoServicio: "dominical", // Volver al servicio por defecto
                     });
-                    
+
                     router.push("/historial");
                   }
                 }}
@@ -709,16 +750,25 @@ export default function ConteoPage() {
                 </label>
                 <Select
                   value={conteoState.tipoServicio}
-                  onValueChange={(value) =>
-                    updateConteo({ tipoServicio: value })
-                  }
+                  onValueChange={(value) => {
+                    if (value === "manual") {
+                      setShowServicioInput(true);
+                    } else {
+                      updateConteo({ tipoServicio: value });
+                      setShowServicioInput(false);
+                    }
+                  }}
                 >
                   <SelectTrigger
                     id="servicio-select"
                     className="h-10 md:h-12 text-sm md:text-base"
                     aria-describedby="servicio-help"
                   >
-                    <SelectValue />
+                    <SelectValue>
+                      {servicios.find(
+                        (s) => s.value === conteoState.tipoServicio
+                      )?.label || conteoState.tipoServicio}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-64 md:max-h-80">
                     {servicios.map((servicio) => (
@@ -726,8 +776,34 @@ export default function ConteoPage() {
                         {servicio.label}
                       </SelectItem>
                     ))}
+                    <SelectItem key="manual" value="manual">
+                      Agregar servicio...
+                    </SelectItem>
                   </SelectContent>
                 </Select>
+                {showServicioInput && (
+                  <div className="mt-2 flex gap-2 items-center">
+                    <Input
+                      type="text"
+                      placeholder="Nombre del servicio"
+                      value={servicioManual}
+                      onChange={(e) => setServicioManual(e.target.value)}
+                      className="h-10 md:h-12 text-sm md:text-base"
+                    />
+                    <button
+                      type="button"
+                      className="px-3 py-2 bg-blue-600 text-white rounded"
+                      onClick={() => {
+                        if (servicioManual.trim()) {
+                          updateConteo({ tipoServicio: servicioManual.trim() });
+                          setShowServicioInput(false);
+                        }
+                      }}
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                )}
                 <div id="servicio-help" className="text-xs text-gray-500 mt-1">
                   Tipo de servicio a registrar
                 </div>
@@ -1092,9 +1168,13 @@ export default function ConteoPage() {
         onRemoveAsistente={(id, categoria, tipo) => {
           if (
             tipo === "miembro" &&
-            ["hermanos", "hermanas", "ninos", "adolescentes", "hermanosApartados"].includes(
-              categoria
-            )
+            [
+              "hermanos",
+              "hermanas",
+              "ninos",
+              "adolescentes",
+              "hermanosApartados",
+            ].includes(categoria)
           ) {
             handleRemoveMiembro(categoria as CategoriaPlural, id);
           } else if (categoria === "hermanosVisitas") {
@@ -1130,7 +1210,9 @@ export default function ConteoPage() {
             ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
             : "bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
         } active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4`}
-        aria-label={isEditMode ? "Actualizar registro" : "Guardar conteo de asistencia"}
+        aria-label={
+          isEditMode ? "Actualizar registro" : "Guardar conteo de asistencia"
+        }
       >
         <Save className="w-5 h-5 md:w-6 md:h-6 mr-2" />
         <span className="flex-1 text-center">
