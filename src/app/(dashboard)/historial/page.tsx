@@ -731,7 +731,7 @@ NOTAS FINALES:
               placeholder="Buscar por servicio o ujier..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 sm:pl-10 rounded-lg h-8 sm:h-9 text-xs sm:text-sm"
+              className="pl-8 sm:pl-10 rounded-lg text-xs sm:text-sm"
             />
           </div>
 
