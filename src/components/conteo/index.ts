@@ -6,12 +6,16 @@ export { SimpatizantesDialog } from "./SimpatizantesDialog";
 export { MiembrosDialog } from "./MiembrosDialog";
 export { AsistentesDialog } from "./AsistentesDialog";
 export { HermanosVisitasDialog } from "./HermanosVisitasDialog";
+export { ConteoHeader } from "./ConteoHeader";
+export { EditModeBanner, ConsecutiveModeBanner } from "./ConteoBanners";
 
 // Utils
 export * from "./utils";
+export * from "./calculations";
 
 // Constants
 export * from "./constants";
 
 // Types
 export * from "./types";
+export type { ConteoDataResult } from "./calculations";
