@@ -14,6 +14,7 @@ export interface SimpatizanteLite {
 export interface HermanoVisita {
   id: string;
   nombre: string;
+  iglesia?: string;
 }
 
 // Estado persistente del conteo (refleja use-persistent-conteo)
@@ -119,6 +120,6 @@ export interface AsistentesDialogProps extends ConteoDialogProps {
 
 export interface HermanosVisitasDialogProps extends ConteoDialogProps {
   hermanosVisitasDelDia: HermanoVisita[];
-  onAddHermanoVisita: (hermano: Omit<HermanoVisita, 'id'>) => void;
+  onAddHermanoVisita: (hermano: { nombre: string; iglesia?: string }) => void;
   onRemoveHermanoVisita: (id: string) => void;
 }

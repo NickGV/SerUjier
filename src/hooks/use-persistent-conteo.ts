@@ -28,7 +28,7 @@ interface ConteoState {
   ninosDelDia: Array<{ id: string; nombre: string }>;
   adolescentesDelDia: Array<{ id: string; nombre: string }>;
   hermanosApartadosDelDia: Array<{ id: string; nombre: string }>;
-  hermanosVisitasDelDia: Array<{ id: string; nombre: string }>;
+  hermanosVisitasDelDia: Array<{ id: string; nombre: string; iglesia?: string }>;
   selectedUjieres: string[];
   searchMiembros: string;
 }
@@ -179,7 +179,7 @@ export function usePersistentConteo() {
       adolescentes?: Array<{ id: string; nombre: string }>;
       hermanosApartados?: Array<{ id: string; nombre: string }>;
     };
-    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
   }) => {
     // Convertir el servicio al valor correcto
     const servicioValue = historialData.servicio.toLowerCase();

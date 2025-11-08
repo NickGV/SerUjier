@@ -238,10 +238,11 @@ export default function ConteoPage() {
 
   // Handlers para hermanos visitas
   const hermanosVisitasHandlers = {
-    handleAdd: (nuevoHermano: { nombre: string }) => {
+    handleAdd: (nuevoHermano: { nombre: string; iglesia?: string }) => {
       const hermanoVisita = {
         id: Date.now().toString(),
         nombre: nuevoHermano.nombre,
+        iglesia: nuevoHermano.iglesia,
       };
 
       updateConteo({

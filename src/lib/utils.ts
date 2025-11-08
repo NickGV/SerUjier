@@ -352,7 +352,7 @@ export async function fetchHistorial() {
         adolescentes?: Array<{ id: string; nombre: string }>;
         hermanosApartados?: Array<{ id: string; nombre: string }>;
       };
-      hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+      hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
     }>;
   } catch (error) {
     console.error("Error fetching historial:", error);
@@ -380,7 +380,7 @@ export async function saveConteo(conteoData: {
     adolescentes?: Array<{ id: string; nombre: string }>;
     hermanosApartados?: Array<{ id: string; nombre: string }>;
   };
-  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
 }) {
   try {
     const docRef = await addDoc(collection(db, "historial"), conteoData);
@@ -414,7 +414,7 @@ export async function updateHistorialRecord(
       adolescentes?: Array<{ id: string; nombre: string }>;
       hermanosApartados?: Array<{ id: string; nombre: string }>;
     };
-    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
   }>
 ) {
   try {
@@ -468,7 +468,7 @@ export async function getHistorialRecordById(id: string) {
           adolescentes?: Array<{ id: string; nombre: string }>;
           hermanosApartados?: Array<{ id: string; nombre: string }>;
         };
-        hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
+        hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
       };
     } else {
       throw new Error("Registro de historial no encontrado");

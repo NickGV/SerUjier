@@ -24,7 +24,7 @@ interface UseConteoCountersProps {
       hermanosApartados?: MiembroSimplificado[];
     };
     simpatizantesAsistieron?: { id: string; nombre: string }[];
-    hermanosVisitasAsistieron?: { id: string; nombre: string }[];
+    hermanosVisitasAsistieron?: { id: string; nombre: string; iglesia?: string }[];
   } | null;
 }
 

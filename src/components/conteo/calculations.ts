@@ -228,6 +228,7 @@ function buildAsistentesArrays(
       ...conteoState.hermanosVisitasDelDia.map((h) => ({
         id: h.id,
         nombre: h.nombre,
+        iglesia: h.iglesia,
       })),
     ],
   };
@@ -256,7 +257,7 @@ export interface ConteoDataResult {
     adolescentes: Array<{ id: string; nombre: string }>;
     hermanosApartados: Array<{ id: string; nombre: string }>;
   };
-  hermanosVisitasAsistieron: Array<{ id: string; nombre: string }>;
+  hermanosVisitasAsistieron: Array<{ id: string; nombre: string; iglesia?: string }>;
 }
 
 /**

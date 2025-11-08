@@ -32,13 +32,14 @@ export function HermanosVisitasDialog({
   const [showNewForm, setShowNewForm] = useState(false);
   const [newHermanoVisita, setNewHermanoVisita] = useState({
     nombre: "",
+    iglesia: "",
   });
 
   // Reset states when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
       setShowNewForm(false);
-      setNewHermanoVisita({ nombre: "" });
+      setNewHermanoVisita({ nombre: "", iglesia: "" });
     }
   }, [isOpen]);
 
@@ -48,8 +49,9 @@ export function HermanosVisitasDialog({
     try {
       await onAddHermanoVisita({
         nombre: newHermanoVisita.nombre.trim(),
+        iglesia: newHermanoVisita.iglesia.trim() || undefined,
       });
-      setNewHermanoVisita({ nombre: "" });
+      setNewHermanoVisita({ nombre: "", iglesia: "" });
       setShowNewForm(false);
       toast.success("Hermano visita agregado exitosamente");
     } catch (error) {
@@ -117,6 +119,11 @@ export function HermanosVisitasDialog({
                                 <h3 className="font-semibold text-gray-900 text-sm truncate">
                                   {hermanoVisita.nombre}
                                 </h3>
+                                {hermanoVisita.iglesia && (
+                                  <p className="text-xs text-gray-600 mt-0.5 truncate">
+                                    Iglesia: {hermanoVisita.iglesia}
+                                  </p>
+                                )}
                                 <Badge
                                   variant="outline"
                                   className="bg-indigo-50 text-indigo-700 text-xs mt-1"
@@ -214,8 +221,30 @@ export function HermanosVisitasDialog({
                     }}
                     autoFocus
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Iglesia
+                  </label>
+                  <Input
+                    placeholder="Nombre de la iglesia visitante"
+                    value={newHermanoVisita.iglesia}
+                    onChange={(e) =>
+                      setNewHermanoVisita({
+                        ...newHermanoVisita,
+                        iglesia: e.target.value,
+                      })
+                    }
+                    className="h-10 text-sm"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && newHermanoVisita.nombre.trim()) {
+                        handleAddNewHermanoVisita();
+                      }
+                    }}
+                  />
                   <p className="text-xs text-gray-500 mt-1">
-                    Solo se requiere el nombre para el conteo
+                    Opcional: De qué iglesia nos visita
                   </p>
                 </div>
               </div>
