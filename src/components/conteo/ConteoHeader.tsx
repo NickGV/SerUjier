@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, User, Clock, Trash2, X } from "lucide-react";
+import { Plus, Calendar, User, Clock, Trash2, X, RefreshCw } from "lucide-react";
 import { servicios } from "./constants";
 
 interface ConteoHeaderProps {
@@ -30,6 +30,8 @@ interface ConteoHeaderProps {
     ujierPersonalizado?: string;
   }) => void;
   onShowBulkCount: () => void;
+  onRefreshData?: () => void;
+  isRefreshing?: boolean;
 }
 
 export function ConteoHeader({
@@ -43,6 +45,8 @@ export function ConteoHeader({
   onTipoServicioChange,
   onUjieresChange,
   onShowBulkCount,
+  onRefreshData,
+  isRefreshing = false,
 }: ConteoHeaderProps) {
   const [showServicioInput, setShowServicioInput] = useState(false);
   const [servicioManual, setServicioManual] = useState("");
@@ -128,15 +132,29 @@ export function ConteoHeader({
           <CardTitle className="text-base sm:text-lg font-semibold text-gray-800">
             Conteo de Asistencia
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onShowBulkCount}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm"
-          >
-            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            Conteo Múltiple
-          </Button>
+          <div className="flex gap-2">
+            {onRefreshData && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onRefreshData()}
+                disabled={isRefreshing}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
+              >
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Actualizando...' : 'Actualizar Datos'}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowBulkCount}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 hover:from-blue-600 hover:to-blue-700 text-xs sm:text-sm"
+            >
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              Conteo Múltiple
+            </Button>
+          </div>
         </div>
 
         {/* Editable fields */}

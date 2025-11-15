@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSimpatizantes, Simpatizante } from "@/hooks/use-simpatizantes";
 import { useSearch } from "@/hooks/use-search";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import {
   SimpatizantesHeader,
   SimpatizantesFilters,
@@ -25,6 +25,7 @@ const SimpatizantesPage = () => {
     addSimpatizante,
     updateSimpatizante,
     deleteSimpatizante,
+    refreshSimpatizantes,
   } = useSimpatizantes();
 
   // Search functionality
@@ -43,6 +44,7 @@ const SimpatizantesPage = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [editingSimpatizante, setEditingSimpatizante] =
     useState<Simpatizante | null>(null);
   const [deletingSimpatizante, setDeletingSimpatizante] =
@@ -63,6 +65,15 @@ const SimpatizantesPage = () => {
     if (deletingSimpatizante) {
       await deleteSimpatizante(deletingSimpatizante.id);
       setDeletingSimpatizante(null);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshSimpatizantes();
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -103,14 +114,25 @@ const SimpatizantesPage = () => {
         filteredCount={filteredSimpatizantes.length}
       />
 
-      {/* Add New Button */}
-      <Button
-        onClick={() => setShowAddDialog(true)}
-        className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
-      >
-        <Plus className="w-5 h-5 mr-2" />
-        Agregar Nuevo Simpatizante
-      </Button>
+      {/* Action Buttons */}
+      <div className="space-y-3">
+        <Button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white hover:text-white rounded-xl py-3 shadow-lg"
+        >
+          <RefreshCw className={`w-5 h-5 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Actualizando...' : 'Actualizar Datos'}
+        </Button>
+        
+        <Button
+          onClick={() => setShowAddDialog(true)}
+          className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Agregar Nuevo Simpatizante
+        </Button>
+      </div>
 
       <SimpatizantesList
         simpatizantes={filteredSimpatizantes}

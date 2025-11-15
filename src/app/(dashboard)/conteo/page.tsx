@@ -24,7 +24,7 @@ import {
   Loader2,
   Calendar,
 } from "lucide-react";
-import { DatosServicioBase, Miembro, MiembroSimplificado } from "@/app/types";
+import { Miembro, MiembroSimplificado } from "@/app/types";
 
 // Componentes modulares
 import {
@@ -53,16 +53,17 @@ export default function ConteoPage() {
     clearDayData,
     loadHistorialData,
     isLoaded,
+    setDatosServicioBase,
   } = usePersistentConteo();
 
-  // Estado para el servicio base (modo consecutivo)
-  const [datosServicioBase, setDatosServicioBase] =
-    useState<DatosServicioBase | null>(null);
+  // Get datosServicioBase from persistent state
+  const datosServicioBase = conteoState.datosServicioBase;
 
   // Estados para datos de Firebase
   const [simpatizantes, setSimpatizantes] = useState<SimpatizanteLite[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [ujieres, setUjieres] = useState<string[]>([]);
 
   // Hook para modo edición
@@ -124,33 +125,43 @@ export default function ConteoPage() {
     CategoriaPlural | ""
   >("");
 
-  // Efecto para cargar datos desde Firebase
-  useEffect(() => {
-    const loadData = async () => {
-      try {
+  // Función para cargar datos desde Firebase
+  const loadFirebaseData = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
         setLoading(true);
-        const [simpatizantesData, miembrosData, ujieresData] =
-          await Promise.all([
-            fetchSimpatizantes(),
-            fetchMiembros(),
-            fetchUjieres(),
-          ]);
-        setSimpatizantes(simpatizantesData);
-        setMiembros(miembrosData);
-        // Extraer solo los nombres de los ujieres activos
-        const nombresUjieres = ujieresData
-          .filter((ujier) => ujier.activo)
-          .map((ujier) => ujier.nombre)
-          .sort();
-        setUjieres(nombresUjieres);
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
+      }
+      
+      const [simpatizantesData, miembrosData, ujieresData] =
+        await Promise.all([
+          fetchSimpatizantes(),
+          fetchMiembros(),
+          fetchUjieres(),
+        ]);
+      setSimpatizantes(simpatizantesData);
+      setMiembros(miembrosData);
+      // Extraer solo los nombres de los ujieres activos
+      const nombresUjieres = ujieresData
+        .filter((ujier) => ujier.activo)
+        .map((ujier) => ujier.nombre)
+        .sort();
+      setUjieres(nombresUjieres);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    loadData();
+  // Efecto para cargar datos desde Firebase al montar
+  useEffect(() => {
+    loadFirebaseData();
   }, []);
 
   // ========== HANDLERS AGRUPADOS ==========
@@ -380,6 +391,8 @@ export default function ConteoPage() {
         onTipoServicioChange={(tipoServicio) => updateConteo({ tipoServicio })}
         onUjieresChange={(updates) => updateConteo(updates)}
         onShowBulkCount={() => setShowBulkCountDialog(true)}
+        onRefreshData={() => loadFirebaseData(true)}
+        isRefreshing={isRefreshing}
       />
 
       {/* Banner de modo consecutivo */}

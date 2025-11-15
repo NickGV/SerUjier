@@ -24,6 +24,7 @@ import {
   Search,
   Trash2,
   AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import {
   Select,
@@ -77,6 +78,7 @@ function HistorialContent() {
   const [historial, setHistorial] = useState<HistorialRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [filtroServicio, setFiltroServicio] = useState("todos");
   const [filtroUjier, setFiltroUjier] = useState("todos");
@@ -90,27 +92,39 @@ function HistorialContent() {
   );
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const loadHistorial = async () => {
-      try {
-        const data = await fetchHistorial();
-        // Ensure new fields exist with default values
-        const normalizedData: HistorialRecord[] = data.map((record: HistorialRecordAPI) => ({
-          ...record,
-          hermanosApartados: record.hermanosApartados || 0,
-          hermanosVisitas: record.hermanosVisitas || 0,
-        }));
-        setHistorial(normalizedData);
-      } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Error cargando historial";
-        setError(msg);
-      } finally {
+  const loadHistorialData = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+        setError(null);
+      } else {
+        setLoading(true);
+        setError(null);
+      }
+      
+      const data = await fetchHistorial();
+      // Ensure new fields exist with default values
+      const normalizedData: HistorialRecord[] = data.map((record: HistorialRecordAPI) => ({
+        ...record,
+        hermanosApartados: record.hermanosApartados || 0,
+        hermanosVisitas: record.hermanosVisitas || 0,
+      }));
+      setHistorial(normalizedData);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Error cargando historial";
+      setError(msg);
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    loadHistorial();
+  useEffect(() => {
+    loadHistorialData();
   }, []);
 
   // Verificar permisos después de cargar los datos
@@ -687,10 +701,22 @@ NOTAS FINALES:
       {/* Header */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader className="px-3 sm:px-6">
-          <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            Historial de Asistencia
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+              Historial de Asistencia
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadHistorialData(true)}
+              disabled={isRefreshing}
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
+            >
+              <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+            </Button>
+          </div>
           <div className="flex items-center justify-between mt-2">
             <Badge
               variant="outline"

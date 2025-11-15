@@ -13,6 +13,20 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+// Helper function to clean data objects before sending to Firebase
+// Removes undefined values and empty strings to avoid Firebase validation issues
+function cleanDataForFirebase<T extends Record<string, unknown>>(data: T): Partial<T> {
+  const cleaned: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined && value !== null && value !== "") {
+      cleaned[key] = value;
+    }
+  }
+  
+  return cleaned as Partial<T>;
+}
+
 // Función para hashear contraseñas (mismo algoritmo que en la API de login)
 export function hashPassword(password: string): string {
   const salt = "ujier_salt_2025";
@@ -52,8 +66,9 @@ export async function addSimpatizante(simpatizante: {
   fechaRegistro: string;
 }) {
   try {
-    const docRef = await addDoc(collection(db, "simpatizantes"), simpatizante);
-    console.log("Simpatizante creado exitosamente:", simpatizante.nombre);
+    // Clean the data to remove undefined/empty values before sending to Firebase
+    const cleanedData = cleanDataForFirebase(simpatizante);
+    const docRef = await addDoc(collection(db, "simpatizantes"), cleanedData);
     return { id: docRef.id };
   } catch (error) {
     console.error("Error adding simpatizante:", error);
@@ -92,7 +107,6 @@ export async function addMiembro(miembro: {
 }) {
   try {
     const docRef = await addDoc(collection(db, "miembros"), miembro);
-    console.log("Miembro creado exitosamente:", miembro.nombre);
     return { id: docRef.id };
   } catch (error) {
     console.error("Error adding miembro:", error);
@@ -112,7 +126,6 @@ export async function updateMiembro(
   try {
     const miembroRef = doc(db, "miembros", id);
     await updateDoc(miembroRef, data);
-    console.log("Miembro actualizado exitosamente:", id);
   } catch (error) {
     console.error("Error updating miembro:", error);
     throw error;
@@ -123,7 +136,6 @@ export async function deleteMiembro(id: string) {
   try {
     const miembroRef = doc(db, "miembros", id);
     await deleteDoc(miembroRef);
-    console.log("Miembro eliminado exitosamente:", id);
   } catch (error) {
     console.error("Error deleting miembro:", error);
     throw error;
@@ -196,7 +208,6 @@ export async function addUjier(ujier: {
       collection(db, "usuarios"),
       ujierWithHashedPassword
     );
-    console.log("Usuario creado exitosamente:", ujier.nombre);
     return { id: docRef.id };
   } catch (error) {
     console.error("Error adding ujier:", error);
@@ -223,7 +234,6 @@ export async function updateUjier(
     const ujierRef = doc(db, "usuarios", id);
     await updateDoc(ujierRef, updateData);
 
-    console.log("Usuario actualizado exitosamente:", id);
   } catch (error) {
     console.error("Error updating ujier:", error);
     throw error;
@@ -234,7 +244,6 @@ export async function deleteUjier(id: string) {
   try {
     const ujierRef = doc(db, "usuarios", id);
     await deleteDoc(ujierRef);
-    console.log("Usuario eliminado exitosamente:", id);
   } catch (error) {
     console.error("Error deleting ujier:", error);
     throw error;
@@ -276,10 +285,17 @@ export async function updateSimpatizante(
   }>
 ) {
   try {
+    // Clean the data to remove undefined/empty values before sending to Firebase
+    const cleanedData = cleanDataForFirebase(data);
+    
+    // Only proceed if there's actually data to update
+    if (Object.keys(cleanedData).length === 0) {
+      return;
+    }
+    
     const simpatizanteRef = doc(db, "simpatizantes", id);
-    await updateDoc(simpatizanteRef, data);
+    await updateDoc(simpatizanteRef, cleanedData);
 
-    console.log("Simpatizante actualizado exitosamente:", id);
   } catch (error) {
     console.error("Error updating simpatizante:", error);
     throw error;
@@ -316,7 +332,6 @@ export async function deleteSimpatizante(id: string) {
     const simpatizanteRef = doc(db, "simpatizantes", id);
     await deleteDoc(simpatizanteRef);
 
-    console.log("Simpatizante eliminado exitosamente:", id);
   } catch (error) {
     console.error("Error deleting simpatizante:", error);
     throw error;
@@ -384,7 +399,6 @@ export async function saveConteo(conteoData: {
 }) {
   try {
     const docRef = await addDoc(collection(db, "historial"), conteoData);
-    console.log("Conteo guardado exitosamente con ID:", docRef.id);
     return { id: docRef.id };
   } catch (error) {
     console.error("Error saving conteo:", error);
@@ -420,7 +434,6 @@ export async function updateHistorialRecord(
   try {
     const historialRef = doc(db, "historial", id);
     await updateDoc(historialRef, data);
-    console.log("Registro de historial actualizado exitosamente:", id);
   } catch (error) {
     console.error("Error updating historial record:", error);
     throw error;
@@ -431,7 +444,6 @@ export async function deleteHistorialRecord(id: string) {
   try {
     const historialRef = doc(db, "historial", id);
     await deleteDoc(historialRef);
-    console.log("Registro de historial eliminado exitosamente:", id);
   } catch (error) {
     console.error("Error deleting historial record:", error);
     throw error;

@@ -53,11 +53,24 @@ export function EditSimpatizanteDialog({
     }
 
     try {
-      await onUpdate(simpatizante.id, {
-        nombre: formData.nombre.trim(),
-        telefono: formData.telefono.trim() || undefined,
-        notas: formData.notas.trim() || undefined,
-      });
+      // Create clean data object - only include fields with actual values
+      const cleanData: { nombre?: string; telefono?: string; notas?: string } = {};
+      
+      // Always include nombre since it's required
+      cleanData.nombre = formData.nombre.trim();
+      
+      // Only add optional fields if they have actual content
+      const telefonoTrimmed = formData.telefono.trim();
+      if (telefonoTrimmed) {
+        cleanData.telefono = telefonoTrimmed;
+      }
+      
+      const notasTrimmed = formData.notas.trim();
+      if (notasTrimmed) {
+        cleanData.notas = notasTrimmed;
+      }
+      
+      await onUpdate(simpatizante.id, cleanData);
       onClose();
     } catch (error) {
       console.error("Error al actualizar simpatizante:", error);

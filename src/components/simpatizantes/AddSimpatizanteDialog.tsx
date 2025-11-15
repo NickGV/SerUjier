@@ -37,11 +37,23 @@ export function AddSimpatizanteDialog({
     }
 
     try {
-      await onAdd({
+      // Create clean data object - only include fields with actual values
+      const cleanData: { nombre: string; telefono?: string; notas?: string } = {
         nombre: formData.nombre.trim(),
-        telefono: formData.telefono.trim() || undefined,
-        notas: formData.notas.trim() || undefined,
-      });
+      };
+      
+      // Only add optional fields if they have actual content
+      const telefonoTrimmed = formData.telefono.trim();
+      if (telefonoTrimmed) {
+        cleanData.telefono = telefonoTrimmed;
+      }
+      
+      const notasTrimmed = formData.notas.trim();
+      if (notasTrimmed) {
+        cleanData.notas = notasTrimmed;
+      }
+      
+      await onAdd(cleanData);
       setFormData({ nombre: "", telefono: "", notas: "" });
       onClose();
     } catch (error) {

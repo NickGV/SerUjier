@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/contexts/user-context";
+import { DatosServicioBase } from "@/app/types";
 
 interface ConteoState {
   hermanos: number;
@@ -31,6 +32,8 @@ interface ConteoState {
   hermanosVisitasDelDia: Array<{ id: string; nombre: string; iglesia?: string }>;
   selectedUjieres: string[];
   searchMiembros: string;
+  datosServicioBase: DatosServicioBase | null;
+  [key: string]: unknown;
 }
 
 const STORAGE_KEY = "conteo-persistente";
@@ -66,6 +69,7 @@ const initialState: ConteoState = {
   hermanosVisitasDelDia: [],
   selectedUjieres: [],
   searchMiembros: "",
+  datosServicioBase: null,
 };
 
 export function usePersistentConteo() {
@@ -149,13 +153,13 @@ export function usePersistentConteo() {
       hermanasDelDia: [],
       ninosDelDia: [],
       adolescentesDelDia: [],
-
       hermanosApartadosDelDia: [],
       hermanosVisitasDelDia: [],
       selectedUjieres: [],
       ujierSeleccionado: "",
       ujierPersonalizado: "",
       searchMiembros: "",
+      datosServicioBase: null,
     }));
   }, []);
 
@@ -212,7 +216,17 @@ export function usePersistentConteo() {
       hermanosApartadosDelDia: historialData.miembrosAsistieron?.hermanosApartados || [],
       hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
       searchMiembros: "",
+      datosServicioBase: null,
     });
+  }, []);
+
+  // Funciones para manejar datosServicioBase
+  const setDatosServicioBase = useCallback((data: DatosServicioBase | null) => {
+    setConteoState(prev => ({ ...prev, datosServicioBase: data }));
+  }, []);
+
+  const clearDatosServicioBase = useCallback(() => {
+    setConteoState(prev => ({ ...prev, datosServicioBase: null }));
   }, []);
 
   return {
@@ -222,5 +236,7 @@ export function usePersistentConteo() {
     clearDayData,
     loadHistorialData,
     isLoaded,
+    setDatosServicioBase,
+    clearDatosServicioBase,
   };
 }
