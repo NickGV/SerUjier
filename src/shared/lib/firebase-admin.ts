@@ -1,6 +1,11 @@
-import { AppOptions, cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import {
+  type AppOptions,
+  cert,
+  getApps,
+  initializeApp,
+} from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // Firebase Admin initialization (server-only)
 // Supports either a base64-encoded service account JSON or individual env vars
@@ -13,8 +18,8 @@ let adminAppOptions: AppOptions | undefined;
 
 if (serviceAccountBase64) {
   try {
-    const decoded = Buffer.from(serviceAccountBase64, "base64").toString(
-      "utf8"
+    const decoded = Buffer.from(serviceAccountBase64, 'base64').toString(
+      'utf8'
     );
     const svc = JSON.parse(decoded);
     adminAppOptions = { credential: cert(svc) };

@@ -2,7 +2,7 @@
 export type User = {
   id: string;
   nombre: string;
-  rol: "ujier" | "admin" | "directiva";
+  rol: 'ujier' | 'admin' | 'directiva';
   // permisos?: string[];
 };
 
@@ -15,7 +15,7 @@ export type Simpatizante = User & {
 };
 
 // Categories of members
-export type miembroCategoria = "hermano" | "hermana" | "nino" | "adolescente";
+export type miembroCategoria = 'hermano' | 'hermana' | 'nino' | 'adolescente';
 
 export interface Miembro {
   id: string;

@@ -1,1 +1,1 @@
-export { default } from "@/features/asistencia/pages/ConteoPage";
+export { default } from '@/features/asistencia/pages/ConteoPage';

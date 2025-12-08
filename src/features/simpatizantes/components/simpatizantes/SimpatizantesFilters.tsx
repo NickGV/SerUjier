@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Search, X } from "lucide-react";
+import { Card, CardContent } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
+import { Search, X } from 'lucide-react';
 
 interface SimpatizantesFiltersProps {
   searchTerm: string;
@@ -51,4 +51,3 @@ export function SimpatizantesFilters({
     </Card>
   );
 }
-

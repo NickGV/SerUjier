@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { adminAuth, adminDb } from "@/shared/lib/firebase-admin";
-import { Buffer } from "buffer";
+import { NextResponse } from 'next/server';
+import { adminAuth, adminDb } from '@/shared/lib/firebase-admin';
+import { Buffer } from 'buffer';
 
-const SESSION_COOKIE_NAME = "session";
+const SESSION_COOKIE_NAME = 'session';
 const SESSION_EXPIRES_MS = 1000 * 60 * 60 * 24 * 5; // 5 días
 
 export async function POST(req: Request) {
@@ -11,20 +11,20 @@ export async function POST(req: Request) {
 
     if (!nombre || !password) {
       return NextResponse.json(
-        { error: "Nombre and password are required" },
+        { error: 'Nombre and password are required' },
         { status: 400 }
       );
     }
 
-    const usersRef = adminDb.collection("usuarios");
+    const usersRef = adminDb.collection('usuarios');
     const snapshot = await usersRef
-      .where("nombre", "==", nombre)
+      .where('nombre', '==', nombre)
       .limit(1)
       .get();
 
     if (snapshot.empty) {
       return NextResponse.json(
-        { error: "Usuario o contraseña incorrectos" },
+        { error: 'Usuario o contraseña incorrectos' },
         { status: 401 }
       );
     }
@@ -33,20 +33,20 @@ export async function POST(req: Request) {
     const userData = userDoc.data();
 
     // Decode the password from Base64 and compare
-    const storedPassword = Buffer.from(userData.password, "base64").toString(
-      "utf-8"
+    const storedPassword = Buffer.from(userData.password, 'base64').toString(
+      'utf-8'
     );
 
     if (storedPassword !== password) {
       return NextResponse.json(
-        { error: "Usuario o contraseña incorrectos" },
+        { error: 'Usuario o contraseña incorrectos' },
         { status: 401 }
       );
     }
 
-    if (!userData.activo && userData.rol !== "admin") {
+    if (!userData.activo && userData.rol !== 'admin') {
       return NextResponse.json(
-        { error: "El usuario no está activo. Contacte al administrador." },
+        { error: 'El usuario no está activo. Contacte al administrador.' },
         { status: 403 }
       );
     }
@@ -67,26 +67,26 @@ export async function POST(req: Request) {
       name: SESSION_COOKIE_NAME,
       value: sessionCookie,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
       maxAge: SESSION_EXPIRES_MS / 1000,
     });
     return res;
   } catch (e) {
-    console.error("Auth error:", e);
-    const msg = e instanceof Error ? e.message : "Internal Server Error";
+    console.error('Auth error:', e);
+    const msg = e instanceof Error ? e.message : 'Internal Server Error';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
-  const raw = req.headers.get("cookie") ?? "";
+  const raw = req.headers.get('cookie') ?? '';
   const session = raw
-    .split(";")
+    .split(';')
     .map((s: string) => s.trim())
     .find((c: string) => c.startsWith(`${SESSION_COOKIE_NAME}=`))
-    ?.split("=")[1];
+    ?.split('=')[1];
   if (session) {
     try {
       const decoded = await adminAuth.verifySessionCookie(session, true);
@@ -98,8 +98,8 @@ export async function DELETE(req: Request) {
   const res = NextResponse.json({ ok: true });
   res.cookies.set({
     name: SESSION_COOKIE_NAME,
-    value: "",
-    path: "/",
+    value: '',
+    path: '/',
     maxAge: 0,
   });
   return res;

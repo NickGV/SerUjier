@@ -1,11 +1,11 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
+'use client';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
+import { Input } from '@/shared/ui/input';
+import { Textarea } from '@/shared/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
+} from '@/shared/ui/alert-dialog';
 import {
   ArrowLeft,
   User,
@@ -26,12 +26,12 @@ import {
   Edit3,
   Save,
   Trash2,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   getSimpatizanteById,
   updateSimpatizante,
   deleteSimpatizante,
-} from "@/shared/lib/utils";
+} from '@/shared/lib/utils';
 
 interface Simpatizante {
   id: string;
@@ -51,9 +51,9 @@ const SimpatizanteDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedData, setEditedData] = useState({
-    nombre: "",
-    telefono: "",
-    notas: "",
+    nombre: '',
+    telefono: '',
+    notas: '',
   });
 
   useEffect(() => {
@@ -63,12 +63,12 @@ const SimpatizanteDetail = () => {
           const data = await getSimpatizanteById(id);
           setSimpatizante(data);
           setEditedData({
-            nombre: data.nombre || "",
-            telefono: data.telefono || "",
-            notas: data.notas || "",
+            nombre: data.nombre || '',
+            telefono: data.telefono || '',
+            notas: data.notas || '',
           });
         } catch (err) {
-          setError(err instanceof Error ? err.message : "Error desconocido");
+          setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
           setLoading(false);
         }
@@ -86,16 +86,16 @@ const SimpatizanteDetail = () => {
       setSimpatizante({ ...simpatizante, ...editedData });
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar");
+      setError(err instanceof Error ? err.message : 'Error al actualizar');
     }
   };
 
   const handleCancel = () => {
     if (simpatizante) {
       setEditedData({
-        nombre: simpatizante.nombre || "",
-        telefono: simpatizante.telefono || "",
-        notas: simpatizante.notas || "",
+        nombre: simpatizante.nombre || '',
+        telefono: simpatizante.telefono || '',
+        notas: simpatizante.notas || '',
       });
     }
     setIsEditing(false);
@@ -107,9 +107,9 @@ const SimpatizanteDetail = () => {
     setIsDeleting(true);
     try {
       await deleteSimpatizante(simpatizante.id);
-      router.push("/simpatizantes");
+      router.push('/simpatizantes');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar");
+      setError(err instanceof Error ? err.message : 'Error al eliminar');
       setIsDeleting(false);
     }
   };
@@ -118,7 +118,7 @@ const SimpatizanteDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">
             Cargando información del simpatizante...
           </p>
@@ -207,7 +207,7 @@ const SimpatizanteDetail = () => {
           <p className="text-slate-200 text-sm sm:text-base md:text-lg px-2">
             {isEditing
               ? editedData.telefono
-              : simpatizante.telefono || "Sin teléfono"}
+              : simpatizante.telefono || 'Sin teléfono'}
           </p>
         </CardContent>
       </Card>
@@ -292,7 +292,7 @@ const SimpatizanteDetail = () => {
               />
             ) : (
               <p className="text-gray-800 bg-gray-50 p-3 sm:p-4 rounded-lg sm:rounded-xl text-sm sm:text-base">
-                {simpatizante.telefono || "No registrado"}
+                {simpatizante.telefono || 'No registrado'}
               </p>
             )}
           </div>
@@ -314,7 +314,7 @@ const SimpatizanteDetail = () => {
               />
             ) : (
               <p className="text-gray-800 bg-gray-50 p-3 sm:p-4 rounded-lg sm:rounded-xl min-h-[100px] sm:min-h-[120px] text-sm sm:text-base">
-                {simpatizante.notas || "Sin notas adicionales"}
+                {simpatizante.notas || 'Sin notas adicionales'}
               </p>
             )}
           </div>
@@ -328,11 +328,11 @@ const SimpatizanteDetail = () => {
               </p>
               <p className="text-gray-600 text-sm sm:text-base">
                 {new Date(simpatizante.fechaRegistro).toLocaleDateString(
-                  "es-ES",
+                  'es-ES',
                   {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
                   }
                 )}
               </p>
@@ -362,11 +362,11 @@ const SimpatizanteDetail = () => {
                 className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4 py-1 sm:py-2 w-fit"
               >
                 {new Date(simpatizante.fechaRegistro).toLocaleDateString(
-                  "es-ES",
+                  'es-ES',
                   {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
                   }
                 )}
               </Badge>
@@ -383,7 +383,7 @@ const SimpatizanteDetail = () => {
                   (new Date().getTime() -
                     new Date(simpatizante.fechaRegistro).getTime()) /
                     (1000 * 60 * 60 * 24)
-                )}{" "}
+                )}{' '}
                 días
               </Badge>
             </div>
@@ -396,7 +396,7 @@ const SimpatizanteDetail = () => {
         {simpatizante.telefono && (
           <Button
             className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg sm:rounded-xl py-3 sm:py-4 md:py-5 shadow-lg text-sm sm:text-base md:text-lg font-semibold h-12 sm:h-14 md:h-16 transition-all duration-200"
-            onClick={() => window.open(`tel:${simpatizante.telefono}`, "_self")}
+            onClick={() => window.open(`tel:${simpatizante.telefono}`, '_self')}
           >
             <Phone className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-2 sm:mr-3" />
             Llamar
@@ -422,7 +422,7 @@ const SimpatizanteDetail = () => {
                 disabled={isDeleting}
               >
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1 sm:mr-2" />
-                {isDeleting ? "Eliminando..." : "Eliminar"}
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-md w-[95vw] sm:w-full mx-auto">
@@ -435,10 +435,10 @@ const SimpatizanteDetail = () => {
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-sm sm:text-base text-gray-600 mt-2">
                   Esta acción no se puede deshacer. Se eliminará permanentemente
-                  la información de{" "}
+                  la información de{' '}
                   <strong className="text-gray-800">
                     {simpatizante.nombre}
-                  </strong>{" "}
+                  </strong>{' '}
                   de la base de datos.
                 </AlertDialogDescription>
               </AlertDialogHeader>

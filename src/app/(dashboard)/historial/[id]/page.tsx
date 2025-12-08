@@ -1,26 +1,21 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useUser } from "@/shared/contexts/user-context";
-import { getHistorialRecordById, fetchMiembros } from "@/shared/lib/utils";
-import { RoleGuard } from "@/shared/components/role-guard";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
+import React, { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useUser } from '@/shared/contexts/user-context';
+import { getHistorialRecordById, fetchMiembros } from '@/shared/lib/utils';
+import { RoleGuard } from '@/shared/components/role-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
+import { Input } from '@/shared/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from '@/shared/ui/select';
 import {
   Calendar,
   ArrowLeft,
@@ -35,7 +30,7 @@ import {
   Baby,
   Zap,
   Heart,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface HistorialRecordAPI {
   id: string;
@@ -70,7 +65,7 @@ interface Miembro {
   id: string;
   nombre: string;
   telefono?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
+  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro: string;
 }
@@ -79,20 +74,20 @@ interface AsistenteInfo {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: "miembro" | "simpatizante";
+  tipo: 'miembro' | 'simpatizante';
 }
 
 interface PersonaFiltrada {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: "miembro" | "simpatizante";
-  status: "asistente" | "faltante";
+  tipo: 'miembro' | 'simpatizante';
+  status: 'asistente' | 'faltante';
 }
 
 export default function ServicioHistorialPage() {
   return (
-    <RoleGuard route="historial" allowedRoles={["admin", "directiva"]}>
+    <RoleGuard route="historial" allowedRoles={['admin', 'directiva']}>
       <ServicioHistorialContent />
     </RoleGuard>
   );
@@ -108,11 +103,11 @@ function ServicioHistorialContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Estados para filtros
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<
-    "all" | "asistentes" | "faltantes"
-  >("all");
-  const [filterCategoria, setFilterCategoria] = useState<string>("all");
+    'all' | 'asistentes' | 'faltantes'
+  >('all');
+  const [filterCategoria, setFilterCategoria] = useState<string>('all');
 
   const recordId = params.id as string;
 
@@ -135,7 +130,7 @@ function ServicioHistorialContent() {
         setRecord(normalizedRecord);
         setAllMembers(membersData);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error cargando datos";
+        const msg = err instanceof Error ? err.message : 'Error cargando datos';
         setError(msg);
       } finally {
         setLoading(false);
@@ -148,7 +143,7 @@ function ServicioHistorialContent() {
   }, [recordId]);
 
   // Verificar permisos después de cargar los datos
-  if (user && user.rol !== "directiva" && user.rol !== "admin") {
+  if (user && user.rol !== 'directiva' && user.rol !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -183,8 +178,8 @@ function ServicioHistorialContent() {
         asistentes.push({
           id: simpatizante.id,
           nombre: simpatizante.nombre,
-          categoria: "Simpatizantes",
-          tipo: "simpatizante",
+          categoria: 'Simpatizantes',
+          tipo: 'simpatizante',
         });
       });
     }
@@ -200,7 +195,7 @@ function ServicioHistorialContent() {
                 nombre: miembro.nombre,
                 categoria:
                   categoria.charAt(0).toUpperCase() + categoria.slice(1),
-                tipo: "miembro",
+                tipo: 'miembro',
               });
             });
           }
@@ -214,8 +209,8 @@ function ServicioHistorialContent() {
         asistentes.push({
           id: hermanoVisita.id,
           nombre: hermanoVisita.nombre,
-          categoria: "Hermanos Visitas",
-          tipo: "miembro",
+          categoria: 'Hermanos Visitas',
+          tipo: 'miembro',
         });
       });
     }
@@ -231,7 +226,7 @@ function ServicioHistorialContent() {
 
     const asistentes = getAllAsistentes();
     const asistenteIds = new Set(
-      asistentes.filter((a) => a.tipo === "miembro").map((a) => a.id)
+      asistentes.filter((a) => a.tipo === 'miembro').map((a) => a.id)
     );
 
     return allMembers
@@ -239,15 +234,15 @@ function ServicioHistorialContent() {
       .map((miembro) => ({
         ...miembro,
         categoria_display:
-          miembro.categoria === "hermano"
-            ? "Hermanos"
-            : miembro.categoria === "hermana"
-            ? "Hermanas"
-            : miembro.categoria === "nino"
-            ? "Niños"
-            : miembro.categoria === "adolescente"
-            ? "Adolescentes"
-            : "Hermanos Apartados",
+          miembro.categoria === 'hermano'
+            ? 'Hermanos'
+            : miembro.categoria === 'hermana'
+              ? 'Hermanas'
+              : miembro.categoria === 'nino'
+                ? 'Niños'
+                : miembro.categoria === 'adolescente'
+                  ? 'Adolescentes'
+                  : 'Hermanos Apartados',
       }));
   };
 
@@ -258,29 +253,29 @@ function ServicioHistorialContent() {
 
     let dataToFilter: PersonaFiltrada[] = [];
 
-    if (filterType === "all") {
+    if (filterType === 'all') {
       dataToFilter = [
-        ...asistentes.map((a) => ({ ...a, status: "asistente" as const })),
+        ...asistentes.map((a) => ({ ...a, status: 'asistente' as const })),
         ...faltantes.map((f) => ({
           id: f.id,
           nombre: f.nombre,
           categoria: f.categoria_display,
-          tipo: "miembro" as const,
-          status: "faltante" as const,
+          tipo: 'miembro' as const,
+          status: 'faltante' as const,
         })),
       ];
-    } else if (filterType === "asistentes") {
+    } else if (filterType === 'asistentes') {
       dataToFilter = asistentes.map((a) => ({
         ...a,
-        status: "asistente" as const,
+        status: 'asistente' as const,
       }));
     } else {
       dataToFilter = faltantes.map((f) => ({
         id: f.id,
         nombre: f.nombre,
         categoria: f.categoria_display,
-        tipo: "miembro" as const,
-        status: "faltante" as const,
+        tipo: 'miembro' as const,
+        status: 'faltante' as const,
       }));
     }
 
@@ -292,7 +287,7 @@ function ServicioHistorialContent() {
     }
 
     // Filtrar por categoría
-    if (filterCategoria !== "all") {
+    if (filterCategoria !== 'all') {
       dataToFilter = dataToFilter.filter(
         (item) => item.categoria.toLowerCase() === filterCategoria.toLowerCase()
       );
@@ -303,22 +298,22 @@ function ServicioHistorialContent() {
 
   const getCategoriaColor = (
     categoria: string,
-    status?: "asistente" | "faltante"
+    status?: 'asistente' | 'faltante'
   ) => {
-    if (status === "faltante") {
+    if (status === 'faltante') {
       return `bg-red-50 border-red-200 text-red-700`;
     }
 
     const baseColor =
       {
-        hermanos: "slate",
-        hermanas: "rose",
-        niños: "amber",
-        adolescentes: "purple",
-        simpatizantes: "emerald",
-        "hermanos apartados": "orange",
-        "hermanos visitas": "indigo",
-      }[categoria.toLowerCase()] || "gray";
+        hermanos: 'slate',
+        hermanas: 'rose',
+        niños: 'amber',
+        adolescentes: 'purple',
+        simpatizantes: 'emerald',
+        'hermanos apartados': 'orange',
+        'hermanos visitas': 'indigo',
+      }[categoria.toLowerCase()] || 'gray';
 
     return `bg-${baseColor}-50 border-${baseColor}-200 text-${baseColor}-700`;
   };
@@ -326,26 +321,26 @@ function ServicioHistorialContent() {
   // Función para obtener el icono según la categoría
   const getCategoriaIcon = (
     categoria: string,
-    status?: "asistente" | "faltante"
+    status?: 'asistente' | 'faltante'
   ) => {
-    const iconSize = "w-5 h-5";
+    const iconSize = 'w-5 h-5';
 
-    if (status === "faltante") {
+    if (status === 'faltante') {
       // Para faltantes, usar iconos en rojo
       switch (categoria.toLowerCase()) {
-        case "hermanos":
+        case 'hermanos':
           return <User className={`${iconSize} text-red-600`} />;
-        case "hermanas":
+        case 'hermanas':
           return <Heart className={`${iconSize} text-red-600`} />;
-        case "niños":
+        case 'niños':
           return <Baby className={`${iconSize} text-red-600`} />;
-        case "adolescentes":
+        case 'adolescentes':
           return <Zap className={`${iconSize} text-red-600`} />;
-        case "simpatizantes":
+        case 'simpatizantes':
           return <Users className={`${iconSize} text-red-600`} />;
-        case "hermanos apartados":
+        case 'hermanos apartados':
           return <User className={`${iconSize} text-red-600`} />;
-        case "hermanos visitas":
+        case 'hermanos visitas':
           return <Users className={`${iconSize} text-red-600`} />;
         default:
           return <UserX className={`${iconSize} text-red-600`} />;
@@ -354,19 +349,19 @@ function ServicioHistorialContent() {
 
     // Para asistentes, usar colores distintivos
     switch (categoria.toLowerCase()) {
-      case "hermanos":
+      case 'hermanos':
         return <User className={`${iconSize} text-slate-600`} />;
-      case "hermanas":
+      case 'hermanas':
         return <Heart className={`${iconSize} text-rose-600`} />;
-      case "niños":
+      case 'niños':
         return <Baby className={`${iconSize} text-amber-600`} />;
-      case "adolescentes":
+      case 'adolescentes':
         return <Zap className={`${iconSize} text-purple-600`} />;
-      case "simpatizantes":
+      case 'simpatizantes':
         return <Users className={`${iconSize} text-emerald-600`} />;
-      case "hermanos apartados":
+      case 'hermanos apartados':
         return <User className={`${iconSize} text-orange-600`} />;
-      case "hermanos visitas":
+      case 'hermanos visitas':
         return <Users className={`${iconSize} text-indigo-600`} />;
       default:
         return <User className={`${iconSize} text-gray-600`} />;
@@ -376,29 +371,29 @@ function ServicioHistorialContent() {
   // Función para obtener el avatar con color de fondo según categoría
   const getCategoriaAvatar = (
     categoria: string,
-    status?: "asistente" | "faltante"
+    status?: 'asistente' | 'faltante'
   ) => {
-    if (status === "faltante") {
-      return "bg-red-100";
+    if (status === 'faltante') {
+      return 'bg-red-100';
     }
 
     switch (categoria.toLowerCase()) {
-      case "hermanos":
-        return "bg-slate-100";
-      case "hermanas":
-        return "bg-rose-100";
-      case "niños":
-        return "bg-amber-100";
-      case "adolescentes":
-        return "bg-purple-100";
-      case "simpatizantes":
-        return "bg-emerald-100";
-      case "hermanos apartados":
-        return "bg-orange-100";
-      case "hermanos visitas":
-        return "bg-indigo-100";
+      case 'hermanos':
+        return 'bg-slate-100';
+      case 'hermanas':
+        return 'bg-rose-100';
+      case 'niños':
+        return 'bg-amber-100';
+      case 'adolescentes':
+        return 'bg-purple-100';
+      case 'simpatizantes':
+        return 'bg-emerald-100';
+      case 'hermanos apartados':
+        return 'bg-orange-100';
+      case 'hermanos visitas':
+        return 'bg-indigo-100';
       default:
-        return "bg-gray-100";
+        return 'bg-gray-100';
     }
   };
 
@@ -406,7 +401,7 @@ function ServicioHistorialContent() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando detalles del servicio...</p>
         </div>
       </div>
@@ -423,9 +418,9 @@ function ServicioHistorialContent() {
             </div>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
             <p className="text-gray-600 mb-4">
-              {error || "Servicio no encontrado"}
+              {error || 'Servicio no encontrado'}
             </p>
-            <Button onClick={() => router.push("/historial")} variant="outline">
+            <Button onClick={() => router.push('/historial')} variant="outline">
               Volver al Historial
             </Button>
           </CardContent>
@@ -447,7 +442,7 @@ function ServicioHistorialContent() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push("/historial")}
+              onClick={() => router.push('/historial')}
               className="mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -465,12 +460,12 @@ function ServicioHistorialContent() {
           </div>
           <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            Servicio del{" "}
-            {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
+            Servicio del{' '}
+            {new Date(record.fecha + 'T12:00:00').toLocaleDateString('es-ES', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
             })}
           </CardTitle>
         </CardHeader>
@@ -484,8 +479,8 @@ function ServicioHistorialContent() {
             <div>
               <span className="text-gray-600">Fecha:</span>
               <div className="font-semibold">
-                {new Date(record.fecha + "T12:00:00").toLocaleDateString(
-                  "es-ES"
+                {new Date(record.fecha + 'T12:00:00').toLocaleDateString(
+                  'es-ES'
                 )}
               </div>
             </div>
@@ -497,7 +492,7 @@ function ServicioHistorialContent() {
               <span className="text-gray-600">Ujier(es):</span>
               <div className="font-semibold">
                 {Array.isArray(record.ujier)
-                  ? record.ujier.join(", ")
+                  ? record.ujier.join(', ')
                   : record.ujier}
               </div>
             </div>
@@ -626,7 +621,7 @@ function ServicioHistorialContent() {
             <Select
               value={filterType}
               onValueChange={(value: unknown) =>
-                setFilterType(value as "all" | "asistentes" | "faltantes")
+                setFilterType(value as 'all' | 'asistentes' | 'faltantes')
               }
             >
               <SelectTrigger className="h-9">
@@ -666,15 +661,15 @@ function ServicioHistorialContent() {
               {filteredData.length} encontrados
             </Badge>
             {(searchTerm ||
-              filterType !== "all" ||
-              filterCategoria !== "all") && (
+              filterType !== 'all' ||
+              filterCategoria !== 'all') && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSearchTerm("");
-                  setFilterType("all");
-                  setFilterCategoria("all");
+                  setSearchTerm('');
+                  setFilterType('all');
+                  setFilterCategoria('all');
                 }}
                 className="text-xs"
               >
@@ -690,11 +685,11 @@ function ServicioHistorialContent() {
         <CardHeader>
           <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
             <Users className="w-4 h-4" />
-            {filterType === "asistentes"
-              ? "Asistentes"
-              : filterType === "faltantes"
-              ? "Miembros Faltantes"
-              : "Todos los Miembros"}
+            {filterType === 'asistentes'
+              ? 'Asistentes'
+              : filterType === 'faltantes'
+                ? 'Miembros Faltantes'
+                : 'Todos los Miembros'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -708,9 +703,9 @@ function ServicioHistorialContent() {
               <div
                 key={person.id}
                 className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                  person.status === "faltante"
-                    ? "bg-red-50 border-red-200"
-                    : "bg-white border-gray-200"
+                  person.status === 'faltante'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-white border-gray-200'
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -732,9 +727,9 @@ function ServicioHistorialContent() {
                       {/* Indicador pequeño de asistencia */}
                       <div
                         className={`w-3 h-3 rounded-full ${
-                          person.status === "faltante"
-                            ? "bg-red-400"
-                            : "bg-green-400"
+                          person.status === 'faltante'
+                            ? 'bg-red-400'
+                            : 'bg-green-400'
                         }`}
                       />
                     </div>
@@ -753,19 +748,19 @@ function ServicioHistorialContent() {
                       <Badge
                         variant="outline"
                         className={`text-xs ${
-                          person.tipo === "miembro"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-purple-50 text-purple-700 border-purple-200"
+                          person.tipo === 'miembro'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-purple-50 text-purple-700 border-purple-200'
                         }`}
                       >
-                        {person.tipo === "miembro" ? "Miembro" : "Simpatizante"}
+                        {person.tipo === 'miembro' ? 'Miembro' : 'Simpatizante'}
                       </Badge>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {person.status === "faltante" ? (
+                  {person.status === 'faltante' ? (
                     <Badge
                       variant="outline"
                       className="bg-red-50 text-red-700 border-red-200 font-medium"

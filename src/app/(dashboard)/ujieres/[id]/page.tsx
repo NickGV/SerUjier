@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@/shared/contexts/user-context";
-import { getUjierById, updateUjier } from "@/shared/lib/utils";
-import { RoleGuard } from "@/shared/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
-import { Label } from "@/shared/ui/label";
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useUser } from '@/shared/contexts/user-context';
+import { getUjierById, updateUjier } from '@/shared/lib/utils';
+import { RoleGuard } from '@/shared/components/role-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Badge } from '@/shared/ui/badge';
+import { Label } from '@/shared/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from '@/shared/ui/select';
 import {
   ArrowLeft,
   Save,
@@ -26,20 +26,20 @@ import {
   Eye,
   EyeOff,
   Shield,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface Ujier {
   id: string;
   nombre: string;
   password: string;
-  rol: "admin" | "directiva" | "ujier";
+  rol: 'admin' | 'directiva' | 'ujier';
   activo: boolean;
   fechaCreacion: string;
 }
 
 export default function UjierDetailPage() {
   return (
-    <RoleGuard route="ujieres" allowedRoles={["admin", "directiva"]}>
+    <RoleGuard route="ujieres" allowedRoles={['admin', 'directiva']}>
       <UjierDetailContent />
     </RoleGuard>
   );
@@ -57,24 +57,24 @@ function UjierDetailContent() {
   const [editedUsuario, setEditedUsuario] = useState<{
     nombre: string;
     password: string;
-    rol: "admin" | "directiva" | "ujier";
+    rol: 'admin' | 'directiva' | 'ujier';
     activo: boolean;
   }>({
-    nombre: "",
-    password: "",
-    rol: "ujier",
+    nombre: '',
+    password: '',
+    rol: 'ujier',
     activo: true,
   });
 
-  const isAdmin = user?.rol === "admin";
-  const isDirectiva = user?.rol === "directiva";
+  const isAdmin = user?.rol === 'admin';
+  const isDirectiva = user?.rol === 'directiva';
 
   // Determinar qué campos puede editar cada rol
   const canEditFullProfile = isAdmin;
   const canToggleStatus =
     (isAdmin || isDirectiva) &&
     ujier &&
-    !(ujier.rol === "admin" || ujier.rol === "directiva");
+    !(ujier.rol === 'admin' || ujier.rol === 'directiva');
 
   useEffect(() => {
     if (id) {
@@ -90,13 +90,13 @@ function UjierDetailContent() {
               activo: data.activo,
             });
           } else {
-            setError("Usuario no encontrado");
+            setError('Usuario no encontrado');
           }
         } catch (err) {
           const msg =
             err instanceof Error
               ? err.message
-              : "Error cargando detalles del usuario";
+              : 'Error cargando detalles del usuario';
           setError(msg);
         } finally {
           setLoading(false);
@@ -108,7 +108,7 @@ function UjierDetailContent() {
   }, [id]);
 
   // Verificar permisos - Solo admin y directiva pueden ver detalles de ujieres
-  if (user && user.rol === "ujier") {
+  if (user && user.rol === 'ujier') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -152,16 +152,16 @@ function UjierDetailContent() {
       await updateUjier(ujier.id, dataToUpdate);
       router.back();
     } catch (err) {
-      console.error("Error updating usuario:", err);
-      setError("Error al actualizar usuario");
+      console.error('Error updating usuario:', err);
+      setError('Error al actualizar usuario');
     }
   };
 
   const getRoleIcon = (rol: string) => {
     switch (rol) {
-      case "admin":
+      case 'admin':
         return <Crown className="w-6 h-6 text-red-600" />;
-      case "directiva":
+      case 'directiva':
         return <UserCog className="w-6 h-6 text-blue-600" />;
       default:
         return <User className="w-6 h-6 text-green-600" />;
@@ -170,23 +170,23 @@ function UjierDetailContent() {
 
   const getRoleBadgeColor = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "directiva":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+      case 'admin':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'directiva':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
-        return "bg-green-50 text-green-700 border-green-200";
+        return 'bg-green-50 text-green-700 border-green-200';
     }
   };
 
   const getRoleDisplayName = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "Administrador";
-      case "directiva":
-        return "Directiva";
+      case 'admin':
+        return 'Administrador';
+      case 'directiva':
+        return 'Directiva';
       default:
-        return "Ujier";
+        return 'Ujier';
     }
   };
 
@@ -194,7 +194,7 @@ function UjierDetailContent() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando detalles del usuario...</p>
         </div>
       </div>
@@ -272,11 +272,11 @@ function UjierDetailContent() {
                     variant="outline"
                     className={`text-xs ${
                       ujier.activo
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-red-50 text-red-700 border-red-200"
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-red-50 text-red-700 border-red-200'
                     }`}
                   >
-                    {ujier.activo ? "Activo" : "Inactivo"}
+                    {ujier.activo ? 'Activo' : 'Inactivo'}
                   </Badge>
                 </div>
               </div>
@@ -293,8 +293,8 @@ function UjierDetailContent() {
               <Shield className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm font-medium">
                 {isDirectiva
-                  ? "Permisos limitados: Solo puedes activar/desactivar usuarios regulares"
-                  : "Sin permisos de edición"}
+                  ? 'Permisos limitados: Solo puedes activar/desactivar usuarios regulares'
+                  : 'Sin permisos de edición'}
               </span>
             </div>
           </CardContent>
@@ -321,7 +321,7 @@ function UjierDetailContent() {
                 setEditedUsuario({ ...editedUsuario, nombre: e.target.value })
               }
               disabled={!canEditFullProfile}
-              className={!canEditFullProfile ? "bg-gray-50" : ""}
+              className={!canEditFullProfile ? 'bg-gray-50' : ''}
             />
           </div>
 
@@ -338,7 +338,7 @@ function UjierDetailContent() {
                 setEditedUsuario({ ...editedUsuario, password: e.target.value })
               }
               disabled={!canEditFullProfile}
-              className={!canEditFullProfile ? "bg-gray-50" : ""}
+              className={!canEditFullProfile ? 'bg-gray-50' : ''}
             />
             {canEditFullProfile && (
               <p className="text-xs text-gray-500 mt-1">
@@ -354,13 +354,13 @@ function UjierDetailContent() {
             </Label>
             <Select
               value={editedUsuario.rol}
-              onValueChange={(value: "admin" | "directiva" | "ujier") =>
+              onValueChange={(value: 'admin' | 'directiva' | 'ujier') =>
                 setEditedUsuario({ ...editedUsuario, rol: value })
               }
               disabled={!canEditFullProfile}
             >
               <SelectTrigger
-                className={!canEditFullProfile ? "bg-gray-50" : ""}
+                className={!canEditFullProfile ? 'bg-gray-50' : ''}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -408,16 +408,16 @@ function UjierDetailContent() {
               Estado
             </Label>
             <Select
-              value={editedUsuario.activo ? "activo" : "inactivo"}
+              value={editedUsuario.activo ? 'activo' : 'inactivo'}
               onValueChange={(value) =>
                 setEditedUsuario({
                   ...editedUsuario,
-                  activo: value === "activo",
+                  activo: value === 'activo',
                 })
               }
               disabled={!canToggleStatus}
             >
-              <SelectTrigger className={!canToggleStatus ? "bg-gray-50" : ""}>
+              <SelectTrigger className={!canToggleStatus ? 'bg-gray-50' : ''}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -437,9 +437,9 @@ function UjierDetailContent() {
             </Select>
             {!canToggleStatus && (
               <p className="text-xs text-gray-500 mt-1">
-                {ujier.rol === "admin" || ujier.rol === "directiva"
-                  ? "Los administradores y directiva no pueden ser desactivados"
-                  : "Sin permisos para cambiar el estado"}
+                {ujier.rol === 'admin' || ujier.rol === 'directiva'
+                  ? 'Los administradores y directiva no pueden ser desactivados'
+                  : 'Sin permisos para cambiar el estado'}
               </p>
             )}
           </div>
@@ -461,20 +461,20 @@ function UjierDetailContent() {
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Fecha de Creación:</span>
             <span className="text-sm">
-              {new Date(ujier.fechaCreacion).toLocaleDateString("es-ES", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
+              {new Date(ujier.fechaCreacion).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
               })}
             </span>
           </div>
           <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
             <span className="text-sm text-gray-600">Permisos:</span>
             <div className="text-sm max-w-xs">
-              {ujier.rol === "admin" && "Acceso completo al sistema"}
-              {ujier.rol === "directiva" &&
-                "Dashboard, conteo, simpatizantes, historial, usuarios (limitado)"}
-              {ujier.rol === "ujier" && "Solo conteo y simpatizantes"}
+              {ujier.rol === 'admin' && 'Acceso completo al sistema'}
+              {ujier.rol === 'directiva' &&
+                'Dashboard, conteo, simpatizantes, historial, usuarios (limitado)'}
+              {ujier.rol === 'ujier' && 'Solo conteo y simpatizantes'}
             </div>
           </div>
           <div className="flex justify-between">

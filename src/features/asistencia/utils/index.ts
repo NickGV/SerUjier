@@ -10,7 +10,7 @@ export {
   sumCounters,
   type HistorialDataForCalculation,
   type ManualCounters,
-} from "./conteo-calculations";
+} from './conteo-calculations';
 
 export {
   normalizeUjieres,
@@ -19,4 +19,4 @@ export {
   getCustomUjierString,
   validateUjieres,
   getActiveUjieres,
-} from "./ujier-utils";
+} from './ujier-utils';

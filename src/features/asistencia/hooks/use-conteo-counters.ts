@@ -1,9 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { CounterData, ConteoState } from "@/features/asistencia/components/conteo/types";
-import { MiembroSimplificado } from "@/shared/types";
-import { CATEGORIA_COLORS } from "@/features/asistencia/components/conteo/constants";
+import { useState } from 'react';
+import {
+  type CounterData,
+  type ConteoState,
+} from '@/features/asistencia/components/conteo/types';
+import { type MiembroSimplificado } from '@/shared/types';
+import { CATEGORIA_COLORS } from '@/features/asistencia/components/conteo/constants';
 
 interface UseConteoCountersProps {
   conteoState: ConteoState;
@@ -24,7 +27,11 @@ interface UseConteoCountersProps {
       hermanosApartados?: MiembroSimplificado[];
     };
     simpatizantesAsistieron?: { id: string; nombre: string }[];
-    hermanosVisitasAsistieron?: { id: string; nombre: string; iglesia?: string }[];
+    hermanosVisitasAsistieron?: {
+      id: string;
+      nombre: string;
+      iglesia?: string;
+    }[];
   } | null;
 }
 
@@ -34,7 +41,7 @@ export function useConteoCounters({
   datosServicioBase,
 }: UseConteoCountersProps) {
   const [editingCounter, setEditingCounter] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState("");
+  const [tempValue, setTempValue] = useState('');
 
   const handleCounterEdit = (type: string, value: number) => {
     setEditingCounter(type);
@@ -46,43 +53,43 @@ export function useConteoCounters({
     const updates: Partial<ConteoState> = {};
 
     switch (editingCounter) {
-      case "hermanos":
+      case 'hermanos':
         updates.hermanos = newValue;
         break;
-      case "hermanas":
+      case 'hermanas':
         updates.hermanas = newValue;
         break;
-      case "ninos":
+      case 'ninos':
         updates.ninos = newValue;
         break;
-      case "adolescentes":
+      case 'adolescentes':
         updates.adolescentes = newValue;
         break;
-      case "simpatizantes":
+      case 'simpatizantes':
         updates.simpatizantesCount = newValue;
         break;
-      case "hermanosApartados":
+      case 'hermanosApartados':
         updates.hermanosApartados = newValue;
         break;
-      case "hermanosVisitas":
+      case 'hermanosVisitas':
         updates.hermanosVisitasCount = newValue;
         break;
     }
 
     updateConteo(updates);
     setEditingCounter(null);
-    setTempValue("");
+    setTempValue('');
   };
 
   const counters: CounterData[] = [
     {
-      key: "hermanos",
-      label: "Hermanos",
+      key: 'hermanos',
+      label: 'Hermanos',
       value: conteoState.hermanos,
       setter: (value: number) => updateConteo({ hermanos: value }),
       color: CATEGORIA_COLORS.hermanos,
       miembrosDelDia: conteoState.hermanosDelDia,
-      categoria: "hermanos",
+      categoria: 'hermanos',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.hermanos || 0
         : 0,
@@ -91,13 +98,13 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: "hermanas",
-      label: "Hermanas",
+      key: 'hermanas',
+      label: 'Hermanas',
       value: conteoState.hermanas,
       setter: (value: number) => updateConteo({ hermanas: value }),
       color: CATEGORIA_COLORS.hermanas,
       miembrosDelDia: conteoState.hermanasDelDia,
-      categoria: "hermanas",
+      categoria: 'hermanas',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.hermanas || 0
         : 0,
@@ -106,13 +113,13 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: "ninos",
-      label: "Niños",
+      key: 'ninos',
+      label: 'Niños',
       value: conteoState.ninos,
       setter: (value: number) => updateConteo({ ninos: value }),
       color: CATEGORIA_COLORS.ninos,
       miembrosDelDia: conteoState.ninosDelDia,
-      categoria: "ninos",
+      categoria: 'ninos',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.ninos || 0
         : 0,
@@ -121,13 +128,13 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: "adolescentes",
-      label: "Adolescentes",
+      key: 'adolescentes',
+      label: 'Adolescentes',
       value: conteoState.adolescentes,
       setter: (value: number) => updateConteo({ adolescentes: value }),
       color: CATEGORIA_COLORS.adolescentes,
       miembrosDelDia: conteoState.adolescentesDelDia,
-      categoria: "adolescentes",
+      categoria: 'adolescentes',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.adolescentes || 0
         : 0,
@@ -136,13 +143,13 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: "hermanosApartados",
-      label: "Hermanos Apartados",
+      key: 'hermanosApartados',
+      label: 'Hermanos Apartados',
       value: conteoState.hermanosApartados,
       setter: (value: number) => updateConteo({ hermanosApartados: value }),
       color: CATEGORIA_COLORS.hermanosApartados,
       miembrosDelDia: conteoState.hermanosApartadosDelDia,
-      categoria: "hermanosApartados",
+      categoria: 'hermanosApartados',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.hermanosApartados || 0
         : 0,
@@ -151,12 +158,12 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: "simpatizantes",
-      label: "Simpatizantes",
+      key: 'simpatizantes',
+      label: 'Simpatizantes',
       value: conteoState.simpatizantesCount,
       setter: (value: number) => updateConteo({ simpatizantesCount: value }),
       color: CATEGORIA_COLORS.simpatizantes,
-      categoria: "simpatizantes",
+      categoria: 'simpatizantes',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.simpatizantes || 0
         : 0,
@@ -166,12 +173,12 @@ export function useConteoCounters({
       miembrosDelDia: conteoState.simpatizantesDelDia,
     },
     {
-      key: "hermanosVisitas",
-      label: "Hermanos Visitas",
+      key: 'hermanosVisitas',
+      label: 'Hermanos Visitas',
       value: conteoState.hermanosVisitasCount,
       setter: (value: number) => updateConteo({ hermanosVisitasCount: value }),
       color: CATEGORIA_COLORS.hermanosVisitas,
-      categoria: "hermanosVisitas",
+      categoria: 'hermanosVisitas',
       baseValue: conteoState.modoConsecutivo
         ? datosServicioBase?.hermanosVisitas || 0
         : 0,

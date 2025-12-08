@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { getHistorialRecordById } from "@/shared/lib/utils";
-import { DatosServicioBase } from "@/shared/types";
-import { HistorialRecord } from "@/features/historial/components/historial/utils";
-import { ConteoState } from "@/features/asistencia/components/conteo/types";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { getHistorialRecordById } from '@/shared/lib/utils';
+import { type DatosServicioBase } from '@/shared/types';
+import { type HistorialRecord } from '@/features/historial/components/historial/utils';
+import { type ConteoState } from '@/features/asistencia/components/conteo/types';
 
 interface UseConteoEditModeProps {
   editId: string | null;
@@ -14,7 +14,7 @@ interface UseConteoEditModeProps {
   loading: boolean;
   loadHistorialData: (
     historialData: HistorialRecord,
-    editRecordId?: string,
+    editRecordId?: string
   ) => void;
   clearDayData: () => void;
   updateConteo: (updates: Partial<ConteoState>) => void;
@@ -67,11 +67,11 @@ export function useConteoEditMode({
           setLoadingEdit(true);
           const historialRecord = await getHistorialRecordById(editId);
           loadHistorialData(historialRecord, editId);
-          toast.success("Datos cargados para edición");
+          toast.success('Datos cargados para edición');
         } catch (error) {
-          console.error("Error cargando registro para edición:", error);
-          toast.error("Error al cargar el registro para edición");
-          router.push("/historial");
+          console.error('Error cargando registro para edición:', error);
+          toast.error('Error al cargar el registro para edición');
+          router.push('/historial');
         } finally {
           setLoadingEdit(false);
         }
@@ -95,7 +95,7 @@ export function useConteoEditMode({
   const handleCancelEdit = () => {
     if (
       confirm(
-        "¿Desea cancelar la edición? Los cambios no guardados se perderán.",
+        '¿Desea cancelar la edición? Los cambios no guardados se perderán.'
       )
     ) {
       // Clear everything and reset states
@@ -105,10 +105,10 @@ export function useConteoEditMode({
       // Reset consecutive mode if it was active
       updateConteo({
         modoConsecutivo: false,
-        tipoServicio: "dominical",
+        tipoServicio: 'dominical',
       });
 
-      router.push("/historial");
+      router.push('/historial');
     }
   };
 

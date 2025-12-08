@@ -1,10 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useSimpatizantes, Simpatizante } from "@/features/simpatizantes/hooks/use-simpatizantes";
-import { useSearch } from "@/shared/hooks/use-search";
-import { Button } from "@/shared/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { useState } from 'react';
+import {
+  useSimpatizantes,
+  type Simpatizante,
+} from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { useSearch } from '@/shared/hooks/use-search';
+import { Button } from '@/shared/ui/button';
+import { Plus, RefreshCw } from 'lucide-react';
 import {
   SimpatizantesHeader,
   SimpatizantesFilters,
@@ -12,7 +15,7 @@ import {
   AddSimpatizanteDialog,
   EditSimpatizanteDialog,
   DeleteSimpatizanteDialog,
-} from "@/features/simpatizantes/components/simpatizantes";
+} from '@/features/simpatizantes/components/simpatizantes';
 
 const SimpatizantesPage = () => {
   const {
@@ -81,7 +84,7 @@ const SimpatizantesPage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando simpatizantes...</p>
         </div>
       </div>
@@ -121,10 +124,12 @@ const SimpatizantesPage = () => {
           disabled={isRefreshing}
           className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white hover:text-white rounded-xl py-3 shadow-lg"
         >
-          <RefreshCw className={`w-5 h-5 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-5 h-5 mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
+          />
           {isRefreshing ? 'Actualizando...' : 'Actualizar Datos'}
         </Button>
-        
+
         <Button
           onClick={() => setShowAddDialog(true)}
           className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
@@ -175,4 +180,3 @@ const SimpatizantesPage = () => {
 };
 
 export default SimpatizantesPage;
-

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@/shared/contexts/user-context";
-import { DatosServicioBase } from "@/shared/types";
-import { calculateManualCounters } from "@/features/asistencia/utils/conteo-calculations";
+import { useState, useEffect, useCallback } from 'react';
+import { useUser } from '@/shared/contexts/user-context';
+import { type DatosServicioBase } from '@/shared/types';
+import { calculateManualCounters } from '@/features/asistencia/utils/conteo-calculations';
 import {
   normalizeUjieres,
   getUjierSelectorValue,
   getCustomUjierString,
-} from "@/features/asistencia/utils/ujier-utils";
+} from '@/features/asistencia/utils/ujier-utils';
 
 interface ConteoState {
   hermanos: number;
@@ -48,14 +48,14 @@ interface ConteoState {
   [key: string]: unknown;
 }
 
-const STORAGE_KEY = "conteo-persistente";
+const STORAGE_KEY = 'conteo-persistente';
 
 // Función para obtener la fecha local en formato YYYY-MM-DD
 const getLocalDateString = () => {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
@@ -68,9 +68,9 @@ const initialState: ConteoState = {
   hermanosApartados: 0,
   hermanosVisitasCount: 0,
   fecha: getLocalDateString(), // Usar función local en lugar de toISOString()
-  tipoServicio: "dominical",
-  ujierSeleccionado: "",
-  ujierPersonalizado: "",
+  tipoServicio: 'dominical',
+  ujierSeleccionado: '',
+  ujierPersonalizado: '',
   modoConsecutivo: false,
   isEditMode: false,
   editingRecordId: null,
@@ -82,7 +82,7 @@ const initialState: ConteoState = {
   hermanosApartadosDelDia: [],
   hermanosVisitasDelDia: [],
   selectedUjieres: [],
-  searchMiembros: "",
+  searchMiembros: '',
   datosServicioBase: null,
 };
 
@@ -110,7 +110,7 @@ export function usePersistentConteo() {
         }
       }
     } catch (error) {
-      console.error("Error cargando conteo desde localStorage:", error);
+      console.error('Error cargando conteo desde localStorage:', error);
     } finally {
       setIsLoaded(true);
     }
@@ -129,7 +129,7 @@ export function usePersistentConteo() {
         ...prev,
         selectedUjieres: [user.nombre],
         ujierSeleccionado: user.nombre,
-        ujierPersonalizado: "",
+        ujierPersonalizado: '',
       }));
     }
   }, [isLoaded, user, conteoState.selectedUjieres.length]);
@@ -140,7 +140,7 @@ export function usePersistentConteo() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(conteoState));
       } catch (error) {
-        console.error("Error guardando conteo en localStorage:", error);
+        console.error('Error guardando conteo en localStorage:', error);
       }
     }
   }, [conteoState, isLoaded]);
@@ -175,9 +175,9 @@ export function usePersistentConteo() {
       hermanosApartadosDelDia: [],
       hermanosVisitasDelDia: [],
       selectedUjieres: [],
-      ujierSeleccionado: "",
-      ujierPersonalizado: "",
-      searchMiembros: "",
+      ujierSeleccionado: '',
+      ujierPersonalizado: '',
+      searchMiembros: '',
       datosServicioBase: null,
       isEditMode: false,
       editingRecordId: null,
@@ -212,7 +212,7 @@ export function usePersistentConteo() {
           iglesia?: string;
         }>;
       },
-      editRecordId?: string,
+      editRecordId?: string
     ) => {
       // Convertir el servicio al valor correcto
       const servicioValue = historialData.servicio.toLowerCase();
@@ -247,13 +247,13 @@ export function usePersistentConteo() {
         hermanosApartadosDelDia:
           historialData.miembrosAsistieron?.hermanosApartados || [],
         hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
-        searchMiembros: "",
+        searchMiembros: '',
         datosServicioBase: null,
         isEditMode: !!editRecordId,
         editingRecordId: editRecordId || null,
       });
     },
-    [],
+    []
   );
 
   // Funciones para manejar datosServicioBase

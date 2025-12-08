@@ -1,17 +1,14 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useUser } from "@/shared/contexts/user-context";
-import {
-  fetchHistorial,
-  deleteHistorialRecord,
-} from "@/shared/lib/utils";
-import { RoleGuard } from "@/shared/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@/shared/contexts/user-context';
+import { fetchHistorial, deleteHistorialRecord } from '@/shared/lib/utils';
+import { RoleGuard } from '@/shared/components/role-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
+import { Input } from '@/shared/ui/input';
+import { useRouter } from 'next/navigation';
 import {
   Calendar,
   Filter,
@@ -25,15 +22,15 @@ import {
   Trash2,
   AlertTriangle,
   RefreshCw,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
-import { toast } from "sonner";
+} from '@/shared/ui/select';
+import { toast } from 'sonner';
 
 interface HistorialRecordAPI {
   id: string;
@@ -66,7 +63,7 @@ interface HistorialRecord extends HistorialRecordAPI {
 
 export default function HistorialPage() {
   return (
-    <RoleGuard route="historial" allowedRoles={["admin", "directiva"]}>
+    <RoleGuard route="historial" allowedRoles={['admin', 'directiva']}>
       <HistorialContent />
     </RoleGuard>
   );
@@ -80,11 +77,11 @@ function HistorialContent() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [filtroServicio, setFiltroServicio] = useState("todos");
-  const [filtroUjier, setFiltroUjier] = useState("todos");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filtroServicio, setFiltroServicio] = useState('todos');
+  const [filtroUjier, setFiltroUjier] = useState('todos');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Estados para eliminación
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
@@ -101,18 +98,20 @@ function HistorialContent() {
         setLoading(true);
         setError(null);
       }
-      
+
       const data = await fetchHistorial();
       // Ensure new fields exist with default values
-      const normalizedData: HistorialRecord[] = data.map((record: HistorialRecordAPI) => ({
-        ...record,
-        hermanosApartados: record.hermanosApartados || 0,
-        hermanosVisitas: record.hermanosVisitas || 0,
-      }));
+      const normalizedData: HistorialRecord[] = data.map(
+        (record: HistorialRecordAPI) => ({
+          ...record,
+          hermanosApartados: record.hermanosApartados || 0,
+          hermanosVisitas: record.hermanosVisitas || 0,
+        })
+      );
       setHistorial(normalizedData);
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Error cargando historial";
+        err instanceof Error ? err.message : 'Error cargando historial';
       setError(msg);
     } finally {
       if (isRefresh) {
@@ -128,7 +127,7 @@ function HistorialContent() {
   }, []);
 
   // Verificar permisos después de cargar los datos
-  if (user && user.rol !== "directiva" && user.rol !== "admin") {
+  if (user && user.rol !== 'directiva' && user.rol !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -154,18 +153,18 @@ function HistorialContent() {
 
   const filteredData = historial.filter((record) => {
     const servicioMatch =
-      filtroServicio === "todos" ||
+      filtroServicio === 'todos' ||
       record.servicio.toLowerCase().includes(filtroServicio.toLowerCase());
 
     const ujierArray = Array.isArray(record.ujier)
       ? record.ujier
       : [record.ujier];
     const ujierMatch =
-      filtroUjier === "todos" ||
+      filtroUjier === 'todos' ||
       ujierArray.some((ujier) => ujier.includes(filtroUjier));
 
     const searchTermMatch =
-      searchTerm === "" ||
+      searchTerm === '' ||
       record.servicio.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ujierArray.some((ujier: string) =>
         ujier.toLowerCase().includes(searchTerm.toLowerCase())
@@ -174,7 +173,7 @@ function HistorialContent() {
     // Filtro por rango de fechas
     let fechaMatch = true;
     if (fechaInicio || fechaFin) {
-      const recordDate = new Date(record.fecha + "T12:00:00");
+      const recordDate = new Date(record.fecha + 'T12:00:00');
       if (fechaInicio) {
         const startDate = new Date(fechaInicio);
         fechaMatch = fechaMatch && recordDate >= startDate;
@@ -241,8 +240,8 @@ function HistorialContent() {
     totalHermanosVisitas;
 
   const clearDateFilters = () => {
-    setFechaInicio("");
-    setFechaFin("");
+    setFechaInicio('');
+    setFechaFin('');
   };
 
   const setQuickDateFilter = (days: number) => {
@@ -250,48 +249,48 @@ function HistorialContent() {
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - days);
 
-    setFechaInicio(startDate.toISOString().split("T")[0]);
-    setFechaFin(today.toISOString().split("T")[0]);
+    setFechaInicio(startDate.toISOString().split('T')[0]);
+    setFechaFin(today.toISOString().split('T')[0]);
   };
 
   const clearAllFilters = () => {
-    setFiltroServicio("todos");
-    setFiltroUjier("todos");
-    setFechaInicio("");
-    setFechaFin("");
-    setSearchTerm("");
+    setFiltroServicio('todos');
+    setFiltroUjier('todos');
+    setFechaInicio('');
+    setFechaFin('');
+    setSearchTerm('');
   };
 
   const downloadCSV = () => {
     const headers = [
-      "Fecha",
-      "Servicio",
-      "Ujier(es)",
-      "Hermanos",
-      "Hermanas",
-      "Niños",
-      "Adolescentes",
-      "Simpatizantes",
-      "Hermanos Apartados",
-      "Hermanos Visitas",
-      "Total",
-      "Simpatizantes Asistieron",
-      "Hermanos Asistieron",
-      "Hermanas Asistieron",
-      "Niños Asistieron",
-      "Adolescentes Asistieron",
-      "Hermanos Apartados Asistieron",
-      "Hermanos Visitas Asistieron",
+      'Fecha',
+      'Servicio',
+      'Ujier(es)',
+      'Hermanos',
+      'Hermanas',
+      'Niños',
+      'Adolescentes',
+      'Simpatizantes',
+      'Hermanos Apartados',
+      'Hermanos Visitas',
+      'Total',
+      'Simpatizantes Asistieron',
+      'Hermanos Asistieron',
+      'Hermanas Asistieron',
+      'Niños Asistieron',
+      'Adolescentes Asistieron',
+      'Hermanos Apartados Asistieron',
+      'Hermanos Visitas Asistieron',
     ];
 
     const csvContent = [
-      headers.join(","),
+      headers.join(','),
       ...filteredData.map((record) =>
         [
           record.fecha,
           `"${record.servicio}"`,
           `"${
-            Array.isArray(record.ujier) ? record.ujier.join("; ") : record.ujier
+            Array.isArray(record.ujier) ? record.ujier.join('; ') : record.ujier
           }"`,
           record.hermanos,
           record.hermanas,
@@ -302,50 +301,50 @@ function HistorialContent() {
           record.hermanosVisitas || 0,
           record.total,
           `"${
-            record.simpatizantesAsistieron?.map((s) => s.nombre).join("; ") ||
-            ""
+            record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
+            ''
           }"`,
           `"${
             record.miembrosAsistieron?.hermanos
               ?.map((m) => m.nombre)
-              .join("; ") || ""
+              .join('; ') || ''
           }"`,
           `"${
             record.miembrosAsistieron?.hermanas
               ?.map((m) => m.nombre)
-              .join("; ") || ""
+              .join('; ') || ''
           }"`,
           `"${
-            record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join("; ") ||
-            ""
+            record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join('; ') ||
+            ''
           }"`,
           `"${
             record.miembrosAsistieron?.adolescentes
               ?.map((m) => m.nombre)
-              .join("; ") || ""
+              .join('; ') || ''
           }"`,
           `"${
             record.miembrosAsistieron?.hermanosApartados
               ?.map((m) => m.nombre)
-              .join("; ") || ""
+              .join('; ') || ''
           }"`,
           `"${
-            record.hermanosVisitasAsistieron?.map((h) => h.nombre).join("; ") ||
-            ""
+            record.hermanosVisitasAsistieron?.map((h) => h.nombre).join('; ') ||
+            ''
           }"`,
-        ].join(",")
+        ].join(',')
       ),
-    ].join("\n");
+    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
+    link.setAttribute('href', url);
     link.setAttribute(
-      "download",
-      `informe_asistencia_${new Date().toISOString().split("T")[0]}.csv`
+      'download',
+      `informe_asistencia_${new Date().toISOString().split('T')[0]}.csv`
     );
-    link.style.visibility = "hidden";
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -354,67 +353,70 @@ function HistorialContent() {
   const downloadExcel = async () => {
     try {
       // Importar xlsx dinámicamente
-      const XLSX = await import("xlsx");
+      const XLSX = await import('xlsx');
 
       // Preparar datos para Excel
       const excelData = filteredData.map((record) => ({
-        Fecha: new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES"),
-        "Día de la Semana": new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
-          weekday: "long",
+        Fecha: new Date(record.fecha + 'T12:00:00').toLocaleDateString('es-ES'),
+        'Día de la Semana': new Date(
+          record.fecha + 'T12:00:00'
+        ).toLocaleDateString('es-ES', {
+          weekday: 'long',
         }),
         Servicio: record.servicio,
-        "Ujier(es)": Array.isArray(record.ujier)
-          ? record.ujier.join(", ")
+        'Ujier(es)': Array.isArray(record.ujier)
+          ? record.ujier.join(', ')
           : record.ujier,
         Hermanos: record.hermanos,
         Hermanas: record.hermanas,
         Niños: record.ninos,
         Adolescentes: record.adolescentes,
         Simpatizantes: record.simpatizantes,
-        "Hermanos Apartados": record.hermanosApartados || 0,
-        "Hermanos Visitas": record.hermanosVisitas || 0,
-        "Total Asistentes": record.total,
-        "Simpatizantes que Asistieron":
-          record.simpatizantesAsistieron?.map((s) => s.nombre).join(", ") || "",
-        "Hermanos que Asistieron":
+        'Hermanos Apartados': record.hermanosApartados || 0,
+        'Hermanos Visitas': record.hermanosVisitas || 0,
+        'Total Asistentes': record.total,
+        'Simpatizantes que Asistieron':
+          record.simpatizantesAsistieron?.map((s) => s.nombre).join(', ') || '',
+        'Hermanos que Asistieron':
           record.miembrosAsistieron?.hermanos
             ?.map((m) => m.nombre)
-            .join(", ") || "",
-        "Hermanas que Asistieron":
+            .join(', ') || '',
+        'Hermanas que Asistieron':
           record.miembrosAsistieron?.hermanas
             ?.map((m) => m.nombre)
-            .join(", ") || "",
-        "Niños que Asistieron":
-          record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join(", ") ||
-          "",
-        "Adolescentes que Asistieron":
+            .join(', ') || '',
+        'Niños que Asistieron':
+          record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join(', ') ||
+          '',
+        'Adolescentes que Asistieron':
           record.miembrosAsistieron?.adolescentes
             ?.map((m) => m.nombre)
-            .join(", ") || "",
-        "Hermanos Apartados que Asistieron":
+            .join(', ') || '',
+        'Hermanos Apartados que Asistieron':
           record.miembrosAsistieron?.hermanosApartados
             ?.map((m) => m.nombre)
-            .join(", ") || "",
-        "Hermanos Visitas que Asistieron":
-          record.hermanosVisitasAsistieron?.map((h) => h.nombre).join(", ") || "",
+            .join(', ') || '',
+        'Hermanos Visitas que Asistieron':
+          record.hermanosVisitasAsistieron?.map((h) => h.nombre).join(', ') ||
+          '',
       }));
 
       // Estadísticas resumidas para segunda hoja
       const estadisticas = [
-        { Concepto: "Total de Registros", Valor: totalRegistros },
-        { Concepto: "Promedio de Asistencia", Valor: promedioAsistencia },
-        { Concepto: "Mayor Asistencia", Valor: mayorAsistencia },
-        { Concepto: "Menor Asistencia", Valor: menorAsistencia },
-        { Concepto: "", Valor: "" }, // Separador
-        { Concepto: "TOTALES POR CATEGORÍA", Valor: "" },
-        { Concepto: "Total Hermanos", Valor: totalHermanos },
-        { Concepto: "Total Hermanas", Valor: totalHermanas },
-        { Concepto: "Total Niños", Valor: totalNinos },
-        { Concepto: "Total Adolescentes", Valor: totalAdolescentes },
-        { Concepto: "Total Simpatizantes", Valor: totalSimpatizantes },
-        { Concepto: "Total Hermanos Apartados", Valor: totalHermanosApartados },
-        { Concepto: "Total Hermanos Visitas", Valor: totalHermanosVisitas },
-        { Concepto: "GRAN TOTAL", Valor: granTotal },
+        { Concepto: 'Total de Registros', Valor: totalRegistros },
+        { Concepto: 'Promedio de Asistencia', Valor: promedioAsistencia },
+        { Concepto: 'Mayor Asistencia', Valor: mayorAsistencia },
+        { Concepto: 'Menor Asistencia', Valor: menorAsistencia },
+        { Concepto: '', Valor: '' }, // Separador
+        { Concepto: 'TOTALES POR CATEGORÍA', Valor: '' },
+        { Concepto: 'Total Hermanos', Valor: totalHermanos },
+        { Concepto: 'Total Hermanas', Valor: totalHermanas },
+        { Concepto: 'Total Niños', Valor: totalNinos },
+        { Concepto: 'Total Adolescentes', Valor: totalAdolescentes },
+        { Concepto: 'Total Simpatizantes', Valor: totalSimpatizantes },
+        { Concepto: 'Total Hermanos Apartados', Valor: totalHermanosApartados },
+        { Concepto: 'Total Hermanos Visitas', Valor: totalHermanosVisitas },
+        { Concepto: 'GRAN TOTAL', Valor: granTotal },
       ];
 
       // Crear libro de trabajo con múltiples hojas
@@ -441,47 +443,47 @@ function HistorialContent() {
         { wch: 40 }, // Niños que Asistieron
         { wch: 40 }, // Adolescentes que Asistieron
       ];
-      worksheet1["!cols"] = colWidths;
+      worksheet1['!cols'] = colWidths;
 
       XLSX.utils.book_append_sheet(
         workbook,
         worksheet1,
-        "Registros Detallados"
+        'Registros Detallados'
       );
 
       // Hoja 2: Estadísticas
       const worksheet2 = XLSX.utils.json_to_sheet(estadisticas);
-      worksheet2["!cols"] = [{ wch: 25 }, { wch: 15 }];
-      XLSX.utils.book_append_sheet(workbook, worksheet2, "Estadísticas");
+      worksheet2['!cols'] = [{ wch: 25 }, { wch: 15 }];
+      XLSX.utils.book_append_sheet(workbook, worksheet2, 'Estadísticas');
 
       // Generar archivo Excel
       const excelBuffer = XLSX.write(workbook, {
-        bookType: "xlsx",
-        type: "array",
+        bookType: 'xlsx',
+        type: 'array',
       });
       const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
       // Descargar archivo
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
+      link.setAttribute('href', url);
       link.setAttribute(
-        "download",
+        'download',
         `informe_asistencia_completo_${
-          new Date().toISOString().split("T")[0]
+          new Date().toISOString().split('T')[0]
         }.xlsx`
       );
-      link.style.visibility = "hidden";
+      link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error al exportar a Excel:", error);
+      console.error('Error al exportar a Excel:', error);
       toast.error(
-        "Error al generar el archivo Excel. Por favor, intente nuevamente."
+        'Error al generar el archivo Excel. Por favor, intente nuevamente.'
       );
     }
   };
@@ -492,18 +494,18 @@ INFORME DETALLADO DE ASISTENCIA
 ===============================
 
 FILTROS APLICADOS:
-- Servicio: ${filtroServicio === "todos" ? "Todos" : filtroServicio}
-- Ujier: ${filtroUjier === "todos" ? "Todos" : filtroUjier}
-- Fecha inicio: ${fechaInicio || "Sin filtro"}
-- Fecha fin: ${fechaFin || "Sin filtro"}
-- Búsqueda: ${searchTerm || "Sin filtro"}
-- Fecha de generación: ${new Date().toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+- Servicio: ${filtroServicio === 'todos' ? 'Todos' : filtroServicio}
+- Ujier: ${filtroUjier === 'todos' ? 'Todos' : filtroUjier}
+- Fecha inicio: ${fechaInicio || 'Sin filtro'}
+- Fecha fin: ${fechaFin || 'Sin filtro'}
+- Búsqueda: ${searchTerm || 'Sin filtro'}
+- Fecha de generación: ${new Date().toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     })}
 
 RESUMEN EJECUTIVO:
@@ -512,7 +514,7 @@ RESUMEN EJECUTIVO:
 - Período analizado: ${
       fechaInicio && fechaFin
         ? `${fechaInicio} a ${fechaFin}`
-        : "Todos los registros"
+        : 'Todos los registros'
     }
 - Gran total de asistentes: ${granTotal} personas
 - Promedio de asistencia por servicio: ${promedioAsistencia} personas
@@ -540,20 +542,24 @@ ESTADÍSTICAS POR CATEGORÍA:
 DETALLE DE REGISTROS:
 =====================
 ${filteredData
-  .sort((a, b) => new Date(b.fecha + "T12:00:00").getTime() - new Date(a.fecha + "T12:00:00").getTime())
+  .sort(
+    (a, b) =>
+      new Date(b.fecha + 'T12:00:00').getTime() -
+      new Date(a.fecha + 'T12:00:00').getTime()
+  )
   .map(
     (record, index) => `
-${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
-      .toLocaleDateString("es-ES", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+${index + 1}. REGISTRO DEL ${new Date(record.fecha + 'T12:00:00')
+      .toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       })
       .toUpperCase()}
    Servicio: ${record.servicio}
    Ujier(es): ${
-     Array.isArray(record.ujier) ? record.ujier.join(", ") : record.ujier
+     Array.isArray(record.ujier) ? record.ujier.join(', ') : record.ujier
    }
    
    CONTEO POR CATEGORÍAS:
@@ -569,8 +575,8 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
      record.simpatizantesAsistieron && record.simpatizantesAsistieron.length > 0
        ? `Simpatizantes (${
            record.simpatizantesAsistieron.length
-         }): ${record.simpatizantesAsistieron.map((s) => s.nombre).join(", ")}`
-       : "Simpatizantes: Ninguno registrado"
+         }): ${record.simpatizantesAsistieron.map((s) => s.nombre).join(', ')}`
+       : 'Simpatizantes: Ninguno registrado'
    }
        ${
          record.miembrosAsistieron?.hermanos &&
@@ -579,8 +585,8 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
                record.miembrosAsistieron.hermanos.length
              }): ${record.miembrosAsistieron.hermanos
                .map((m) => m.nombre)
-               .join(", ")}`
-           : "Hermanos: Ninguno registrado"
+               .join(', ')}`
+           : 'Hermanos: Ninguno registrado'
        }
     ${
       record.miembrosAsistieron?.hermanas &&
@@ -589,8 +595,8 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
             record.miembrosAsistieron.hermanas.length
           }): ${record.miembrosAsistieron.hermanas
             .map((m) => m.nombre)
-            .join(", ")}`
-        : "Hermanas: Ninguno registrado"
+            .join(', ')}`
+        : 'Hermanas: Ninguno registrado'
     }
     ${
       record.miembrosAsistieron?.ninos &&
@@ -599,8 +605,8 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
             record.miembrosAsistieron.ninos.length
           }): ${record.miembrosAsistieron.ninos
             .map((m) => m.nombre)
-            .join(", ")}`
-        : "Niños: Ninguno registrado"
+            .join(', ')}`
+        : 'Niños: Ninguno registrado'
     }
     ${
       record.miembrosAsistieron?.adolescentes &&
@@ -609,14 +615,14 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + "T12:00:00")
             record.miembrosAsistieron.adolescentes.length
           }): ${record.miembrosAsistieron.adolescentes
             .map((m) => m.nombre)
-            .join(", ")}`
-        : "Adolescentes: Ninguno registrado"
+            .join(', ')}`
+        : 'Adolescentes: Ninguno registrado'
     }
 
-${"=".repeat(80)}
+${'='.repeat(80)}
 `
   )
-  .join("")}
+  .join('')}
 
 NOTAS FINALES:
 ==============
@@ -626,16 +632,16 @@ NOTAS FINALES:
     `.trim();
 
     const blob = new Blob([reportContent], {
-      type: "text/plain;charset=utf-8;",
+      type: 'text/plain;charset=utf-8;',
     });
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
+    link.setAttribute('href', url);
     link.setAttribute(
-      "download",
-      `informe_detallado_${new Date().toISOString().split("T")[0]}.txt`
+      'download',
+      `informe_detallado_${new Date().toISOString().split('T')[0]}.txt`
     );
-    link.style.visibility = "hidden";
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -650,17 +656,19 @@ NOTAS FINALES:
       await deleteHistorialRecord(recordId);
       // Recargar los datos
       const updatedData = await fetchHistorial();
-      const normalizedData: HistorialRecord[] = updatedData.map((record: HistorialRecordAPI) => ({
-        ...record,
-        hermanosApartados: record.hermanosApartados || 0,
-        hermanosVisitas: record.hermanosVisitas || 0,
-      }));
+      const normalizedData: HistorialRecord[] = updatedData.map(
+        (record: HistorialRecordAPI) => ({
+          ...record,
+          hermanosApartados: record.hermanosApartados || 0,
+          hermanosVisitas: record.hermanosVisitas || 0,
+        })
+      );
       setHistorial(normalizedData);
       setShowDeleteConfirm(null);
-      toast.success("Registro eliminado exitosamente");
+      toast.success('Registro eliminado exitosamente');
     } catch (error) {
-      console.error("Error al eliminar registro:", error);
-      toast.error("Error al eliminar el registro. Intente nuevamente.");
+      console.error('Error al eliminar registro:', error);
+      toast.error('Error al eliminar el registro. Intente nuevamente.');
     } finally {
       setIsDeleting(false);
     }
@@ -670,7 +678,7 @@ NOTAS FINALES:
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando historial...</p>
         </div>
       </div>
@@ -713,7 +721,9 @@ NOTAS FINALES:
               disabled={isRefreshing}
               className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
             >
-              <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
               {isRefreshing ? 'Actualizando...' : 'Actualizar'}
             </Button>
           </div>
@@ -724,8 +734,8 @@ NOTAS FINALES:
             >
               {filteredData.length} registros encontrados
             </Badge>
-            {(filtroServicio !== "todos" ||
-              filtroUjier !== "todos" ||
+            {(filtroServicio !== 'todos' ||
+              filtroUjier !== 'todos' ||
               fechaInicio ||
               fechaFin ||
               searchTerm) && (
@@ -894,8 +904,8 @@ NOTAS FINALES:
                   {fechaInicio && fechaFin
                     ? `${fechaInicio} a ${fechaFin}`
                     : fechaInicio
-                    ? `Desde ${fechaInicio}`
-                    : `Hasta ${fechaFin}`}
+                      ? `Desde ${fechaInicio}`
+                      : `Hasta ${fechaFin}`}
                 </Badge>
               </div>
             )}
@@ -1056,7 +1066,7 @@ NOTAS FINALES:
               </p>
             </CardContent>
           </Card>
-        ) : ( 
+        ) : (
           filteredData.map((record) => (
             <Card
               key={record.id + record.fecha}
@@ -1066,16 +1076,19 @@ NOTAS FINALES:
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-semibold text-gray-800">
-                      {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {new Date(record.fecha + 'T12:00:00').toLocaleDateString(
+                        'es-ES',
+                        {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        }
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">
                       {Array.isArray(record.ujier)
-                        ? record.ujier.join(", ")
+                        ? record.ujier.join(', ')
                         : record.ujier}
                     </div>
                   </div>
@@ -1213,7 +1226,7 @@ NOTAS FINALES:
                   onClick={() => handleDeleteRecord(showDeleteConfirm)}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </Button>
               </div>
             </CardContent>

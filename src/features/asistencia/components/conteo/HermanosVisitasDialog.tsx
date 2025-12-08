@@ -1,26 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { useState, useEffect } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import {
-  X,
-  Plus,
-  CheckCircle,
-  Trash2,
-  Users,
-  User,
-} from "lucide-react";
-import { toast } from "sonner";
-import { HermanosVisitasDialogProps } from "./types";
+} from '@/shared/ui/dialog';
+import { X, Plus, CheckCircle, Trash2, Users, User } from 'lucide-react';
+import { toast } from 'sonner';
+import { type HermanosVisitasDialogProps } from './types';
 
 export function HermanosVisitasDialog({
   isOpen,
@@ -31,15 +24,15 @@ export function HermanosVisitasDialog({
 }: HermanosVisitasDialogProps) {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newHermanoVisita, setNewHermanoVisita] = useState({
-    nombre: "",
-    iglesia: "",
+    nombre: '',
+    iglesia: '',
   });
 
   // Reset states when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
       setShowNewForm(false);
-      setNewHermanoVisita({ nombre: "", iglesia: "" });
+      setNewHermanoVisita({ nombre: '', iglesia: '' });
     }
   }, [isOpen]);
 
@@ -51,12 +44,12 @@ export function HermanosVisitasDialog({
         nombre: newHermanoVisita.nombre.trim(),
         iglesia: newHermanoVisita.iglesia.trim() || undefined,
       });
-      setNewHermanoVisita({ nombre: "", iglesia: "" });
+      setNewHermanoVisita({ nombre: '', iglesia: '' });
       setShowNewForm(false);
-      toast.success("Hermano visita agregado exitosamente");
+      toast.success('Hermano visita agregado exitosamente');
     } catch (error) {
-      console.error("Error agregando hermano visita:", error);
-      toast.error("Error al agregar hermano visita. Intente nuevamente.");
+      console.error('Error agregando hermano visita:', error);
+      toast.error('Error al agregar hermano visita. Intente nuevamente.');
     }
   };
 
@@ -83,7 +76,8 @@ export function HermanosVisitasDialog({
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-indigo-700 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
-                      Hermanos Visitas Agregados ({hermanosVisitasDelDia.length})
+                      Hermanos Visitas Agregados ({hermanosVisitasDelDia.length}
+                      )
                     </h4>
                     <Button
                       variant="ghost"
@@ -93,7 +87,7 @@ export function HermanosVisitasDialog({
                         hermanosVisitasDelDia.forEach((h) =>
                           onRemoveHermanoVisita(h.id)
                         );
-                        toast.info("Hermanos visitas eliminados");
+                        toast.info('Hermanos visitas eliminados');
                       }}
                     >
                       <Trash2 className="w-3 h-3 mr-1" />
@@ -138,7 +132,9 @@ export function HermanosVisitasDialog({
                               variant="ghost"
                               size="sm"
                               className="text-red-500 hover:text-red-700 h-8 w-8 p-0"
-                              onClick={() => onRemoveHermanoVisita(hermanoVisita.id)}
+                              onClick={() =>
+                                onRemoveHermanoVisita(hermanoVisita.id)
+                              }
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

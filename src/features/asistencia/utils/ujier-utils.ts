@@ -21,7 +21,7 @@ export function normalizeUjieres(ujier: string | string[]): string[] {
  */
 export function formatUjieres(ujier: string | string[]): string {
   const ujieresArray = normalizeUjieres(ujier);
-  return ujieresArray.join(", ");
+  return ujieresArray.join(', ');
 }
 
 /**
@@ -32,7 +32,7 @@ export function formatUjieres(ujier: string | string[]): string {
  */
 export function getUjierSelectorValue(ujier: string | string[]): string {
   const ujieresArray = normalizeUjieres(ujier);
-  return ujieresArray.length === 1 ? ujieresArray[0] : "otro";
+  return ujieresArray.length === 1 ? ujieresArray[0] : 'otro';
 }
 
 /**
@@ -43,7 +43,7 @@ export function getUjierSelectorValue(ujier: string | string[]): string {
  */
 export function getCustomUjierString(ujier: string | string[]): string {
   const ujieresArray = normalizeUjieres(ujier);
-  return ujieresArray.length > 1 ? ujieresArray.join(", ") : "";
+  return ujieresArray.length > 1 ? ujieresArray.join(', ') : '';
 }
 
 /**
@@ -63,7 +63,7 @@ export function validateUjieres(selectedUjieres: string[]): boolean {
  * @returns Array of active ujier names, sorted alphabetically
  */
 export function getActiveUjieres<T extends { activo: boolean; nombre: string }>(
-  ujieres: T[],
+  ujieres: T[]
 ): string[] {
   return ujieres
     .filter((ujier) => ujier.activo)

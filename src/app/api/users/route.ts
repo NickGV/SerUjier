@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { adminDb } from "@/shared/lib/firebase-admin";
+import { NextResponse } from 'next/server';
+import { adminDb } from '@/shared/lib/firebase-admin';
 
 interface User {
   id: string;
@@ -13,7 +13,7 @@ interface User {
 
 export async function GET() {
   try {
-    const usersRef = adminDb.collection("usuarios");
+    const usersRef = adminDb.collection('usuarios');
     const snapshot = await usersRef.get();
 
     const users: User[] = snapshot.docs.map(
@@ -21,19 +21,19 @@ export async function GET() {
         ({
           id: doc.id,
           ...doc.data(),
-        } as User)
+        }) as User
     );
 
     // Filter only active users and admins for login dropdown
     const availableUsers = users.filter(
-      (user) => user.activo === true || user.rol === "admin"
+      (user) => user.activo === true || user.rol === 'admin'
     );
 
     return NextResponse.json(availableUsers);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error('Error fetching users:', error);
     return NextResponse.json(
-      { error: "Failed to fetch users" },
+      { error: 'Failed to fetch users' },
       { status: 500 }
     );
   }

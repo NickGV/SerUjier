@@ -1,12 +1,11 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { User, Trash2, Edit3 } from "lucide-react";
-import { Simpatizante } from "@/features/simpatizantes/hooks/use-simpatizantes";
-import { Users } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
+import { User, Users, Trash2, Edit3 } from 'lucide-react';
+import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 
 interface SimpatizantesListProps {
   simpatizantes: Simpatizante[];
@@ -33,8 +32,8 @@ export function SimpatizantesList({
           </h3>
           <p className="text-gray-500">
             {searchTerm
-              ? "Intenta con un término de búsqueda diferente o más específico"
-              : "Comienza agregando el primer simpatizante usando el botón de arriba"}
+              ? 'Intenta con un término de búsqueda diferente o más específico'
+              : 'Comienza agregando el primer simpatizante usando el botón de arriba'}
           </p>
         </CardContent>
       </Card>
@@ -63,7 +62,7 @@ export function SimpatizantesList({
                 {/* Información del simpatizante */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-600">
-                    {simpatizante.notas || "Sin notas"}
+                    {simpatizante.notas || 'Sin notas'}
                   </p>
 
                   {/* Badge y fecha en la misma línea */}
@@ -75,13 +74,13 @@ export function SimpatizantesList({
                       Simpatizante
                     </Badge>
                     <span className="text-xs text-gray-500">
-                      Desde:{" "}
+                      Desde:{' '}
                       {new Date(simpatizante.fechaRegistro).toLocaleDateString(
-                        "es-ES",
+                        'es-ES',
                         {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
                         }
                       )}
                     </span>
@@ -136,4 +135,3 @@ export function SimpatizantesList({
     </div>
   );
 }
-

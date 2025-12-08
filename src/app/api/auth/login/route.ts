@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { adminAuth } from "@/shared/lib/firebase-admin";
-import { cookies } from "next/headers";
+import { NextResponse } from 'next/server';
+import { adminAuth } from '@/shared/lib/firebase-admin';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   debugger;
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const { user } = await req.json();
 
     if (!user) {
-      return NextResponse.json({ error: "Usuario requerido" }, { status: 400 });
+      return NextResponse.json({ error: 'Usuario requerido' }, { status: 400 });
     }
 
     // Crear un custom token para el usuario
@@ -19,10 +19,10 @@ export async function POST(req: Request) {
 
     // Crear cookie de sesión
     const cookieStore = await cookies();
-    cookieStore.set("session-user", JSON.stringify(user), {
+    cookieStore.set('session-user', JSON.stringify(user), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 días
     });
 
@@ -32,9 +32,9 @@ export async function POST(req: Request) {
       user,
     });
   } catch (error) {
-    console.error("Error creating session:", error);
+    console.error('Error creating session:', error);
     return NextResponse.json(
-      { error: "Error al crear sesión" },
+      { error: 'Error al crear sesión' },
       { status: 500 }
     );
   }

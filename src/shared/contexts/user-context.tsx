@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
   nombre: string;
-  rol: "admin" | "directiva" | "ujier";
+  rol: 'admin' | 'directiva' | 'ujier';
   email?: string;
   activo?: boolean;
 }
@@ -29,7 +29,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       try {
         // Verificar si hay una sesión activa
-        const response = await fetch("/api/auth/check-session");
+        const response = await fetch('/api/auth/check-session');
 
         if (response.ok) {
           const data = await response.json();
@@ -43,20 +43,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             };
 
             setUser(userInfo);
-            localStorage.setItem("currentUser", JSON.stringify(userInfo));
+            localStorage.setItem('currentUser', JSON.stringify(userInfo));
           } else {
             setUser(null);
-            localStorage.removeItem("currentUser");
+            localStorage.removeItem('currentUser');
           }
         } else {
           // No hay sesión válida
           setUser(null);
-          localStorage.removeItem("currentUser");
+          localStorage.removeItem('currentUser');
         }
       } catch (error) {
-        console.error("Error verificando sesión:", error);
+        console.error('Error verificando sesión:', error);
         setUser(null);
-        localStorage.removeItem("currentUser");
+        localStorage.removeItem('currentUser');
       } finally {
         setIsLoading(false);
       }
@@ -68,19 +68,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       // Llamar al endpoint de logout para limpiar cookies del servidor
-      await fetch("/api/auth/session", {
-        method: "DELETE",
+      await fetch('/api/auth/session', {
+        method: 'DELETE',
       });
 
       setUser(null);
-      localStorage.removeItem("currentUser");
-      window.location.href = "/login";
+      localStorage.removeItem('currentUser');
+      window.location.href = '/login';
     } catch (error) {
-      console.error("Error durante el logout:", error);
+      console.error('Error durante el logout:', error);
       // Incluso si hay error, limpiar el estado local
       setUser(null);
-      localStorage.removeItem("currentUser");
-      window.location.href = "/login";
+      localStorage.removeItem('currentUser');
+      window.location.href = '/login';
     }
   };
 
@@ -89,9 +89,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser: (newUser: User | null) => {
       setUser(newUser);
       if (newUser) {
-        localStorage.setItem("currentUser", JSON.stringify(newUser));
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
       } else {
-        localStorage.removeItem("currentUser");
+        localStorage.removeItem('currentUser');
       }
     },
     logout,
@@ -104,7 +104,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
 }

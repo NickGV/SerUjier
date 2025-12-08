@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { useState } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { Loader2 } from "lucide-react";
-import { Simpatizante } from "@/features/simpatizantes/hooks/use-simpatizantes";
+} from '@/shared/ui/dialog';
+import { Loader2 } from 'lucide-react';
+import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 
 interface AddSimpatizanteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: Omit<Simpatizante, "id" | "fechaRegistro">) => Promise<void>;
+  onAdd: (data: Omit<Simpatizante, 'id' | 'fechaRegistro'>) => Promise<void>;
   isAdding: boolean;
 }
 
@@ -26,9 +26,9 @@ export function AddSimpatizanteDialog({
   isAdding,
 }: AddSimpatizanteDialogProps) {
   const [formData, setFormData] = useState({
-    nombre: "",
-    telefono: "",
-    notas: "",
+    nombre: '',
+    telefono: '',
+    notas: '',
   });
 
   const handleSubmit = async () => {
@@ -41,29 +41,29 @@ export function AddSimpatizanteDialog({
       const cleanData: { nombre: string; telefono?: string; notas?: string } = {
         nombre: formData.nombre.trim(),
       };
-      
+
       // Only add optional fields if they have actual content
       const telefonoTrimmed = formData.telefono.trim();
       if (telefonoTrimmed) {
         cleanData.telefono = telefonoTrimmed;
       }
-      
+
       const notasTrimmed = formData.notas.trim();
       if (notasTrimmed) {
         cleanData.notas = notasTrimmed;
       }
-      
+
       await onAdd(cleanData);
-      setFormData({ nombre: "", telefono: "", notas: "" });
+      setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     } catch (error) {
-      console.error("Error al agregar simpatizante:", error);
+      console.error('Error al agregar simpatizante:', error);
     }
   };
 
   const handleClose = () => {
     if (!isAdding) {
-      setFormData({ nombre: "", telefono: "", notas: "" });
+      setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     }
   };
@@ -137,7 +137,7 @@ export function AddSimpatizanteDialog({
                   Agregando...
                 </>
               ) : (
-                "Agregar"
+                'Agregar'
               )}
             </Button>
           </div>

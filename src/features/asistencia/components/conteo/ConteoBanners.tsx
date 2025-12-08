@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Calendar, Edit3, X } from "lucide-react";
-import { DatosServicioBase } from "@/shared/types";
-import { servicios } from "./constants";
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Calendar, Edit3, X } from 'lucide-react';
+import { type DatosServicioBase } from '@/shared/types';
+import { servicios } from './constants';
 
 interface EditModeBannerProps {
   onCancel: () => void;
@@ -58,13 +58,13 @@ export function ConsecutiveModeBanner({
         <div className="flex items-center gap-2 mb-2">
           <Calendar className="w-5 h-5" />
           <span className="font-semibold">
-            Modo Consecutivo:{" "}
+            Modo Consecutivo:{' '}
             {servicios.find((s) => s.value === tipoServicio)?.label ||
               tipoServicio}
           </span>
         </div>
         <div className="text-emerald-100 text-sm">
-          Base del {datosServicioBase.servicio}: {datosServicioBase.total}{" "}
+          Base del {datosServicioBase.servicio}: {datosServicioBase.total}{' '}
           asistentes
         </div>
         <div className="text-emerald-200 text-xs mt-1">
@@ -74,5 +74,3 @@ export function ConsecutiveModeBanner({
     </Card>
   );
 }
-
-

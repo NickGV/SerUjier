@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertDialog,
@@ -9,8 +9,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
-import { Simpatizante } from "@/features/simpatizantes/hooks/use-simpatizantes";
+} from '@/shared/ui/alert-dialog';
+import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 
 interface DeleteSimpatizanteDialogProps {
   isOpen: boolean;
@@ -32,7 +32,7 @@ export function DeleteSimpatizanteDialog({
       await onConfirm();
       onClose();
     } catch (error) {
-      console.error("Error al eliminar simpatizante:", error);
+      console.error('Error al eliminar simpatizante:', error);
     }
   };
 
@@ -60,11 +60,10 @@ export function DeleteSimpatizanteDialog({
             disabled={isDeleting}
             className="bg-red-600 hover:bg-red-700"
           >
-            {isDeleting ? "Eliminando..." : "Eliminar"}
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
-

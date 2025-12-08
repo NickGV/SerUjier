@@ -1,25 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { useState, useEffect } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import {
-  Search,
-  X,
-  Users,
-  User,
-  Trash2,
-} from "lucide-react";
-import { AsistentesDialogProps } from "./types";
-import { getCategoriaLabel, getCategoriaColor } from "./utils";
+} from '@/shared/ui/dialog';
+import { Search, X, Users, User, Trash2 } from 'lucide-react';
+import { type AsistentesDialogProps } from './types';
+import { getCategoriaLabel, getCategoriaColor } from './utils';
 
 export function AsistentesDialog({
   isOpen,
@@ -27,8 +21,8 @@ export function AsistentesDialog({
   asistentes,
   onRemoveAsistente,
 }: AsistentesDialogProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchDebounce, setSearchDebounce] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounce, setSearchDebounce] = useState('');
 
   // Debounce search
   useEffect(() => {
@@ -41,7 +35,7 @@ export function AsistentesDialog({
   // Reset states when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
-      setSearchTerm("");
+      setSearchTerm('');
     }
   }, [isOpen]);
 
@@ -88,14 +82,16 @@ export function AsistentesDialog({
                   <Card
                     key={asistente.id}
                     className={`bg-white border-gray-200 hover:shadow-md transition-all duration-200 ${
-                      asistente.esBase ? "border-dashed" : "border-solid"
+                      asistente.esBase ? 'border-dashed' : 'border-solid'
                     }`}
                   >
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {/* Avatar */}
-                          <div className={`w-10 h-10 ${getCategoriaColor(asistente.categoria)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                          <div
+                            className={`w-10 h-10 ${getCategoriaColor(asistente.categoria)} rounded-full flex items-center justify-center flex-shrink-0`}
+                          >
                             <User className="w-5 h-5" />
                           </div>
 
@@ -126,14 +122,14 @@ export function AsistentesDialog({
                               <Badge
                                 variant="outline"
                                 className={`text-xs ${
-                                  asistente.tipo === "miembro"
-                                    ? "bg-blue-50 text-blue-700 border-blue-200"
-                                    : "bg-green-50 text-green-700 border-green-200"
+                                  asistente.tipo === 'miembro'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : 'bg-green-50 text-green-700 border-green-200'
                                 }`}
                               >
-                                {asistente.tipo === "miembro"
-                                  ? "Miembro"
-                                  : "Simpatizante"}
+                                {asistente.tipo === 'miembro'
+                                  ? 'Miembro'
+                                  : 'Simpatizante'}
                               </Badge>
                             </div>
                           </div>
@@ -166,14 +162,14 @@ export function AsistentesDialog({
                   <p className="text-sm">
                     {searchDebounce
                       ? `No se encontraron asistentes que coincidan con "${searchDebounce}"`
-                      : "No hay asistentes registrados"}
+                      : 'No hay asistentes registrados'}
                   </p>
                   {searchDebounce && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3 text-xs"
-                      onClick={() => setSearchTerm("")}
+                      onClick={() => setSearchTerm('')}
                     >
                       <X className="w-3 h-3 mr-1" />
                       Limpiar búsqueda
@@ -192,7 +188,7 @@ export function AsistentesDialog({
                 className="flex-1 bg-transparent text-sm"
                 onClick={() => {
                   onClose();
-                  setSearchTerm("");
+                  setSearchTerm('');
                 }}
               >
                 <X className="w-4 h-4 mr-1" />
@@ -202,7 +198,7 @@ export function AsistentesDialog({
                 <Button
                   variant="outline"
                   className="flex-1 bg-blue-50 text-blue-700 border-blue-200 text-sm"
-                  onClick={() => setSearchTerm("")}
+                  onClick={() => setSearchTerm('')}
                 >
                   <Search className="w-4 h-4 mr-1" />
                   Limpiar Búsqueda

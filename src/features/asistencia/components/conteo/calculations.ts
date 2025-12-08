@@ -1,5 +1,5 @@
-import { ConteoState } from "./types";
-import { DatosServicioBase } from "@/shared/types";
+import { type ConteoState } from './types';
+import { type DatosServicioBase } from '@/shared/types';
 
 /**
  * Interface for calculated totals by category
@@ -82,7 +82,10 @@ export function calculateAllTotals(
   conteoState: ConteoState,
   datosServicioBase: DatosServicioBase | null
 ): CategoryTotals {
-  const baseValues = getBaseValues(conteoState.modoConsecutivo, datosServicioBase);
+  const baseValues = getBaseValues(
+    conteoState.modoConsecutivo,
+    datosServicioBase
+  );
 
   const hermanos = calculateCategoryTotal(
     conteoState.hermanos,
@@ -257,7 +260,11 @@ export interface ConteoDataResult {
     adolescentes: Array<{ id: string; nombre: string }>;
     hermanosApartados: Array<{ id: string; nombre: string }>;
   };
-  hermanosVisitasAsistieron: Array<{ id: string; nombre: string; iglesia?: string }>;
+  hermanosVisitasAsistieron: Array<{
+    id: string;
+    nombre: string;
+    iglesia?: string;
+  }>;
 }
 
 /**
@@ -295,5 +302,3 @@ export function buildConteoData(
     ...asistentes,
   };
 }
-
-

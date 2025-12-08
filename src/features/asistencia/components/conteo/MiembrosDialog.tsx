@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { useState, useEffect } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from '@/shared/ui/dialog';
 import {
   Search,
   X,
@@ -19,11 +19,11 @@ import {
   Trash2,
   Users,
   User,
-} from "lucide-react";
-import { toast } from "sonner";
-import { MiembrosDialogProps } from "./types";
-import { MiembroSimplificado } from "@/shared/types";
-import { getCategoriaColor, getMiembrosPorCategoria } from "./utils";
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { type MiembrosDialogProps } from './types';
+import { type MiembroSimplificado } from '@/shared/types';
+import { getCategoriaColor, getMiembrosPorCategoria } from './utils';
 
 export function MiembrosDialog({
   isOpen,
@@ -36,8 +36,8 @@ export function MiembrosDialog({
   onRemoveMiembro,
   onClearAllMiembros,
 }: MiembrosDialogProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchDebounce, setSearchDebounce] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounce, setSearchDebounce] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
   // Debounce search
@@ -51,7 +51,7 @@ export function MiembrosDialog({
   // Reset states when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
-      setSearchTerm("");
+      setSearchTerm('');
       setSelectedMembers([]);
     }
   }, [isOpen]);
@@ -167,7 +167,7 @@ export function MiembrosDialog({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSearchTerm("")}
+                    onClick={() => setSearchTerm('')}
                     className="text-xs h-8 bg-blue-50 text-blue-700 border-blue-200"
                   >
                     <Search className="w-3 h-3 mr-1" />
@@ -208,8 +208,8 @@ export function MiembrosDialog({
                       key={miembro.id}
                       className={`cursor-pointer transition-all duration-200 ${
                         isSelected
-                          ? "bg-blue-50 border-blue-300 shadow-sm"
-                          : "bg-white border-gray-200 hover:shadow-md"
+                          ? 'bg-blue-50 border-blue-300 shadow-sm'
+                          : 'bg-white border-gray-200 hover:shadow-md'
                       }`}
                       onClick={() => toggleMemberSelection(miembro.id)}
                     >
@@ -220,8 +220,8 @@ export function MiembrosDialog({
                             <div
                               className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                                 isSelected
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "border-gray-300"
+                                  ? 'bg-blue-600 border-blue-600'
+                                  : 'border-gray-300'
                               }`}
                             >
                               {isSelected && (
@@ -230,7 +230,9 @@ export function MiembrosDialog({
                             </div>
 
                             {/* Avatar */}
-                            <div className={`w-10 h-10 ${getCategoriaColor(categoria)} rounded-full flex items-center justify-center flex-shrink-0`}>
+                            <div
+                              className={`w-10 h-10 ${getCategoriaColor(categoria)} rounded-full flex items-center justify-center flex-shrink-0`}
+                            >
                               <User className="w-5 h-5" />
                             </div>
 
@@ -240,7 +242,7 @@ export function MiembrosDialog({
                                 {miembro.nombre}
                               </h3>
                               <p className="text-xs text-gray-600">
-                                {miembro.telefono || "Sin teléfono"}
+                                {miembro.telefono || 'Sin teléfono'}
                               </p>
                               {miembro.notas && (
                                 <p className="text-xs text-gray-500 mt-1 truncate">
@@ -256,8 +258,8 @@ export function MiembrosDialog({
                             size="sm"
                             className={`h-8 w-8 p-0 ${
                               isSelected
-                                ? "bg-blue-100 border-blue-300 text-blue-700"
-                                : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50"
+                                ? 'bg-blue-100 border-blue-300 text-blue-700'
+                                : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50'
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -281,14 +283,14 @@ export function MiembrosDialog({
                   <p className="text-sm">
                     {searchDebounce
                       ? `No se encontraron miembros que coincidan con "${searchDebounce}"`
-                      : "Todos los miembros ya están agregados"}
+                      : 'Todos los miembros ya están agregados'}
                   </p>
                   {searchDebounce && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-3 text-xs"
-                      onClick={() => setSearchTerm("")}
+                      onClick={() => setSearchTerm('')}
                     >
                       <X className="w-3 h-3 mr-1" />
                       Limpiar búsqueda
@@ -313,7 +315,7 @@ export function MiembrosDialog({
                   className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
                   onClick={() => {
                     onClearAllMiembros();
-                    toast.info("Miembros de esta sesión eliminados");
+                    toast.info('Miembros de esta sesión eliminados');
                   }}
                 >
                   <Trash2 className="w-3 h-3 mr-1" />

@@ -1,6 +1,6 @@
-declare module "next/link" {
-  import * as React from "react";
-  import type { UrlObject } from "url";
+declare module 'next/link' {
+  import type * as React from 'react';
+  import type { UrlObject } from 'url';
   export interface LinkProps {
     href: string | UrlObject;
     as?: string | UrlObject;

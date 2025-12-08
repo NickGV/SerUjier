@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import { User, Users, Trash2 } from "lucide-react";
-import { SimpatizanteLite } from "./types";
-import { getCategoriaColor } from "./utils";
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
+import { User, Users, Trash2 } from 'lucide-react';
+import { type SimpatizanteLite } from './types';
+import { getCategoriaColor } from './utils';
 
 interface SimpatizantesListProps {
   simpatizantesDelDia: SimpatizanteLite[];
@@ -38,7 +38,9 @@ export function SimpatizantesList({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {/* Avatar con ícono de persona */}
-                  <div className={`w-12 h-12 ${getCategoriaColor("simpatizantes")} rounded-full flex items-center justify-center flex-shrink-0`}>
+                  <div
+                    className={`w-12 h-12 ${getCategoriaColor('simpatizantes')} rounded-full flex items-center justify-center flex-shrink-0`}
+                  >
                     <User className="w-6 h-6" />
                   </div>
 
@@ -48,7 +50,7 @@ export function SimpatizantesList({
                       {simpatizante.nombre}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {simpatizante.telefono || "Sin teléfono"}
+                      {simpatizante.telefono || 'Sin teléfono'}
                     </p>
 
                     {/* Badge y fecha */}

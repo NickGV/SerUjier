@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/shared/lib/auth";
+import { NextResponse } from 'next/server';
+import { getCurrentUser } from '@/shared/lib/auth';
 
 export async function GET() {
   try {
@@ -7,11 +7,11 @@ export async function GET() {
 
     if (user) {
       // Si tenemos un usuario desde getCurrentUser, necesitamos obtener más datos desde Firestore
-      const { adminDb } = await import("@/shared/lib/firebase-admin");
+      const { adminDb } = await import('@/shared/lib/firebase-admin');
 
       try {
         const userDoc = await adminDb
-          .collection("usuarios")
+          .collection('usuarios')
           .doc(user.uid)
           .get();
 
@@ -19,13 +19,13 @@ export async function GET() {
           const userData = userDoc.data();
 
           // Verificar si el usuario está activo
-          if (userData?.activo === false && userData?.rol !== "admin") {
+          if (userData?.activo === false && userData?.rol !== 'admin') {
             return NextResponse.json({ user: null }, { status: 200 });
           }
 
           const userInfo = {
             id: user.uid,
-            nombre: userData?.nombre || "Usuario",
+            nombre: userData?.nombre || 'Usuario',
             rol: userData?.rol || user.role,
             email: userData?.email || `${userData?.nombre}@ujier.local`,
             activo: userData?.activo ?? true,
@@ -34,13 +34,13 @@ export async function GET() {
           return NextResponse.json({ user: userInfo }, { status: 200 });
         }
       } catch (firestoreError) {
-        console.error("Error fetching user from Firestore:", firestoreError);
+        console.error('Error fetching user from Firestore:', firestoreError);
       }
     }
 
     return NextResponse.json({ user: null }, { status: 200 });
   } catch (error) {
-    console.error("Error checking session:", error);
+    console.error('Error checking session:', error);
     return NextResponse.json({ user: null }, { status: 200 });
   }
 }

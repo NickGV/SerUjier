@@ -44,15 +44,14 @@ export interface ManualCounters {
  * @returns Object with manual counter values for each category
  */
 export function calculateManualCounters(
-  historialData: HistorialDataForCalculation,
+  historialData: HistorialDataForCalculation
 ): ManualCounters {
   // Count how many have names
   const hermanosConNombre =
     historialData.miembrosAsistieron?.hermanos?.length || 0;
   const hermanasConNombre =
     historialData.miembrosAsistieron?.hermanas?.length || 0;
-  const ninosConNombre =
-    historialData.miembrosAsistieron?.ninos?.length || 0;
+  const ninosConNombre = historialData.miembrosAsistieron?.ninos?.length || 0;
   const adolescentesConNombre =
     historialData.miembrosAsistieron?.adolescentes?.length || 0;
   const simpatizantesConNombre =
@@ -69,19 +68,19 @@ export function calculateManualCounters(
     ninos: Math.max(0, historialData.ninos - ninosConNombre),
     adolescentes: Math.max(
       0,
-      historialData.adolescentes - adolescentesConNombre,
+      historialData.adolescentes - adolescentesConNombre
     ),
     simpatizantes: Math.max(
       0,
-      historialData.simpatizantes - simpatizantesConNombre,
+      historialData.simpatizantes - simpatizantesConNombre
     ),
     hermanosApartados: Math.max(
       0,
-      (historialData.hermanosApartados || 0) - hermanosApartadosConNombre,
+      (historialData.hermanosApartados || 0) - hermanosApartadosConNombre
     ),
     hermanosVisitas: Math.max(
       0,
-      (historialData.hermanosVisitas || 0) - hermanosVisitasConNombre,
+      (historialData.hermanosVisitas || 0) - hermanosVisitasConNombre
     ),
   };
 }
@@ -103,7 +102,7 @@ export function calculateTotalAttendance(
     adolescentes: number;
     hermanosApartados: number;
     hermanosVisitas: number;
-  },
+  }
 ): number {
   return (
     counters.hermanos +

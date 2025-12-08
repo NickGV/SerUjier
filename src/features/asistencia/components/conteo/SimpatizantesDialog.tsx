@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { useState, useEffect } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from '@/shared/ui/dialog';
 import {
   Search,
   X,
@@ -19,10 +19,10 @@ import {
   Trash2,
   Users,
   User,
-} from "lucide-react";
-import { toast } from "sonner";
-import { SimpatizantesDialogProps } from "./types";
-import { getCategoriaColor } from "./utils";
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { type SimpatizantesDialogProps } from './types';
+import { getCategoriaColor } from './utils';
 
 export function SimpatizantesDialog({
   isOpen,
@@ -34,16 +34,16 @@ export function SimpatizantesDialog({
   onRemoveSimpatizante,
   onClearAllSimpatizantes,
 }: SimpatizantesDialogProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchDebounce, setSearchDebounce] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounce, setSearchDebounce] = useState('');
   const [showNewForm, setShowNewForm] = useState(false);
   const [selectedSimpatizantes, setSelectedSimpatizantes] = useState<string[]>(
     []
   );
   const [newSimpatizante, setNewSimpatizante] = useState({
-    nombre: "",
-    telefono: "",
-    notas: "",
+    nombre: '',
+    telefono: '',
+    notas: '',
   });
 
   // Debounce search
@@ -57,10 +57,10 @@ export function SimpatizantesDialog({
   // Reset states when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
-      setSearchTerm("");
+      setSearchTerm('');
       setShowNewForm(false);
       setSelectedSimpatizantes([]);
-      setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
+      setNewSimpatizante({ nombre: '', telefono: '', notas: '' });
     }
   }, [isOpen]);
 
@@ -104,14 +104,14 @@ export function SimpatizantesDialog({
     try {
       await onAddNewSimpatizante({
         ...newSimpatizante,
-        fechaRegistro: new Date().toISOString().split("T")[0],
+        fechaRegistro: new Date().toISOString().split('T')[0],
       });
-      setNewSimpatizante({ nombre: "", telefono: "", notas: "" });
+      setNewSimpatizante({ nombre: '', telefono: '', notas: '' });
       setShowNewForm(false);
       setSelectedSimpatizantes([]);
     } catch (error) {
-      console.error("Error agregando simpatizante:", error);
-      toast.error("Error al agregar simpatizante. Intente nuevamente.");
+      console.error('Error agregando simpatizante:', error);
+      toast.error('Error al agregar simpatizante. Intente nuevamente.');
     }
   };
 
@@ -174,7 +174,7 @@ export function SimpatizantesDialog({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSearchTerm("")}
+                        onClick={() => setSearchTerm('')}
                         className="text-xs h-8 bg-blue-50 text-blue-700 border-blue-200"
                       >
                         <Search className="w-3 h-3 mr-1" />
@@ -191,8 +191,6 @@ export function SimpatizantesDialog({
                   </div>
                 </div>
               </div>
-
-             
 
               {/* Lista de simpatizantes disponibles */}
               <div className="flex-1 overflow-hidden">
@@ -219,8 +217,8 @@ export function SimpatizantesDialog({
                           key={simpatizante.id}
                           className={`cursor-pointer transition-all duration-200 ${
                             isSelected
-                              ? "bg-blue-50 border-blue-300 shadow-sm"
-                              : "bg-white border-gray-200 hover:shadow-md"
+                              ? 'bg-blue-50 border-blue-300 shadow-sm'
+                              : 'bg-white border-gray-200 hover:shadow-md'
                           }`}
                           onClick={() =>
                             toggleSimpatizanteSelection(simpatizante.id)
@@ -233,8 +231,8 @@ export function SimpatizantesDialog({
                                 <div
                                   className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                                     isSelected
-                                      ? "bg-blue-600 border-blue-600"
-                                      : "border-gray-300"
+                                      ? 'bg-blue-600 border-blue-600'
+                                      : 'border-gray-300'
                                   }`}
                                 >
                                   {isSelected && (
@@ -243,7 +241,9 @@ export function SimpatizantesDialog({
                                 </div>
 
                                 {/* Avatar */}
-                                <div className={`w-10 h-10 ${getCategoriaColor("simpatizantes")} rounded-full flex items-center justify-center flex-shrink-0`}>
+                                <div
+                                  className={`w-10 h-10 ${getCategoriaColor('simpatizantes')} rounded-full flex items-center justify-center flex-shrink-0`}
+                                >
                                   <User className="w-5 h-5" />
                                 </div>
 
@@ -253,7 +253,7 @@ export function SimpatizantesDialog({
                                     {simpatizante.nombre}
                                   </h3>
                                   <p className="text-xs text-gray-600">
-                                    {simpatizante.telefono || "Sin teléfono"}
+                                    {simpatizante.telefono || 'Sin teléfono'}
                                   </p>
                                   {simpatizante.notas && (
                                     <p className="text-xs text-gray-500 mt-1 truncate">
@@ -269,8 +269,8 @@ export function SimpatizantesDialog({
                                 size="sm"
                                 className={`h-8 w-8 p-0 ${
                                   isSelected
-                                    ? "bg-blue-100 border-blue-300 text-blue-700"
-                                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50"
+                                    ? 'bg-blue-100 border-blue-300 text-blue-700'
+                                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50'
                                 }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -294,14 +294,14 @@ export function SimpatizantesDialog({
                       <p className="text-sm">
                         {searchDebounce
                           ? `No se encontraron simpatizantes que coincidan con "${searchDebounce}"`
-                          : "No hay simpatizantes disponibles"}
+                          : 'No hay simpatizantes disponibles'}
                       </p>
                       {searchDebounce && (
                         <Button
                           variant="outline"
                           size="sm"
                           className="mt-3 text-xs"
-                          onClick={() => setSearchTerm("")}
+                          onClick={() => setSearchTerm('')}
                         >
                           <X className="w-3 h-3 mr-1" />
                           Limpiar búsqueda
@@ -311,8 +311,8 @@ export function SimpatizantesDialog({
                   )}
                 </div>
               </div>
-               {/* Simpatizantes ya agregados */}
-               {simpatizantesDelDia.length > 0 && (
+              {/* Simpatizantes ya agregados */}
+              {simpatizantesDelDia.length > 0 && (
                 <div className="flex-shrink-0 ">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
@@ -325,7 +325,7 @@ export function SimpatizantesDialog({
                       className="text-red-500 hover:text-red-700 text-xs h-6 px-2"
                       onClick={() => {
                         onClearAllSimpatizantes();
-                        toast.info("Simpatizantes eliminados");
+                        toast.info('Simpatizantes eliminados');
                       }}
                     >
                       <Trash2 className="w-3 h-3 mr-1" />

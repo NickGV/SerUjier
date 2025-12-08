@@ -1,21 +1,25 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
+import { Input } from '@/shared/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
-import { useUser } from "@/shared/contexts/user-context";
-import { toast } from "sonner";
-import { getMiembroById, updateMiembro, deleteMiembro } from "@/shared/lib/utils";
+} from '@/shared/ui/select';
+import { useUser } from '@/shared/contexts/user-context';
+import { toast } from 'sonner';
+import {
+  getMiembroById,
+  updateMiembro,
+  deleteMiembro,
+} from '@/shared/lib/utils';
 import {
   ArrowLeft,
   UserCheck,
@@ -31,13 +35,13 @@ import {
   Save,
   X,
   AlertTriangle,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface Miembro {
   id: string;
   nombre: string;
   telefono?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
+  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro: string;
 }
@@ -64,7 +68,7 @@ const MiembroDetail = () => {
           const data = await getMiembroById(id);
           setMiembro(data);
         } catch (err) {
-          setError(err instanceof Error ? err.message : "Error desconocido");
+          setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
           setLoading(false);
         }
@@ -76,13 +80,13 @@ const MiembroDetail = () => {
 
   const getCategoriaIcon = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
+      case 'hermano':
         return <User className="w-6 h-6 text-slate-600" />;
-      case "hermana":
+      case 'hermana':
         return <Users className="w-6 h-6 text-rose-600" />;
-      case "nino":
+      case 'nino':
         return <Baby className="w-6 h-6 text-amber-600" />;
-      case "adolescente":
+      case 'adolescente':
         return <Zap className="w-6 h-6 text-purple-600" />;
       default:
         return <User className="w-6 h-6 text-gray-600" />;
@@ -91,29 +95,29 @@ const MiembroDetail = () => {
 
   const getCategoriaColor = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
-        return "bg-slate-50 text-slate-700 border-slate-200";
-      case "hermana":
-        return "bg-rose-50 text-rose-700 border-rose-200";
-      case "nino":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "adolescente":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+      case 'hermano':
+        return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'hermana':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'nino':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'adolescente':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const getCategoriaLabel = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
-        return "Hermano";
-      case "hermana":
-        return "Hermana";
-      case "nino":
-        return "Niño";
-      case "adolescente":
-        return "Adolescente";
+      case 'hermano':
+        return 'Hermano';
+      case 'hermana':
+        return 'Hermana';
+      case 'nino':
+        return 'Niño';
+      case 'adolescente':
+        return 'Adolescente';
       default:
         return categoria;
     }
@@ -126,11 +130,11 @@ const MiembroDetail = () => {
     setIsDeleting(true);
     try {
       await deleteMiembro(miembro.id);
-      toast.success("Miembro eliminado exitosamente");
-      router.push("/miembros");
+      toast.success('Miembro eliminado exitosamente');
+      router.push('/miembros');
     } catch (error) {
-      console.error("Error al eliminar miembro:", error);
-      toast.error("Error al eliminar el miembro. Intente nuevamente.");
+      console.error('Error al eliminar miembro:', error);
+      toast.error('Error al eliminar el miembro. Intente nuevamente.');
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
@@ -158,10 +162,10 @@ const MiembroDetail = () => {
       // Actualizar el estado local
       setMiembro(editingMiembro);
       setEditingMiembro(null);
-      toast.success("Miembro actualizado exitosamente");
+      toast.success('Miembro actualizado exitosamente');
     } catch (error) {
-      console.error("Error al actualizar miembro:", error);
-      toast.error("Error al actualizar el miembro. Intente nuevamente.");
+      console.error('Error al actualizar miembro:', error);
+      toast.error('Error al actualizar el miembro. Intente nuevamente.');
     } finally {
       setIsSaving(false);
     }
@@ -176,7 +180,7 @@ const MiembroDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando información del miembro...</p>
         </div>
       </div>
@@ -283,10 +287,10 @@ const MiembroDetail = () => {
                 Fecha de Registro
               </p>
               <p className="text-gray-600">
-                {new Date(miembro.fechaRegistro).toLocaleDateString("es-ES", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+                {new Date(miembro.fechaRegistro).toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 })}
               </p>
             </div>
@@ -343,7 +347,7 @@ const MiembroDetail = () => {
             >
               Volver a la Lista
             </Button>
-            {user?.rol === "admin" && (
+            {user?.rol === 'admin' && (
               <>
                 <Button
                   variant="outline"
@@ -379,8 +383,9 @@ const MiembroDetail = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                ¿Estás seguro de que deseas eliminar a <strong>{miembro?.nombre}</strong>? Esta acción
-                no se puede deshacer.
+                ¿Estás seguro de que deseas eliminar a{' '}
+                <strong>{miembro?.nombre}</strong>? Esta acción no se puede
+                deshacer.
               </p>
               <div className="flex gap-2">
                 <Button
@@ -396,7 +401,7 @@ const MiembroDetail = () => {
                   onClick={handleDeleteMiembro}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </Button>
               </div>
             </CardContent>
@@ -438,7 +443,7 @@ const MiembroDetail = () => {
                 <Select
                   value={editingMiembro.categoria}
                   onValueChange={(
-                    value: "hermano" | "hermana" | "nino" | "adolescente"
+                    value: 'hermano' | 'hermana' | 'nino' | 'adolescente'
                   ) =>
                     setEditingMiembro({ ...editingMiembro, categoria: value })
                   }
@@ -461,7 +466,7 @@ const MiembroDetail = () => {
                 </label>
                 <Input
                   placeholder="Número de teléfono"
-                  value={editingMiembro.telefono || ""}
+                  value={editingMiembro.telefono || ''}
                   onChange={(e) =>
                     setEditingMiembro({
                       ...editingMiembro,
@@ -477,7 +482,7 @@ const MiembroDetail = () => {
                 </label>
                 <Input
                   placeholder="Notas adicionales"
-                  value={editingMiembro.notas || ""}
+                  value={editingMiembro.notas || ''}
                   onChange={(e) =>
                     setEditingMiembro({
                       ...editingMiembro,
@@ -503,7 +508,7 @@ const MiembroDetail = () => {
                   disabled={isSaving || !editingMiembro.nombre.trim()}
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? "Guardando..." : "Guardar Cambios"}
+                  {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>
             </CardContent>

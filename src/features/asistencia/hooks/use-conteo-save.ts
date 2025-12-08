@@ -1,13 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { ConteoState } from "@/features/asistencia/components/conteo/types";
-import { DatosServicioBase } from "@/shared/types";
-import { calculateAllTotals, buildConteoData, ConteoDataResult } from "@/features/asistencia/components/conteo/calculations";
-import { saveConteo, updateHistorialRecord } from "@/shared/lib/utils";
-import { servicios } from "@/features/asistencia/components/conteo/constants";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { type ConteoState } from '@/features/asistencia/components/conteo/types';
+import { type DatosServicioBase } from '@/shared/types';
+import {
+  calculateAllTotals,
+  buildConteoData,
+  type ConteoDataResult,
+} from '@/features/asistencia/components/conteo/calculations';
+import { saveConteo, updateHistorialRecord } from '@/shared/lib/utils';
+import { servicios } from '@/features/asistencia/components/conteo/constants';
 
 interface UseConteoSaveProps {
   conteoState: ConteoState;
@@ -54,7 +58,7 @@ export function useConteoSave({
    */
   const validateUjieres = (selectedUjieres: string[]): boolean => {
     if (selectedUjieres.length === 0) {
-      toast.info("Por favor seleccione al menos un ujier");
+      toast.info('Por favor seleccione al menos un ujier');
       return false;
     }
     return true;
@@ -64,13 +68,15 @@ export function useConteoSave({
    * Checks if the service is one that can have a consecutive service
    */
   const isServicioBase = (tipoServicio: string): boolean => {
-    return tipoServicio === "evangelismo" || tipoServicio === "misionero";
+    return tipoServicio === 'evangelismo' || tipoServicio === 'misionero';
   };
 
   /**
    * Handles saving in edit mode
    */
-  const handleEditModeSave = async (conteoData: ConteoDataResult): Promise<boolean> => {
+  const handleEditModeSave = async (
+    conteoData: ConteoDataResult
+  ): Promise<boolean> => {
     if (!editingRecordId) return false;
 
     try {
@@ -83,15 +89,15 @@ export function useConteoSave({
       // Reset consecutive mode if it was active
       updateConteo({
         modoConsecutivo: false,
-        tipoServicio: "dominical",
+        tipoServicio: 'dominical',
       });
 
-      toast.success("Registro actualizado exitosamente");
-      router.push("/historial");
+      toast.success('Registro actualizado exitosamente');
+      router.push('/historial');
       return true;
     } catch (error) {
-      console.error("Error actualizando registro:", error);
-      toast.error("Error al actualizar el registro. Intente nuevamente.");
+      console.error('Error actualizando registro:', error);
+      toast.error('Error al actualizar el registro. Intente nuevamente.');
       return false;
     }
   };
@@ -99,15 +105,17 @@ export function useConteoSave({
   /**
    * Handles saving a base service (evangelism/missionary)
    */
-  const handleServicioBaseSave = async (conteoData: ConteoDataResult): Promise<boolean> => {
+  const handleServicioBaseSave = async (
+    conteoData: ConteoDataResult
+  ): Promise<boolean> => {
     try {
       await saveConteo(conteoData);
       setDatosServicioBase(conteoData as DatosServicioBase);
       setShowContinuarDialog(true);
       return true;
     } catch (error) {
-      console.error("Error guardando servicio base:", error);
-      toast.error("Error al guardar el conteo. Intente nuevamente.");
+      console.error('Error guardando servicio base:', error);
+      toast.error('Error al guardar el conteo. Intente nuevamente.');
       return false;
     }
   };
@@ -115,7 +123,9 @@ export function useConteoSave({
   /**
    * Handles saving a service in consecutive mode
    */
-  const handleConsecutiveSave = async (conteoData: ConteoDataResult): Promise<boolean> => {
+  const handleConsecutiveSave = async (
+    conteoData: ConteoDataResult
+  ): Promise<boolean> => {
     try {
       await saveConteo(conteoData);
 
@@ -126,16 +136,16 @@ export function useConteoSave({
       // Reset consecutive mode
       updateConteo({
         modoConsecutivo: false,
-        tipoServicio: "dominical",
+        tipoServicio: 'dominical',
       });
 
       toast.success(
-        "Conteo dominical guardado exitosamente. Modo consecutivo finalizado."
+        'Conteo dominical guardado exitosamente. Modo consecutivo finalizado.'
       );
       return true;
     } catch (error) {
-      console.error("Error guardando conteo consecutivo:", error);
-      toast.error("Error al guardar el conteo. Intente nuevamente.");
+      console.error('Error guardando conteo consecutivo:', error);
+      toast.error('Error al guardar el conteo. Intente nuevamente.');
       return false;
     }
   };
@@ -143,15 +153,17 @@ export function useConteoSave({
   /**
    * Handles normal save (non-consecutive)
    */
-  const handleNormalSave = async (conteoData: ConteoDataResult): Promise<boolean> => {
+  const handleNormalSave = async (
+    conteoData: ConteoDataResult
+  ): Promise<boolean> => {
     try {
       await saveConteo(conteoData);
       clearDayData();
-      toast.success("Conteo guardado exitosamente");
+      toast.success('Conteo guardado exitosamente');
       return true;
     } catch (error) {
-      console.error("Error guardando conteo:", error);
-      toast.error("Error al guardar el conteo. Intente nuevamente.");
+      console.error('Error guardando conteo:', error);
+      toast.error('Error al guardar el conteo. Intente nuevamente.');
       return false;
     }
   };
@@ -215,7 +227,7 @@ export function useConteoSave({
     // Keep selected ushers.
     updateConteo({
       modoConsecutivo: true,
-      tipoServicio: "dominical",
+      tipoServicio: 'dominical',
       hermanos: 0,
       hermanas: 0,
       ninos: 0,
@@ -233,7 +245,7 @@ export function useConteoSave({
     });
     setShowContinuarDialog(false);
     toast.success(
-      "Continuando con el servicio dominical. La base se mantiene y los contadores se reinician."
+      'Continuando con el servicio dominical. La base se mantiene y los contadores se reinician.'
     );
   };
 
@@ -250,7 +262,7 @@ export function useConteoSave({
       modoConsecutivo: false,
     });
 
-    toast.success("Conteo guardado exitosamente");
+    toast.success('Conteo guardado exitosamente');
   };
 
   return {
@@ -262,5 +274,3 @@ export function useConteoSave({
     noContinarConDominical,
   };
 }
-
-

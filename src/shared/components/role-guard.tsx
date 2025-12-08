@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useUser } from "@/shared/contexts/user-context";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Shield, AlertCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import React from 'react';
+import { useUser } from '@/shared/contexts/user-context';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Shield, AlertCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-type AllowedRole = "admin" | "directiva" | "ujier";
+type AllowedRole = 'admin' | 'directiva' | 'ujier';
 type ProtectedRoute =
-  | "conteo"
-  | "simpatizantes"
-  | "historial"
-  | "ujieres"
-  | "configuracion";
+  | 'conteo'
+  | 'simpatizantes'
+  | 'historial'
+  | 'ujieres'
+  | 'configuracion';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -24,11 +24,11 @@ interface RoleGuardProps {
 
 // Definir qué roles pueden acceder a qué rutas
 const ROUTE_PERMISSIONS: Record<ProtectedRoute, AllowedRole[]> = {
-  conteo: ["admin", "directiva", "ujier"],
-  simpatizantes: ["admin", "directiva", "ujier"],
-  historial: ["admin", "directiva"],
-  ujieres: ["admin", "directiva"],
-  configuracion: ["admin", "directiva"],
+  conteo: ['admin', 'directiva', 'ujier'],
+  simpatizantes: ['admin', 'directiva', 'ujier'],
+  historial: ['admin', 'directiva'],
+  ujieres: ['admin', 'directiva'],
+  configuracion: ['admin', 'directiva'],
 };
 
 export function RoleGuard({
@@ -45,7 +45,7 @@ export function RoleGuard({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Verificando permisos...</p>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function RoleGuard({
 
   // Si no hay usuario, redirigir al login
   if (!user) {
-    router.push("/login");
+    router.push('/login');
     return null;
   }
 
@@ -91,11 +91,11 @@ export function RoleGuard({
                 <AlertCircle className="w-4 h-4" />
                 <span className="font-medium">Tu rol actual:</span>
                 <span className="capitalize font-semibold">
-                  {user.rol === "admin"
-                    ? "Administrador"
-                    : user.rol === "directiva"
-                    ? "Directiva"
-                    : "Ujier"}
+                  {user.rol === 'admin'
+                    ? 'Administrador'
+                    : user.rol === 'directiva'
+                      ? 'Directiva'
+                      : 'Ujier'}
                 </span>
               </div>
             </div>
@@ -124,7 +124,7 @@ export function RoleGuard({
                 Volver
               </Button>
               <Button
-                onClick={() => router.push("/")}
+                onClick={() => router.push('/')}
                 className="flex-1 bg-slate-600 hover:bg-slate-700"
               >
                 Ir al Inicio
@@ -151,9 +151,9 @@ export function useRolePermissions() {
     return ROUTE_PERMISSIONS[route].includes(user.rol);
   };
 
-  const isAdmin = () => user?.rol === "admin";
-  const isDirectiva = () => user?.rol === "directiva";
-  const isUjier = () => user?.rol === "ujier";
+  const isAdmin = () => user?.rol === 'admin';
+  const isDirectiva = () => user?.rol === 'directiva';
+  const isUjier = () => user?.rol === 'ujier';
 
   return {
     user,
@@ -163,9 +163,9 @@ export function useRolePermissions() {
     isDirectiva,
     isUjier,
     // Permisos específicos comunes
-    canManageUsers: user?.rol === "admin",
-    canViewHistory: user?.rol === "admin" || user?.rol === "directiva",
-    canModifyUjieres: user?.rol === "admin" || user?.rol === "directiva",
-    canOnlyCount: user?.rol === "ujier",
+    canManageUsers: user?.rol === 'admin',
+    canViewHistory: user?.rol === 'admin' || user?.rol === 'directiva',
+    canModifyUjieres: user?.rol === 'admin' || user?.rol === 'directiva',
+    canOnlyCount: user?.rol === 'ujier',
   };
 }
