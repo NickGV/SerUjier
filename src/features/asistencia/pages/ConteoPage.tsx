@@ -7,23 +7,22 @@ import { useConteoCounters } from "@/features/asistencia/hooks/use-conteo-counte
 import { useBulkCount } from "@/features/asistencia/hooks/use-bulk-count";
 import { useConteoSave } from "@/features/asistencia/hooks/use-conteo-save";
 import { useConteoEditMode } from "@/features/asistencia/hooks/use-conteo-edit-mode";
-import type { SimpatizanteLite, CategoriaPlural, ConteoStateWithIndex } from "@/features/asistencia/components/conteo";
+import type {
+  SimpatizanteLite,
+  CategoriaPlural,
+  ConteoStateWithIndex,
+} from "@/features/asistencia/components/conteo";
 import {
   fetchSimpatizantes,
   fetchMiembros,
   addSimpatizante,
   fetchUjieres,
 } from "@/shared/lib/utils";
+import { getActiveUjieres } from "@/features/asistencia/utils/ujier-utils";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import {
-  Plus,
-  Save,
-  Eye,
-  Loader2,
-  Calendar,
-} from "lucide-react";
+import { Plus, Save, Eye, Loader2, Calendar } from "lucide-react";
 import { Miembro, MiembroSimplificado } from "@/shared/types";
 
 // Componentes modulares
@@ -76,6 +75,7 @@ export default function ConteoPage() {
       clearDayData,
       updateConteo,
       setDatosServicioBase,
+      conteoState,
     });
 
   // Hook para los contadores
@@ -133,20 +133,16 @@ export default function ConteoPage() {
       } else {
         setLoading(true);
       }
-      
-      const [simpatizantesData, miembrosData, ujieresData] =
-        await Promise.all([
-          fetchSimpatizantes(),
-          fetchMiembros(),
-          fetchUjieres(),
-        ]);
+
+      const [simpatizantesData, miembrosData, ujieresData] = await Promise.all([
+        fetchSimpatizantes(),
+        fetchMiembros(),
+        fetchUjieres(),
+      ]);
       setSimpatizantes(simpatizantesData);
       setMiembros(miembrosData);
-      // Extraer solo los nombres de los ujieres activos
-      const nombresUjieres = ujieresData
-        .filter((ujier) => ujier.activo)
-        .map((ujier) => ujier.nombre)
-        .sort();
+      // Extraer solo los nombres de los ujieres activos usando la utilidad
+      const nombresUjieres = getActiveUjieres(ujieresData);
       setUjieres(nombresUjieres);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -198,7 +194,7 @@ export default function ConteoPage() {
     handleRemove: (simpatizanteId: string) => {
       updateConteo({
         simpatizantesDelDia: conteoState.simpatizantesDelDia.filter(
-          (s) => s.id !== simpatizanteId
+          (s) => s.id !== simpatizanteId,
         ),
       });
     },
@@ -214,7 +210,10 @@ export default function ConteoPage() {
   const categoriaKey = (c: CategoriaPlural) => `${c}DelDia` as const;
 
   const miembrosHandlers = {
-    handleAdd: (categoria: CategoriaPlural, newMiembros: MiembroSimplificado[]) => {
+    handleAdd: (
+      categoria: CategoriaPlural,
+      newMiembros: MiembroSimplificado[],
+    ) => {
       const key = categoriaKey(categoria);
       const currentList = conteoState[key] as MiembroSimplificado[];
       const updates: Partial<ConteoStateWithIndex> = {};
@@ -234,7 +233,7 @@ export default function ConteoPage() {
       ] as MiembroSimplificado[];
       const updates: Partial<ConteoStateWithIndex> = {};
       (updates as ConteoStateWithIndex)[key] = currentList.filter(
-        (m) => m.id !== miembroId
+        (m) => m.id !== miembroId,
       );
       updateConteo(updates);
     },
@@ -267,7 +266,7 @@ export default function ConteoPage() {
     handleRemove: (hermanoId: string) => {
       updateConteo({
         hermanosVisitasDelDia: conteoState.hermanosVisitasDelDia.filter(
-          (h) => h.id !== hermanoId
+          (h) => h.id !== hermanoId,
         ),
       });
     },
@@ -295,11 +294,17 @@ export default function ConteoPage() {
   };
 
   // Handlers para los contadores
-  const handleCounterIncrement = (counter: { value: number; setter: (v: number) => void }) => {
+  const handleCounterIncrement = (counter: {
+    value: number;
+    setter: (v: number) => void;
+  }) => {
     counter.setter(counter.value + 1);
   };
 
-  const handleCounterDecrement = (counter: { value: number; setter: (v: number) => void }) => {
+  const handleCounterDecrement = (counter: {
+    value: number;
+    setter: (v: number) => void;
+  }) => {
     counter.setter(Math.max(0, counter.value - 1));
   };
 
@@ -309,7 +314,7 @@ export default function ConteoPage() {
   // Obtener lista de asistentes para el diálogo
   const asistentes = getAllAsistentes(
     conteoState as ConteoStateWithIndex,
-    datosServicioBase
+    datosServicioBase,
   );
 
   // Condición para mostrar el botón de ver asistentes
@@ -346,16 +351,14 @@ export default function ConteoPage() {
     datosServicioBase?.miembrosAsistieron?.hermanas
       ? datosServicioBase.miembrosAsistieron.hermanas.length
       : 0) +
-    (conteoState.modoConsecutivo &&
-    datosServicioBase?.miembrosAsistieron?.ninos
+    (conteoState.modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
       ? datosServicioBase.miembrosAsistieron.ninos.length
       : 0) +
     (conteoState.modoConsecutivo &&
     datosServicioBase?.miembrosAsistieron?.adolescentes
       ? datosServicioBase.miembrosAsistieron.adolescentes.length
       : 0) +
-    (conteoState.modoConsecutivo &&
-    datosServicioBase?.simpatizantesAsistieron
+    (conteoState.modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
       ? datosServicioBase.simpatizantesAsistieron.length
       : 0);
 
@@ -481,17 +484,19 @@ export default function ConteoPage() {
           onAddMiembros={(newMiembros) =>
             miembrosHandlers.handleAdd(
               categoriaSeleccionada as CategoriaPlural,
-              newMiembros
+              newMiembros,
             )
           }
           onRemoveMiembro={(miembroId) =>
             miembrosHandlers.handleRemove(
               categoriaSeleccionada as CategoriaPlural,
-              miembroId
+              miembroId,
             )
           }
           onClearAllMiembros={() =>
-            miembrosHandlers.handleClearAll(categoriaSeleccionada as CategoriaPlural)
+            miembrosHandlers.handleClearAll(
+              categoriaSeleccionada as CategoriaPlural,
+            )
           }
         />
       )}
@@ -561,10 +566,10 @@ export default function ConteoPage() {
               ? "Actualizando..."
               : "Guardando..."
             : isEditMode
-            ? "Actualizar Registro"
-            : conteoState.modoConsecutivo
-            ? "Guardar Conteo de Asistencia"
-            : "Guardar Conteo de Asistencia"}
+              ? "Actualizar Registro"
+              : conteoState.modoConsecutivo
+                ? "Guardar Conteo de Asistencia"
+                : "Guardar Conteo de Asistencia"}
         </span>
       </Button>
 
@@ -631,4 +636,3 @@ export default function ConteoPage() {
     </div>
   );
 }
-

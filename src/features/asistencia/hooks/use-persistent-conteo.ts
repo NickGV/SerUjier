@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/shared/contexts/user-context";
 import { DatosServicioBase } from "@/shared/types";
+import { calculateManualCounters } from "@/features/asistencia/utils/conteo-calculations";
+import {
+  normalizeUjieres,
+  getUjierSelectorValue,
+  getCustomUjierString,
+} from "@/features/asistencia/utils/ujier-utils";
 
 interface ConteoState {
   hermanos: number;
@@ -17,6 +23,8 @@ interface ConteoState {
   ujierSeleccionado: string;
   ujierPersonalizado: string;
   modoConsecutivo: boolean;
+  isEditMode: boolean;
+  editingRecordId: string | null;
   simpatizantesDelDia: Array<{
     id: string;
     nombre: string;
@@ -29,7 +37,11 @@ interface ConteoState {
   ninosDelDia: Array<{ id: string; nombre: string }>;
   adolescentesDelDia: Array<{ id: string; nombre: string }>;
   hermanosApartadosDelDia: Array<{ id: string; nombre: string }>;
-  hermanosVisitasDelDia: Array<{ id: string; nombre: string; iglesia?: string }>;
+  hermanosVisitasDelDia: Array<{
+    id: string;
+    nombre: string;
+    iglesia?: string;
+  }>;
   selectedUjieres: string[];
   searchMiembros: string;
   datosServicioBase: DatosServicioBase | null;
@@ -42,8 +54,8 @@ const STORAGE_KEY = "conteo-persistente";
 const getLocalDateString = () => {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
@@ -60,6 +72,8 @@ const initialState: ConteoState = {
   ujierSeleccionado: "",
   ujierPersonalizado: "",
   modoConsecutivo: false,
+  isEditMode: false,
+  editingRecordId: null,
   simpatizantesDelDia: [],
   hermanosDelDia: [],
   hermanasDelDia: [],
@@ -104,13 +118,18 @@ export function usePersistentConteo() {
 
   // Agregar automáticamente el ujier del usuario cuando se carga el estado
   useEffect(() => {
-    if (isLoaded && user && user.nombre && conteoState.selectedUjieres.length === 0) {
+    if (
+      isLoaded &&
+      user &&
+      user.nombre &&
+      conteoState.selectedUjieres.length === 0
+    ) {
       // Solo agregar si no hay ujieres seleccionados y el usuario tiene nombre
-      setConteoState(prev => ({
+      setConteoState((prev) => ({
         ...prev,
         selectedUjieres: [user.nombre],
         ujierSeleccionado: user.nombre,
-        ujierPersonalizado: ""
+        ujierPersonalizado: "",
       }));
     }
   }, [isLoaded, user, conteoState.selectedUjieres.length]);
@@ -128,7 +147,7 @@ export function usePersistentConteo() {
 
   // Función para actualizar el estado
   const updateConteo = useCallback((updates: Partial<ConteoState>) => {
-    setConteoState(prev => ({ ...prev, ...updates }));
+    setConteoState((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // Función para resetear el conteo
@@ -139,7 +158,7 @@ export function usePersistentConteo() {
 
   // Función para limpiar solo los datos del día (mantener configuración)
   const clearDayData = useCallback(() => {
-    setConteoState(prev => ({
+    setConteoState((prev) => ({
       ...prev,
       hermanos: 0,
       hermanas: 0,
@@ -160,73 +179,90 @@ export function usePersistentConteo() {
       ujierPersonalizado: "",
       searchMiembros: "",
       datosServicioBase: null,
+      isEditMode: false,
+      editingRecordId: null,
     }));
   }, []);
 
   // Función para cargar datos desde un registro de historial para edición
-  const loadHistorialData = useCallback((historialData: {
-    fecha: string;
-    servicio: string;
-    ujier: string | string[];
-    hermanos: number;
-    hermanas: number;
-    ninos: number;
-    adolescentes: number;
-    simpatizantes: number;
-    hermanosApartados?: number;
-    hermanosVisitas?: number;
-    simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-    miembrosAsistieron?: {
-      hermanos?: Array<{ id: string; nombre: string }>;
-      hermanas?: Array<{ id: string; nombre: string }>;
-      ninos?: Array<{ id: string; nombre: string }>;
-      adolescentes?: Array<{ id: string; nombre: string }>;
-      hermanosApartados?: Array<{ id: string; nombre: string }>;
-    };
-    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
-  }) => {
-    // Convertir el servicio al valor correcto
-    const servicioValue = historialData.servicio.toLowerCase();
-    
-    // Normalizar ujieres a array
-    const ujieresArray = Array.isArray(historialData.ujier) 
-      ? historialData.ujier 
-      : [historialData.ujier];
+  const loadHistorialData = useCallback(
+    (
+      historialData: {
+        fecha: string;
+        servicio: string;
+        ujier: string | string[];
+        hermanos: number;
+        hermanas: number;
+        ninos: number;
+        adolescentes: number;
+        simpatizantes: number;
+        hermanosApartados?: number;
+        hermanosVisitas?: number;
+        simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+        miembrosAsistieron?: {
+          hermanos?: Array<{ id: string; nombre: string }>;
+          hermanas?: Array<{ id: string; nombre: string }>;
+          ninos?: Array<{ id: string; nombre: string }>;
+          adolescentes?: Array<{ id: string; nombre: string }>;
+          hermanosApartados?: Array<{ id: string; nombre: string }>;
+        };
+        hermanosVisitasAsistieron?: Array<{
+          id: string;
+          nombre: string;
+          iglesia?: string;
+        }>;
+      },
+      editRecordId?: string,
+    ) => {
+      // Convertir el servicio al valor correcto
+      const servicioValue = historialData.servicio.toLowerCase();
 
-    // Cargar los datos del historial en el estado de conteo
-    setConteoState({
-      hermanos: 0, // Los contadores se ponen en 0, los datos están en las listas
-      hermanas: 0,
-      ninos: 0,
-      adolescentes: 0,
-      simpatizantesCount: 0,
-      hermanosApartados: 0,
-      hermanosVisitasCount: 0,
-      fecha: historialData.fecha,
-      tipoServicio: servicioValue,
-      ujierSeleccionado: ujieresArray.length === 1 ? ujieresArray[0] : "otro",
-      ujierPersonalizado: ujieresArray.length > 1 ? ujieresArray.join(", ") : "",
-      selectedUjieres: ujieresArray,
-      modoConsecutivo: false,
-      simpatizantesDelDia: historialData.simpatizantesAsistieron || [],
-      hermanosDelDia: historialData.miembrosAsistieron?.hermanos || [],
-      hermanasDelDia: historialData.miembrosAsistieron?.hermanas || [],
-      ninosDelDia: historialData.miembrosAsistieron?.ninos || [],
-      adolescentesDelDia: historialData.miembrosAsistieron?.adolescentes || [],
-      hermanosApartadosDelDia: historialData.miembrosAsistieron?.hermanosApartados || [],
-      hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
-      searchMiembros: "",
-      datosServicioBase: null,
-    });
-  }, []);
+      // Normalizar ujieres a array usando la utilidad
+      const ujieresArray = normalizeUjieres(historialData.ujier);
+
+      // Calcular los contadores manuales usando la utilidad
+      const manualCounters = calculateManualCounters(historialData);
+
+      // Cargar los datos del historial en el estado de conteo
+      setConteoState({
+        hermanos: manualCounters.hermanos,
+        hermanas: manualCounters.hermanas,
+        ninos: manualCounters.ninos,
+        adolescentes: manualCounters.adolescentes,
+        simpatizantesCount: manualCounters.simpatizantes,
+        hermanosApartados: manualCounters.hermanosApartados,
+        hermanosVisitasCount: manualCounters.hermanosVisitas,
+        fecha: historialData.fecha,
+        tipoServicio: servicioValue,
+        ujierSeleccionado: getUjierSelectorValue(historialData.ujier),
+        ujierPersonalizado: getCustomUjierString(historialData.ujier),
+        selectedUjieres: ujieresArray,
+        modoConsecutivo: false,
+        simpatizantesDelDia: historialData.simpatizantesAsistieron || [],
+        hermanosDelDia: historialData.miembrosAsistieron?.hermanos || [],
+        hermanasDelDia: historialData.miembrosAsistieron?.hermanas || [],
+        ninosDelDia: historialData.miembrosAsistieron?.ninos || [],
+        adolescentesDelDia:
+          historialData.miembrosAsistieron?.adolescentes || [],
+        hermanosApartadosDelDia:
+          historialData.miembrosAsistieron?.hermanosApartados || [],
+        hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
+        searchMiembros: "",
+        datosServicioBase: null,
+        isEditMode: !!editRecordId,
+        editingRecordId: editRecordId || null,
+      });
+    },
+    [],
+  );
 
   // Funciones para manejar datosServicioBase
   const setDatosServicioBase = useCallback((data: DatosServicioBase | null) => {
-    setConteoState(prev => ({ ...prev, datosServicioBase: data }));
+    setConteoState((prev) => ({ ...prev, datosServicioBase: data }));
   }, []);
 
   const clearDatosServicioBase = useCallback(() => {
-    setConteoState(prev => ({ ...prev, datosServicioBase: null }));
+    setConteoState((prev) => ({ ...prev, datosServicioBase: null }));
   }, []);
 
   return {

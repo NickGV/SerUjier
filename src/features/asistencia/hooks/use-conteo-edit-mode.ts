@@ -12,10 +12,14 @@ interface UseConteoEditModeProps {
   editId: string | null;
   isLoaded: boolean;
   loading: boolean;
-  loadHistorialData: (historialData: HistorialRecord) => void;
+  loadHistorialData: (
+    historialData: HistorialRecord,
+    editRecordId?: string,
+  ) => void;
   clearDayData: () => void;
   updateConteo: (updates: Partial<ConteoState>) => void;
   setDatosServicioBase: (data: DatosServicioBase | null) => void;
+  conteoState: ConteoState;
 }
 
 interface UseConteoEditModeReturn {
@@ -40,24 +44,29 @@ export function useConteoEditMode({
   clearDayData,
   updateConteo,
   setDatosServicioBase,
+  conteoState,
 }: UseConteoEditModeProps): UseConteoEditModeReturn {
   const router = useRouter();
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(false);
 
   /**
    * Effect to load history data when in edit mode
+   * Also checks if we're already in edit mode from persistent state
    */
   useEffect(() => {
     const loadEditData = async () => {
-      if (editId && isLoaded && !loading) {
+      // Si ya estamos en modo edición (desde localStorage), no recargar
+      if (conteoState.isEditMode && conteoState.editingRecordId && !editId) {
+        // Ya estamos en modo edición, no hacer nada
+        return;
+      }
+
+      // Si hay un editId en la URL y no hemos cargado aún
+      if (editId && isLoaded && !loading && !conteoState.isEditMode) {
         try {
           setLoadingEdit(true);
           const historialRecord = await getHistorialRecordById(editId);
-          loadHistorialData(historialRecord);
-          setIsEditMode(true);
-          setEditingRecordId(editId);
+          loadHistorialData(historialRecord, editId);
           toast.success("Datos cargados para edición");
         } catch (error) {
           console.error("Error cargando registro para edición:", error);
@@ -70,7 +79,15 @@ export function useConteoEditMode({
     };
 
     loadEditData();
-  }, [editId, isLoaded, loading, loadHistorialData, router]);
+  }, [
+    editId,
+    isLoaded,
+    loading,
+    loadHistorialData,
+    router,
+    conteoState.isEditMode,
+    conteoState.editingRecordId,
+  ]);
 
   /**
    * Cancels edit mode and clears data
@@ -96,8 +113,8 @@ export function useConteoEditMode({
   };
 
   return {
-    isEditMode,
-    editingRecordId,
+    isEditMode: conteoState.isEditMode,
+    editingRecordId: conteoState.editingRecordId,
     loadingEdit,
     handleCancelEdit,
   };

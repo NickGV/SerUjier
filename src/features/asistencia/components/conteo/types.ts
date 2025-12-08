@@ -31,6 +31,8 @@ export interface ConteoStateBase {
   ujierSeleccionado: string;
   ujierPersonalizado: string;
   modoConsecutivo: boolean;
+  isEditMode: boolean;
+  editingRecordId: string | null;
   simpatizantesDelDia: SimpatizanteLite[];
   hermanosDelDia: MiembroSimplificado[];
   hermanasDelDia: MiembroSimplificado[];
