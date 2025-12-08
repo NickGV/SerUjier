@@ -1,4 +1,4 @@
-import { MiembroSimplificado } from "@/app/types";
+import { MiembroSimplificado } from "@/shared/types";
 
 // Nota: Evitamos importar Simpatizante desde la página para no crear dependencias circulares.
 // Definimos un tipo mínimo local para las operaciones de conteo (subset de la entidad completa).
@@ -88,12 +88,19 @@ export interface SimpatizantesDialogProps extends ConteoDialogProps {
   simpatizantes: SimpatizanteLite[];
   simpatizantesDelDia: SimpatizanteLite[];
   onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
-  onAddNewSimpatizante: (simpatizante: Omit<SimpatizanteLite, 'id'>) => Promise<void>;
+  onAddNewSimpatizante: (
+    simpatizante: Omit<SimpatizanteLite, "id">,
+  ) => Promise<void>;
   onRemoveSimpatizante: (id: string) => void;
   onClearAllSimpatizantes: () => void;
 }
 
-export type CategoriaPlural = "hermanos" | "hermanas" | "ninos" | "adolescentes" | "hermanosApartados";
+export type CategoriaPlural =
+  | "hermanos"
+  | "hermanas"
+  | "ninos"
+  | "adolescentes"
+  | "hermanosApartados";
 
 export interface MiembrosDialogProps extends ConteoDialogProps {
   categoria: CategoriaPlural; // hermanos | hermanas | ninos | adolescentes
@@ -115,7 +122,11 @@ export interface MiembroExtended extends MiembroSimplificado {
 
 export interface AsistentesDialogProps extends ConteoDialogProps {
   asistentes: AsistenteInfo[];
-  onRemoveAsistente: (id: string, categoria: string, tipo: "miembro" | "simpatizante") => void;
+  onRemoveAsistente: (
+    id: string,
+    categoria: string,
+    tipo: "miembro" | "simpatizante",
+  ) => void;
 }
 
 export interface HermanosVisitasDialogProps extends ConteoDialogProps {

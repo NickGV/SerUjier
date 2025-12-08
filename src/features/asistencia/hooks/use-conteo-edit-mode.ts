@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getHistorialRecordById } from "@/shared/lib/utils";
 import { DatosServicioBase } from "@/shared/types";
-import { HistorialRecord } from "@/components/historial/utils";
+import { HistorialRecord } from "@/features/historial/components/historial/utils";
 import { ConteoState } from "@/features/asistencia/components/conteo/types";
 
 interface UseConteoEditModeProps {
@@ -78,7 +78,7 @@ export function useConteoEditMode({
   const handleCancelEdit = () => {
     if (
       confirm(
-        "¿Desea cancelar la edición? Los cambios no guardados se perderán."
+        "¿Desea cancelar la edición? Los cambios no guardados se perderán.",
       )
     ) {
       // Clear everything and reset states
@@ -102,5 +102,3 @@ export function useConteoEditMode({
     handleCancelEdit,
   };
 }
-
-

@@ -1,22 +1,15 @@
-import type { AsistenteInfo, SimpatizanteLite } from "./types";
+import type { AsistenteInfo, SimpatizanteLite, MiembroExtended } from "./types";
 import { MiembroSimplificado, DatosServicioBase } from "@/shared/types";
 
-interface MiembroConCategoria extends MiembroSimplificado {
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-}
-
 export const getMiembrosPorCategoria = (
-  miembros: MiembroConCategoria[],
-  categoria: string
-): MiembroConCategoria[] => {
+  miembros: MiembroExtended[],
+  categoria: string,
+): MiembroExtended[] => {
   // Para hermanos apartados, incluir todos los miembros
   if (categoria === "hermanosApartados") {
     return miembros;
   }
-  
+
   return miembros.filter((m) => {
     if (categoria === "ninos") return m.categoria === "nino";
     if (categoria === "adolescentes") return m.categoria === "adolescente";
@@ -83,7 +76,7 @@ export const getAllAsistentes = (
     // Acceso dinámico via index (usamos assertion al leer):
     [key: string]: unknown;
   },
-  datosServicioBase: DatosServicioBase | null
+  datosServicioBase: DatosServicioBase | null,
 ): AsistenteInfo[] => {
   const asistentes: AsistenteInfo[] = [];
 
@@ -113,13 +106,19 @@ export const getAllAsistentes = (
             tipo: "simpatizante",
             esBase: true,
           });
-        }
+        },
       );
     }
   }
 
   // Agregar miembros de esta sesión
-  const categorias = ["hermanos", "hermanas", "ninos", "adolescentes", "hermanosApartados"] as const;
+  const categorias = [
+    "hermanos",
+    "hermanas",
+    "ninos",
+    "adolescentes",
+    "hermanosApartados",
+  ] as const;
 
   categorias.forEach((categoria) => {
     const miembrosDelDia = conteoState[`${categoria}DelDia`] || [];
