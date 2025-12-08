@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb, adminAuth } from "@/lib/firebase-admin";
+import { adminDb, adminAuth } from "@/shared/lib/firebase-admin";
 
 // Force dynamic rendering for this API route
 export const dynamic = "force-dynamic";

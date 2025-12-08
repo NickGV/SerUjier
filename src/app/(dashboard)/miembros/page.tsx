@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/shared/contexts/user-context";
 import {
   fetchMiembros,
   addMiembro,
   updateMiembro,
   deleteMiembro,
-} from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from "@/shared/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Badge } from "@/shared/ui/badge";
 import {
   UserCheck,
   Search,
@@ -32,16 +32,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import { toast } from "sonner";
-import { Miembro } from "@/app/types";
+import { Miembro } from "@/shared/types";
 
 export default function MiembrosPage() {
   const { user } = useUser();

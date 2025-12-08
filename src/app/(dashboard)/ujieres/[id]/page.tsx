@@ -2,21 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@/contexts/user-context";
-import { getUjierById, updateUjier } from "@/lib/utils";
-import { RoleGuard } from "@/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+import { useUser } from "@/shared/contexts/user-context";
+import { getUjierById, updateUjier } from "@/shared/lib/utils";
+import { RoleGuard } from "@/shared/components/role-guard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Badge } from "@/shared/ui/badge";
+import { Label } from "@/shared/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import {
   ArrowLeft,
   Save,

@@ -17,17 +17,17 @@
     },
     {
       "name": "Button",
-      "path": "src/components/ui/button.tsx",
+      "path": "src/shared/ui/button.tsx",
       "description": "A reusable button component."
     },
     {
       "name": "Input",
-      "path": "src/components/ui/input.tsx",
+      "path": "src/shared/ui/input.tsx",
       "description": "A reusable input component."
     },
     {
       "name": "Dialog",
-      "path": "src/components/ui/dialog.tsx",
+      "path": "src/shared/ui/dialog.tsx",
       "description": "A reusable dialog component."
     },
     {

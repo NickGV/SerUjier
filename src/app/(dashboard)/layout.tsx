@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { UserProvider, useUser } from "@/contexts/user-context";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import { UserProvider, useUser } from "@/shared/contexts/user-context";
+import { BottomNavigation } from "@/shared/components/bottom-navigation";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, logout, isLoading } = useUser();

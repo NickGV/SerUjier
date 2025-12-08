@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb } from "@/shared/lib/firebase-admin";
 
 const createAdminUser = async () => {
   try {

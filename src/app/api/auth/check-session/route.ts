@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/shared/lib/auth";
 
 export async function GET() {
   try {
@@ -7,7 +7,7 @@ export async function GET() {
 
     if (user) {
       // Si tenemos un usuario desde getCurrentUser, necesitamos obtener más datos desde Firestore
-      const { adminDb } = await import("@/lib/firebase-admin");
+      const { adminDb } = await import("@/shared/lib/firebase-admin");
 
       try {
         const userDoc = await adminDb

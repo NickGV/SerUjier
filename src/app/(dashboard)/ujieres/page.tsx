@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/contexts/user-context";
-import { fetchUjieres, addUjier, updateUjier, deleteUjier } from "@/lib/utils";
-import { RoleGuard } from "@/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useUser } from "@/shared/contexts/user-context";
+import { fetchUjieres, addUjier, updateUjier, deleteUjier } from "@/shared/lib/utils";
+import { RoleGuard } from "@/shared/components/role-guard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Badge } from "@/shared/ui/badge";
 import {
   Search,
   Plus,
@@ -29,14 +29,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 import { toast } from "sonner";
 
 interface Ujier {

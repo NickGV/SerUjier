@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/shared/contexts/user-context";
 import {
   fetchHistorial,
   deleteHistorialRecord,
-} from "@/lib/utils";
-import { RoleGuard } from "@/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+} from "@/shared/lib/utils";
+import { RoleGuard } from "@/shared/components/role-guard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
@@ -32,7 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import { toast } from "sonner";
 
 interface HistorialRecordAPI {

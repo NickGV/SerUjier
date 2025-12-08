@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import React, { ReactNode } from "react";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import "@/styles/globals.css";
+import { ThemeProvider } from "@/shared/components/providers/theme-provider";
+import "./globals.css";
 import { Toaster } from "sonner";
-import { InstallPrompt, PWAUpdatePrompt, PWARegister } from "@/components/pwa";
+import { InstallPrompt, PWAUpdatePrompt, PWARegister } from "@/shared/components/pwa";
 
 // TODO: Agregar logo
 export const metadata: Metadata = {

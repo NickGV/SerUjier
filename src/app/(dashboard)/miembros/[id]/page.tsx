@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useUser } from "@/contexts/user-context";
+} from "@/shared/ui/select";
+import { useUser } from "@/shared/contexts/user-context";
 import { toast } from "sonner";
-import { getMiembroById, updateMiembro, deleteMiembro } from "@/lib/utils";
+import { getMiembroById, updateMiembro, deleteMiembro } from "@/shared/lib/utils";
 import {
   ArrowLeft,
   UserCheck,

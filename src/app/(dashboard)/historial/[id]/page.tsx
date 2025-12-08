@@ -2,23 +2,25 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/shared/contexts/user-context";
+import { getHistorialRecordById, fetchMiembros } from "@/shared/lib/utils";
+import { RoleGuard } from "@/shared/components/role-guard";
 import {
-  getHistorialRecordById,
-  fetchMiembros,
-} from "@/lib/utils";
-import { RoleGuard } from "@/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import {
   Calendar,
   ArrowLeft,
@@ -107,7 +109,9 @@ function ServicioHistorialContent() {
 
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "asistentes" | "faltantes">("all");
+  const [filterType, setFilterType] = useState<
+    "all" | "asistentes" | "faltantes"
+  >("all");
   const [filterCategoria, setFilterCategoria] = useState<string>("all");
 
   const recordId = params.id as string;
@@ -123,8 +127,10 @@ function ServicioHistorialContent() {
         // Ensure new fields exist with default values
         const normalizedRecord: HistorialRecord = {
           ...recordData,
-          hermanosApartados: (recordData as HistorialRecordAPI).hermanosApartados || 0,
-          hermanosVisitas: (recordData as HistorialRecordAPI).hermanosVisitas || 0,
+          hermanosApartados:
+            (recordData as HistorialRecordAPI).hermanosApartados || 0,
+          hermanosVisitas:
+            (recordData as HistorialRecordAPI).hermanosVisitas || 0,
         };
         setRecord(normalizedRecord);
         setAllMembers(membersData);
@@ -168,7 +174,7 @@ function ServicioHistorialContent() {
   // Obtener todos los asistentes
   const getAllAsistentes = (): AsistenteInfo[] => {
     if (!record) return [];
-    
+
     const asistentes: AsistenteInfo[] = [];
 
     // Agregar simpatizantes
@@ -185,18 +191,21 @@ function ServicioHistorialContent() {
 
     // Agregar miembros por categoría
     if (record.miembrosAsistieron) {
-      Object.entries(record.miembrosAsistieron).forEach(([categoria, miembros]) => {
-        if (miembros) {
-          miembros.forEach((miembro) => {
-            asistentes.push({
-              id: miembro.id,
-              nombre: miembro.nombre,
-              categoria: categoria.charAt(0).toUpperCase() + categoria.slice(1),
-              tipo: "miembro",
+      Object.entries(record.miembrosAsistieron).forEach(
+        ([categoria, miembros]) => {
+          if (miembros) {
+            miembros.forEach((miembro) => {
+              asistentes.push({
+                id: miembro.id,
+                nombre: miembro.nombre,
+                categoria:
+                  categoria.charAt(0).toUpperCase() + categoria.slice(1),
+                tipo: "miembro",
+              });
             });
-          });
+          }
         }
-      });
+      );
     }
 
     // Agregar hermanos visitas
@@ -215,20 +224,30 @@ function ServicioHistorialContent() {
   };
 
   // Obtener miembros faltantes
-  const getMiembrosFaltantes = (): (Miembro & { categoria_display: string })[] => {
+  const getMiembrosFaltantes = (): (Miembro & {
+    categoria_display: string;
+  })[] => {
     if (!record) return [];
-    
+
     const asistentes = getAllAsistentes();
-    const asistenteIds = new Set(asistentes.filter(a => a.tipo === "miembro").map(a => a.id));
-    
+    const asistenteIds = new Set(
+      asistentes.filter((a) => a.tipo === "miembro").map((a) => a.id)
+    );
+
     return allMembers
-      .filter(miembro => !asistenteIds.has(miembro.id))
-      .map(miembro => ({
+      .filter((miembro) => !asistenteIds.has(miembro.id))
+      .map((miembro) => ({
         ...miembro,
-        categoria_display: miembro.categoria === "hermano" ? "Hermanos" :
-                          miembro.categoria === "hermana" ? "Hermanas" :
-                          miembro.categoria === "nino" ? "Niños" : 
-                          miembro.categoria === "adolescente" ? "Adolescentes" : "Hermanos Apartados"
+        categoria_display:
+          miembro.categoria === "hermano"
+            ? "Hermanos"
+            : miembro.categoria === "hermana"
+            ? "Hermanas"
+            : miembro.categoria === "nino"
+            ? "Niños"
+            : miembro.categoria === "adolescente"
+            ? "Adolescentes"
+            : "Hermanos Apartados",
       }));
   };
 
@@ -238,69 +257,79 @@ function ServicioHistorialContent() {
     const faltantes = getMiembrosFaltantes();
 
     let dataToFilter: PersonaFiltrada[] = [];
-    
+
     if (filterType === "all") {
       dataToFilter = [
-        ...asistentes.map(a => ({ ...a, status: "asistente" as const })),
-        ...faltantes.map(f => ({ 
-          id: f.id, 
-          nombre: f.nombre, 
-          categoria: f.categoria_display, 
+        ...asistentes.map((a) => ({ ...a, status: "asistente" as const })),
+        ...faltantes.map((f) => ({
+          id: f.id,
+          nombre: f.nombre,
+          categoria: f.categoria_display,
           tipo: "miembro" as const,
-          status: "faltante" as const
-        }))
+          status: "faltante" as const,
+        })),
       ];
     } else if (filterType === "asistentes") {
-      dataToFilter = asistentes.map(a => ({ ...a, status: "asistente" as const }));
+      dataToFilter = asistentes.map((a) => ({
+        ...a,
+        status: "asistente" as const,
+      }));
     } else {
-      dataToFilter = faltantes.map(f => ({ 
-        id: f.id, 
-        nombre: f.nombre, 
-        categoria: f.categoria_display, 
+      dataToFilter = faltantes.map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        categoria: f.categoria_display,
         tipo: "miembro" as const,
-        status: "faltante" as const
+        status: "faltante" as const,
       }));
     }
 
     // Filtrar por término de búsqueda
     if (searchTerm) {
-      dataToFilter = dataToFilter.filter(item => 
+      dataToFilter = dataToFilter.filter((item) =>
         item.nombre.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Filtrar por categoría
     if (filterCategoria !== "all") {
-      dataToFilter = dataToFilter.filter(item => 
-        item.categoria.toLowerCase() === filterCategoria.toLowerCase()
+      dataToFilter = dataToFilter.filter(
+        (item) => item.categoria.toLowerCase() === filterCategoria.toLowerCase()
       );
     }
 
     return dataToFilter;
   };
 
-  const getCategoriaColor = (categoria: string, status?: "asistente" | "faltante") => {
+  const getCategoriaColor = (
+    categoria: string,
+    status?: "asistente" | "faltante"
+  ) => {
     if (status === "faltante") {
       return `bg-red-50 border-red-200 text-red-700`;
     }
 
-    const baseColor = {
-      "hermanos": "slate",
-      "hermanas": "rose", 
-      "niños": "amber",
-      "adolescentes": "purple",
-      "simpatizantes": "emerald",
-      "hermanos apartados": "orange",
-      "hermanos visitas": "indigo"
-    }[categoria.toLowerCase()] || "gray";
+    const baseColor =
+      {
+        hermanos: "slate",
+        hermanas: "rose",
+        niños: "amber",
+        adolescentes: "purple",
+        simpatizantes: "emerald",
+        "hermanos apartados": "orange",
+        "hermanos visitas": "indigo",
+      }[categoria.toLowerCase()] || "gray";
 
     return `bg-${baseColor}-50 border-${baseColor}-200 text-${baseColor}-700`;
   };
 
   // Función para obtener el icono según la categoría
-  const getCategoriaIcon = (categoria: string, status?: "asistente" | "faltante") => {
+  const getCategoriaIcon = (
+    categoria: string,
+    status?: "asistente" | "faltante"
+  ) => {
     const iconSize = "w-5 h-5";
-    
+
     if (status === "faltante") {
       // Para faltantes, usar iconos en rojo
       switch (categoria.toLowerCase()) {
@@ -345,7 +374,10 @@ function ServicioHistorialContent() {
   };
 
   // Función para obtener el avatar con color de fondo según categoría
-  const getCategoriaAvatar = (categoria: string, status?: "asistente" | "faltante") => {
+  const getCategoriaAvatar = (
+    categoria: string,
+    status?: "asistente" | "faltante"
+  ) => {
     if (status === "faltante") {
       return "bg-red-100";
     }
@@ -390,7 +422,9 @@ function ServicioHistorialContent() {
               <AlertCircle className="w-12 h-12 mx-auto" />
             </div>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
-            <p className="text-gray-600 mb-4">{error || "Servicio no encontrado"}</p>
+            <p className="text-gray-600 mb-4">
+              {error || "Servicio no encontrado"}
+            </p>
             <Button onClick={() => router.push("/historial")} variant="outline">
               Volver al Historial
             </Button>
@@ -431,7 +465,8 @@ function ServicioHistorialContent() {
           </div>
           <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-            Servicio del {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
+            Servicio del{" "}
+            {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -446,59 +481,79 @@ function ServicioHistorialContent() {
         <CardContent className="p-4 space-y-4">
           {/* Vista de información */}
           <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Fecha:</span>
-                <div className="font-semibold">
-                  {new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES")}
-                </div>
-              </div>
-              <div>
-                <span className="text-gray-600">Servicio:</span>
-                <div className="font-semibold">{record.servicio}</div>
-              </div>
-              <div>
-                <span className="text-gray-600">Ujier(es):</span>
-                <div className="font-semibold">
-                  {Array.isArray(record.ujier) ? record.ujier.join(", ") : record.ujier}
-                </div>
-              </div>
-              <div>
-                <span className="text-gray-600">Total:</span>
-                <div className="font-semibold text-xl text-slate-700">{record.total}</div>
+            <div>
+              <span className="text-gray-600">Fecha:</span>
+              <div className="font-semibold">
+                {new Date(record.fecha + "T12:00:00").toLocaleDateString(
+                  "es-ES"
+                )}
               </div>
             </div>
+            <div>
+              <span className="text-gray-600">Servicio:</span>
+              <div className="font-semibold">{record.servicio}</div>
+            </div>
+            <div>
+              <span className="text-gray-600">Ujier(es):</span>
+              <div className="font-semibold">
+                {Array.isArray(record.ujier)
+                  ? record.ujier.join(", ")
+                  : record.ujier}
+              </div>
+            </div>
+            <div>
+              <span className="text-gray-600">Total:</span>
+              <div className="font-semibold text-xl text-slate-700">
+                {record.total}
+              </div>
+            </div>
+          </div>
 
           {/* Categorías detalladas */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-3 border-t">
-              <div className="text-center p-3 bg-slate-50 rounded-lg">
-                <div className="text-lg font-bold text-slate-600">{record.hermanos}</div>
-                <div className="text-xs text-gray-500">Hermanos</div>
+            <div className="text-center p-3 bg-slate-50 rounded-lg">
+              <div className="text-lg font-bold text-slate-600">
+                {record.hermanos}
               </div>
-              <div className="text-center p-3 bg-rose-50 rounded-lg">
-                <div className="text-lg font-bold text-rose-600">{record.hermanas}</div>
-                <div className="text-xs text-gray-500">Hermanas</div>
-              </div>
-              <div className="text-center p-3 bg-amber-50 rounded-lg">
-                <div className="text-lg font-bold text-amber-600">{record.ninos}</div>
-                <div className="text-xs text-gray-500">Niños</div>
-              </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                <div className="text-lg font-bold text-purple-600">{record.adolescentes}</div>
-                <div className="text-xs text-gray-500">Adolesc.</div>
-              </div>
-              <div className="text-center p-3 bg-emerald-50 rounded-lg">
-                <div className="text-lg font-bold text-emerald-600">{record.simpatizantes}</div>
-                <div className="text-xs text-gray-500">Simpat.</div>
-              </div>
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
-                <div className="text-lg font-bold text-orange-600">{record.hermanosApartados || 0}</div>
-                <div className="text-xs text-gray-500">H. Apart.</div>
-              </div>
-              <div className="text-center p-3 bg-indigo-50 rounded-lg">
-                <div className="text-lg font-bold text-indigo-600">{record.hermanosVisitas || 0}</div>
-                <div className="text-xs text-gray-500">H. Visitas</div>
-              </div>
+              <div className="text-xs text-gray-500">Hermanos</div>
             </div>
+            <div className="text-center p-3 bg-rose-50 rounded-lg">
+              <div className="text-lg font-bold text-rose-600">
+                {record.hermanas}
+              </div>
+              <div className="text-xs text-gray-500">Hermanas</div>
+            </div>
+            <div className="text-center p-3 bg-amber-50 rounded-lg">
+              <div className="text-lg font-bold text-amber-600">
+                {record.ninos}
+              </div>
+              <div className="text-xs text-gray-500">Niños</div>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-lg font-bold text-purple-600">
+                {record.adolescentes}
+              </div>
+              <div className="text-xs text-gray-500">Adolesc.</div>
+            </div>
+            <div className="text-center p-3 bg-emerald-50 rounded-lg">
+              <div className="text-lg font-bold text-emerald-600">
+                {record.simpatizantes}
+              </div>
+              <div className="text-xs text-gray-500">Simpat.</div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-lg font-bold text-orange-600">
+                {record.hermanosApartados || 0}
+              </div>
+              <div className="text-xs text-gray-500">H. Apart.</div>
+            </div>
+            <div className="text-center p-3 bg-indigo-50 rounded-lg">
+              <div className="text-lg font-bold text-indigo-600">
+                {record.hermanosVisitas || 0}
+              </div>
+              <div className="text-xs text-gray-500">H. Visitas</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -508,19 +563,27 @@ function ServicioHistorialContent() {
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <UserCheck className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-700">Asistentes</span>
+              <span className="text-sm font-medium text-green-700">
+                Asistentes
+              </span>
             </div>
-            <div className="text-2xl font-bold text-green-700">{asistentes.length}</div>
+            <div className="text-2xl font-bold text-green-700">
+              {asistentes.length}
+            </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-red-50 border-red-200">
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <UserX className="w-5 h-5 text-red-600" />
-              <span className="text-sm font-medium text-red-700">Faltantes</span>
+              <span className="text-sm font-medium text-red-700">
+                Faltantes
+              </span>
             </div>
-            <div className="text-2xl font-bold text-red-700">{faltantes.length}</div>
+            <div className="text-2xl font-bold text-red-700">
+              {faltantes.length}
+            </div>
           </CardContent>
         </Card>
 
@@ -528,9 +591,13 @@ function ServicioHistorialContent() {
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Users className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Total Miembros</span>
+              <span className="text-sm font-medium text-blue-700">
+                Total Miembros
+              </span>
             </div>
-            <div className="text-2xl font-bold text-blue-700">{allMembers.length}</div>
+            <div className="text-2xl font-bold text-blue-700">
+              {allMembers.length}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -556,7 +623,12 @@ function ServicioHistorialContent() {
             </div>
 
             {/* Filtro por tipo */}
-            <Select value={filterType} onValueChange={(value: unknown) => setFilterType(value as "all" | "asistentes" | "faltantes")}>
+            <Select
+              value={filterType}
+              onValueChange={(value: unknown) =>
+                setFilterType(value as "all" | "asistentes" | "faltantes")
+              }
+            >
               <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -579,8 +651,12 @@ function ServicioHistorialContent() {
                 <SelectItem value="niños">Niños</SelectItem>
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
                 <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
-                <SelectItem value="hermanos apartados">Hermanos Apartados</SelectItem>
-                <SelectItem value="hermanos visitas">Hermanos Visitas</SelectItem>
+                <SelectItem value="hermanos apartados">
+                  Hermanos Apartados
+                </SelectItem>
+                <SelectItem value="hermanos visitas">
+                  Hermanos Visitas
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -589,7 +665,9 @@ function ServicioHistorialContent() {
             <Badge variant="outline" className="bg-blue-50 text-blue-700">
               {filteredData.length} encontrados
             </Badge>
-            {(searchTerm || filterType !== "all" || filterCategoria !== "all") && (
+            {(searchTerm ||
+              filterType !== "all" ||
+              filterCategoria !== "all") && (
               <Button
                 variant="outline"
                 size="sm"
@@ -612,9 +690,11 @@ function ServicioHistorialContent() {
         <CardHeader>
           <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
             <Users className="w-4 h-4" />
-            {filterType === "asistentes" ? "Asistentes" : 
-             filterType === "faltantes" ? "Miembros Faltantes" : 
-             "Todos los Miembros"}
+            {filterType === "asistentes"
+              ? "Asistentes"
+              : filterType === "faltantes"
+              ? "Miembros Faltantes"
+              : "Todos los Miembros"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -628,30 +708,44 @@ function ServicioHistorialContent() {
               <div
                 key={person.id}
                 className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                  person.status === "faltante" 
-                    ? "bg-red-50 border-red-200" 
+                  person.status === "faltante"
+                    ? "bg-red-50 border-red-200"
                     : "bg-white border-gray-200"
                 }`}
               >
                 <div className="flex items-center gap-4">
                   {/* Avatar con icono distintivo por categoría */}
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getCategoriaAvatar(person.categoria, person.status)}`}>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center ${getCategoriaAvatar(
+                      person.categoria,
+                      person.status
+                    )}`}
+                  >
                     {getCategoriaIcon(person.categoria, person.status)}
                   </div>
-                  
+
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 text-base">{person.nombre}</h3>
+                      <h3 className="font-semibold text-gray-900 text-base">
+                        {person.nombre}
+                      </h3>
                       {/* Indicador pequeño de asistencia */}
-                      <div className={`w-3 h-3 rounded-full ${
-                        person.status === "faltante" ? "bg-red-400" : "bg-green-400"
-                      }`} />
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          person.status === "faltante"
+                            ? "bg-red-400"
+                            : "bg-green-400"
+                        }`}
+                      />
                     </div>
-                    
+
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant="outline"
-                        className={`text-xs font-medium ${getCategoriaColor(person.categoria, person.status)}`}
+                        className={`text-xs font-medium ${getCategoriaColor(
+                          person.categoria,
+                          person.status
+                        )}`}
                       >
                         {getCategoriaIcon(person.categoria, person.status)}
                         <span className="ml-1">{person.categoria}</span>
@@ -669,15 +763,21 @@ function ServicioHistorialContent() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   {person.status === "faltante" ? (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-medium">
+                    <Badge
+                      variant="outline"
+                      className="bg-red-50 text-red-700 border-red-200 font-medium"
+                    >
                       <UserX className="w-3 h-3 mr-1" />
                       Faltó
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-700 border-green-200 font-medium"
+                    >
                       <UserCheck className="w-3 h-3 mr-1" />
                       Asistió
                     </Badge>
