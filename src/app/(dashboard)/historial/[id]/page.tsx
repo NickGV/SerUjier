@@ -643,7 +643,7 @@ function ServicioHistorialContent() {
                 <SelectItem value="all">Todas las Categorías</SelectItem>
                 <SelectItem value="hermanos">Hermanos</SelectItem>
                 <SelectItem value="hermanas">Hermanas</SelectItem>
-                <SelectItem value="niños">Niños</SelectItem>
+                <SelectItem value="ninos">Niños</SelectItem>
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
                 <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
                 <SelectItem value="hermanos apartados">

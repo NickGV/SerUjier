@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Input } from '@/shared/ui/input';
 import { useRouter } from 'next/navigation';
+import { servicios } from '@/features/asistencia/components/conteo/constants';
 import {
   Calendar,
   Filter,
@@ -152,20 +153,27 @@ function HistorialContent() {
   }
 
   const filteredData = historial.filter((record) => {
+    // Filtro por servicio (comparación exacta con el value guardado)
     const servicioMatch =
-      filtroServicio === 'todos' ||
-      record.servicio.toLowerCase().includes(filtroServicio.toLowerCase());
+      filtroServicio === 'todos' || record.servicio === filtroServicio;
 
+    // Filtro por ujier (comparación exacta)
     const ujierArray = Array.isArray(record.ujier)
       ? record.ujier
       : [record.ujier];
     const ujierMatch =
       filtroUjier === 'todos' ||
-      ujierArray.some((ujier) => ujier.includes(filtroUjier));
+      ujierArray.some((ujier) => ujier === filtroUjier);
 
+    // Búsqueda general (solo si hay searchTerm, busca en el label del servicio y en ujieres)
     const searchTermMatch =
       searchTerm === '' ||
-      record.servicio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (
+        servicios.find((s) => s.value === record.servicio)?.label ||
+        record.servicio
+      )
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       ujierArray.some((ujier: string) =>
         ujier.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -175,11 +183,11 @@ function HistorialContent() {
     if (fechaInicio || fechaFin) {
       const recordDate = new Date(record.fecha + 'T12:00:00');
       if (fechaInicio) {
-        const startDate = new Date(fechaInicio);
+        const startDate = new Date(fechaInicio + 'T00:00:00');
         fechaMatch = fechaMatch && recordDate >= startDate;
       }
       if (fechaFin) {
-        const endDate = new Date(fechaFin);
+        const endDate = new Date(fechaFin + 'T23:59:59');
         fechaMatch = fechaMatch && recordDate <= endDate;
       }
     }
@@ -783,16 +791,11 @@ NOTAS FINALES:
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="dominical">Dominical</SelectItem>
-                  <SelectItem value="oración y enseñanza">
-                    Oración y Enseñanza
-                  </SelectItem>
-                  <SelectItem value="hermanas dorcas">
-                    Hermanas Dorcas
-                  </SelectItem>
-                  <SelectItem value="evangelismo">Evangelismo</SelectItem>
-                  <SelectItem value="misionero">Misionero</SelectItem>
-                  <SelectItem value="jóvenes">Jóvenes</SelectItem>
+                  {servicios.map((servicio) => (
+                    <SelectItem key={servicio.value} value={servicio.value}>
+                      {servicio.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
