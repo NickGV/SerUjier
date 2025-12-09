@@ -1,19 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { useState } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
-import { Plus, Calendar, User, Clock, Trash2, X, RefreshCw } from "lucide-react";
-import { servicios } from "./constants";
+} from '@/shared/ui/select';
+import {
+  Plus,
+  Calendar,
+  User,
+  Clock,
+  Trash2,
+  X,
+  RefreshCw,
+} from 'lucide-react';
+import { servicios } from '../constants';
 
 interface ConteoHeaderProps {
   fecha: string;
@@ -49,10 +57,10 @@ export function ConteoHeader({
   isRefreshing = false,
 }: ConteoHeaderProps) {
   const [showServicioInput, setShowServicioInput] = useState(false);
-  const [servicioManual, setServicioManual] = useState("");
+  const [servicioManual, setServicioManual] = useState('');
 
   const handleServicioChange = (value: string) => {
-    if (value === "manual") {
+    if (value === 'manual') {
       setShowServicioInput(true);
     } else {
       onTipoServicioChange(value);
@@ -64,53 +72,61 @@ export function ConteoHeader({
     if (servicioManual.trim()) {
       onTipoServicioChange(servicioManual.trim());
       setShowServicioInput(false);
-      setServicioManual("");
+      setServicioManual('');
     }
   };
 
   const handleRemoveUjier = (ujier: string) => {
     const remaining = selectedUjieres.filter((u) => u !== ujier);
-    const updates: { selectedUjieres?: string[]; ujierSeleccionado?: string; ujierPersonalizado?: string } = { selectedUjieres: remaining };
+    const updates: {
+      selectedUjieres?: string[];
+      ujierSeleccionado?: string;
+      ujierPersonalizado?: string;
+    } = { selectedUjieres: remaining };
 
     if (remaining.length === 0) {
-      updates.ujierSeleccionado = "";
-      updates.ujierPersonalizado = "";
+      updates.ujierSeleccionado = '';
+      updates.ujierPersonalizado = '';
     } else if (remaining.length === 1 && ujieres.includes(remaining[0])) {
       updates.ujierSeleccionado = remaining[0];
-      updates.ujierPersonalizado = "";
+      updates.ujierPersonalizado = '';
     } else {
-      updates.ujierSeleccionado = "otro";
-      updates.ujierPersonalizado = remaining.join(", ");
+      updates.ujierSeleccionado = 'otro';
+      updates.ujierPersonalizado = remaining.join(', ');
     }
 
     onUjieresChange(updates);
   };
 
   const handleAddUjier = (value: string) => {
-    if (value === "otro") {
+    if (value === 'otro') {
       // Open input to write custom name
-      const nuevoUjier = prompt("Escriba el nombre del ujier:");
+      const nuevoUjier = prompt('Escriba el nombre del ujier:');
       if (nuevoUjier && nuevoUjier.trim()) {
         const ujierLimpio = nuevoUjier.trim();
         if (!selectedUjieres.includes(ujierLimpio)) {
           const nuevosUjieres = [...selectedUjieres, ujierLimpio];
           onUjieresChange({
             selectedUjieres: nuevosUjieres,
-            ujierSeleccionado: "otro",
-            ujierPersonalizado: nuevosUjieres.join(", "),
+            ujierSeleccionado: 'otro',
+            ujierPersonalizado: nuevosUjieres.join(', '),
           });
         }
       }
     } else if (value && !selectedUjieres.includes(value)) {
       const nuevosUjieres = [...selectedUjieres, value];
-      const updates: { selectedUjieres?: string[]; ujierSeleccionado?: string; ujierPersonalizado?: string } = { selectedUjieres: nuevosUjieres };
+      const updates: {
+        selectedUjieres?: string[];
+        ujierSeleccionado?: string;
+        ujierPersonalizado?: string;
+      } = { selectedUjieres: nuevosUjieres };
 
       if (nuevosUjieres.length === 1) {
         updates.ujierSeleccionado = value;
-        updates.ujierPersonalizado = "";
+        updates.ujierPersonalizado = '';
       } else {
-        updates.ujierSeleccionado = "otro";
-        updates.ujierPersonalizado = nuevosUjieres.join(", ");
+        updates.ujierSeleccionado = 'otro';
+        updates.ujierPersonalizado = nuevosUjieres.join(', ');
       }
 
       onUjieresChange(updates);
@@ -120,8 +136,8 @@ export function ConteoHeader({
   const handleClearUjieres = () => {
     onUjieresChange({
       selectedUjieres: [],
-      ujierSeleccionado: "",
-      ujierPersonalizado: "",
+      ujierSeleccionado: '',
+      ujierPersonalizado: '',
     });
   };
 
@@ -141,7 +157,9 @@ export function ConteoHeader({
                 disabled={isRefreshing}
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
               >
-                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
+                />
                 {isRefreshing ? 'Actualizando...' : 'Actualizar Datos'}
               </Button>
             )}
@@ -240,10 +258,10 @@ export function ConteoHeader({
               className="text-sm md:text-base text-gray-600 mb-2 flex items-center gap-2"
             >
               <User className="w-4 h-4 md:w-5 md:h-5" />
-              Ujier(es) -{" "}
+              Ujier(es) -{' '}
               {selectedUjieres.length > 0
                 ? `${selectedUjieres.length} seleccionados`
-                : "Ninguno seleccionado"}
+                : 'Ninguno seleccionado'}
             </label>
 
             {/* Selected ushers */}
@@ -325,8 +343,8 @@ export function ConteoHeader({
             {servicios.find((s) => s.value === tipoServicio)?.label ||
               tipoServicio}
           </Badge>
-          {ujierSeleccionado === "otro" && ujierPersonalizado ? (
-            ujierPersonalizado.split(",").map((name, index) => (
+          {ujierSeleccionado === 'otro' && ujierPersonalizado ? (
+            ujierPersonalizado.split(',').map((name, index) => (
               <Badge
                 key={index}
                 variant="outline"
@@ -335,7 +353,7 @@ export function ConteoHeader({
                 {name.trim()}
               </Badge>
             ))
-          ) : ujierSeleccionado && ujierSeleccionado !== "otro" ? (
+          ) : ujierSeleccionado && ujierSeleccionado !== 'otro' ? (
             <Badge
               variant="outline"
               className="bg-slate-50 text-slate-700 border-slate-200"
@@ -348,5 +366,3 @@ export function ConteoHeader({
     </Card>
   );
 }
-
-

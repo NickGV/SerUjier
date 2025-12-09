@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from "@/shared/ui/card";
+import { Card, CardContent } from '@/shared/ui/card';
 import { CATEGORIES, type CategoryStats } from './utils';
 
 interface StatsSummaryProps {
@@ -10,12 +10,12 @@ interface StatsSummaryProps {
   menorAsistencia: number;
 }
 
-export function StatsSummary({ 
-  stats, 
-  totalRegistros, 
-  promedioAsistencia, 
-  mayorAsistencia, 
-  menorAsistencia 
+export function StatsSummary({
+  stats,
+  totalRegistros,
+  promedioAsistencia,
+  mayorAsistencia,
+  menorAsistencia,
 }: StatsSummaryProps) {
   return (
     <Card className="bg-gradient-to-r from-slate-600 to-slate-700 text-white border-0 shadow-lg">
@@ -25,20 +25,16 @@ export function StatsSummary({
             <div className="text-xl sm:text-2xl font-bold">
               {promedioAsistencia}
             </div>
-            <div className="text-slate-200 text-xs sm:text-sm">
-              Promedio
-            </div>
+            <div className="text-slate-200 text-xs sm:text-sm">Promedio</div>
           </div>
           <div className="text-center">
             <div className="text-xl sm:text-2xl font-bold">
               {totalRegistros}
             </div>
-            <div className="text-slate-200 text-xs sm:text-sm">
-              Registros
-            </div>
+            <div className="text-slate-200 text-xs sm:text-sm">Registros</div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-500">
           <div className="text-center">
             <div className="text-base sm:text-lg font-semibold">
@@ -61,11 +57,15 @@ export function StatsSummary({
           </div>
           <div className="grid grid-cols-7 gap-1 text-center">
             {CATEGORIES.map((category) => {
-              const value = stats[`total${category.key.charAt(0).toUpperCase() + category.key.slice(1)}` as keyof CategoryStats] as number;
+              const value = stats[
+                `total${category.key.charAt(0).toUpperCase() + category.key.slice(1)}` as keyof CategoryStats
+              ] as number;
               return (
                 <div key={category.key}>
                   <div className="text-sm font-semibold">{value}</div>
-                  <div className="text-xs text-slate-300">{category.shortLabel}</div>
+                  <div className="text-xs text-slate-300">
+                    {category.shortLabel}
+                  </div>
                 </div>
               );
             })}

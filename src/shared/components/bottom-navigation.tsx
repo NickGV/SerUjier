@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { User } from "@/shared/types";
-import { Button } from "@/shared/ui/button";
+import { type User } from '@/shared/types';
+import { Button } from '@/shared/ui/button';
 import {
   Calculator,
   Users,
@@ -10,8 +10,8 @@ import {
   Settings,
   LogOut,
   // Home,
-} from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+} from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 // TODO: Hacer el componente de BottomNavigation que aparezca dependiendo de los permisos del usuario, para ello debo crear un panel de permisos en el dashboard de admin
 
 interface BottomNavigationProps {
@@ -29,105 +29,105 @@ export function BottomNavigation({
   const adminNavItems = [
     // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
     {
-      id: "conteo",
-      label: "Conteo",
+      id: 'conteo',
+      label: 'Conteo',
       icon: Calculator,
-      description: "Registrar asistencia",
-      path: "/conteo",
+      description: 'Registrar asistencia',
+      path: '/conteo',
     },
     {
-      id: "simpatizantes",
-      label: "Simpatizantes",
+      id: 'simpatizantes',
+      label: 'Simpatizantes',
       icon: Users,
-      description: "Gestionar visitantes",
-      path: "/simpatizantes",
+      description: 'Gestionar visitantes',
+      path: '/simpatizantes',
     },
     {
-      id: "miembros",
-      label: "Miembros",
+      id: 'miembros',
+      label: 'Miembros',
       icon: UserCheck,
-      description: "Gestionar miembros",
-      path: "/miembros",
+      description: 'Gestionar miembros',
+      path: '/miembros',
     },
     {
-      id: "historial",
-      label: "Historial",
+      id: 'historial',
+      label: 'Historial',
       icon: Clock,
-      description: "Ver registros",
-      path: "/historial",
+      description: 'Ver registros',
+      path: '/historial',
     },
     {
-      id: "ujieres",
-      label: "Usuarios",
+      id: 'ujieres',
+      label: 'Usuarios',
       icon: Settings,
-      description: "Gestionar usuarios",
-      path: "/ujieres",
+      description: 'Gestionar usuarios',
+      path: '/ujieres',
     },
   ];
 
   const directivaNavItems = [
     // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
     {
-      id: "conteo",
-      label: "Conteo",
+      id: 'conteo',
+      label: 'Conteo',
       icon: Calculator,
-      description: "Registrar asistencia",
-      path: "/conteo",
+      description: 'Registrar asistencia',
+      path: '/conteo',
     },
     {
-      id: "simpatizantes",
-      label: "Simpatizantes",
+      id: 'simpatizantes',
+      label: 'Simpatizantes',
       icon: Users,
-      description: "Gestionar visitantes",
-      path: "/simpatizantes",
+      description: 'Gestionar visitantes',
+      path: '/simpatizantes',
     },
     {
-      id: "miembros",
-      label: "Miembros",
+      id: 'miembros',
+      label: 'Miembros',
       icon: UserCheck,
-      description: "Gestionar miembros",
-      path: "/miembros",
+      description: 'Gestionar miembros',
+      path: '/miembros',
     },
     {
-      id: "historial",
-      label: "Historial",
+      id: 'historial',
+      label: 'Historial',
       icon: Clock,
-      description: "Ver registros",
-      path: "/historial",
+      description: 'Ver registros',
+      path: '/historial',
     },
     {
-      id: "ujieres",
-      label: "Usuarios",
+      id: 'ujieres',
+      label: 'Usuarios',
       icon: Settings,
-      description: "Ver usuarios",
-      path: "/ujieres",
+      description: 'Ver usuarios',
+      path: '/ujieres',
     },
   ];
 
   const ujierNavItems = [
     {
-      id: "conteo",
-      label: "Conteo",
+      id: 'conteo',
+      label: 'Conteo',
       icon: Calculator,
-      description: "Registrar asistencia",
-      path: "/conteo",
+      description: 'Registrar asistencia',
+      path: '/conteo',
     },
     {
-      id: "simpatizantes",
-      label: "Simpatizantes",
+      id: 'simpatizantes',
+      label: 'Simpatizantes',
       icon: Users,
-      description: "Gestionar visitantes",
-      path: "/simpatizantes",
+      description: 'Gestionar visitantes',
+      path: '/simpatizantes',
     },
   ];
 
   const getNavItems = () => {
     switch (currentUser?.rol) {
-      case "admin":
+      case 'admin':
         return adminNavItems;
-      case "directiva":
+      case 'directiva':
         return directivaNavItems;
-      case "ujier":
+      case 'ujier':
         return ujierNavItems;
       default:
         return ujierNavItems;
@@ -138,29 +138,29 @@ export function BottomNavigation({
 
   const getRoleColor = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "directiva":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+      case 'admin':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'directiva':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
-        return "bg-green-50 text-green-700 border-green-200";
+        return 'bg-green-50 text-green-700 border-green-200';
     }
   };
 
   const getRoleLabel = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "Administrador";
-      case "directiva":
-        return "Directiva";
+      case 'admin':
+        return 'Administrador';
+      case 'directiva':
+        return 'Directiva';
       default:
-        return "Ujier";
+        return 'Ujier';
     }
   };
 
   const isCurrentPath = (itemPath: string) => {
-    if (itemPath === "/") {
-      return pathname === "/" || pathname === "/dashboard";
+    if (itemPath === '/') {
+      return pathname === '/' || pathname === '/dashboard';
     }
     return pathname.startsWith(itemPath);
   };
@@ -218,14 +218,16 @@ export function BottomNavigation({
               variant="ghost"
               className={`flex-1 flex flex-col items-center gap-1 h-16 md:h-20 rounded-none border-r border-gray-100 last:border-r-0 p-3 md:p-4 ${
                 isActive
-                  ? "text-gray-900 bg-gray-100 border-t-2 border-t-gray-900"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  ? 'text-gray-900 bg-gray-100 border-t-2 border-t-gray-900'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
               onClick={() => handleNavigation(item.path)}
               title={item.description}
             >
               <Icon className="w-5 h-5 md:w-6 md:h-6" />
-              <span className="text-[11px] md:text-sm font-medium">{item.label}</span>
+              <span className="text-[11px] md:text-sm font-medium">
+                {item.label}
+              </span>
             </Button>
           );
         })}

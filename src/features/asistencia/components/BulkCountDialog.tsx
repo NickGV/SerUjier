@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { BulkCounts, ConteoDialogProps } from "./types";
+} from '@/shared/ui/dialog';
+import { type BulkCounts, type ConteoDialogProps } from '../types';
 
 interface BulkCountDialogProps extends ConteoDialogProps {
   bulkCounts: BulkCounts;
@@ -32,7 +32,7 @@ export function BulkCountDialog({
     });
   };
 
-  const totalToAdd = 
+  const totalToAdd =
     (parseInt(bulkCounts.hermanos) || 0) +
     (parseInt(bulkCounts.hermanas) || 0) +
     (parseInt(bulkCounts.ninos) || 0) +
@@ -41,7 +41,7 @@ export function BulkCountDialog({
     (parseInt(bulkCounts.hermanosApartados) || 0) +
     (parseInt(bulkCounts.hermanosVisitas) || 0);
 
-  const hasValues = Object.values(bulkCounts).some(value => value.length > 0);
+  const hasValues = Object.values(bulkCounts).some((value) => value.length > 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -65,7 +65,7 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.hermanos}
-                onChange={(e) => handleInputChange("hermanos", e.target.value)}
+                onChange={(e) => handleInputChange('hermanos', e.target.value)}
                 className="h-10 text-center text-sm"
                 min="0"
               />
@@ -78,7 +78,7 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.hermanas}
-                onChange={(e) => handleInputChange("hermanas", e.target.value)}
+                onChange={(e) => handleInputChange('hermanas', e.target.value)}
                 className="h-10 text-center text-sm"
                 min="0"
               />
@@ -94,7 +94,7 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.ninos}
-                onChange={(e) => handleInputChange("ninos", e.target.value)}
+                onChange={(e) => handleInputChange('ninos', e.target.value)}
                 className="h-10 text-center text-sm"
                 min="0"
               />
@@ -107,7 +107,9 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.adolescentes}
-                onChange={(e) => handleInputChange("adolescentes", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('adolescentes', e.target.value)
+                }
                 className="h-10 text-center text-sm"
                 min="0"
               />
@@ -122,7 +124,9 @@ export function BulkCountDialog({
               type="number"
               placeholder="0"
               value={bulkCounts.simpatizantes}
-              onChange={(e) => handleInputChange("simpatizantes", e.target.value)}
+              onChange={(e) =>
+                handleInputChange('simpatizantes', e.target.value)
+              }
               className="h-10 text-center text-sm"
               min="0"
             />
@@ -137,7 +141,9 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.hermanosApartados}
-                onChange={(e) => handleInputChange("hermanosApartados", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('hermanosApartados', e.target.value)
+                }
                 className="h-10 text-center text-sm"
                 min="0"
               />
@@ -150,7 +156,9 @@ export function BulkCountDialog({
                 type="number"
                 placeholder="0"
                 value={bulkCounts.hermanosVisitas}
-                onChange={(e) => handleInputChange("hermanosVisitas", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('hermanosVisitas', e.target.value)
+                }
                 className="h-10 text-center text-sm"
                 min="0"
               />

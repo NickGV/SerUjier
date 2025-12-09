@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Plus, Minus, Edit3, UserPlus } from "lucide-react";
-import { CounterData } from "./types";
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Plus, Minus, Edit3, UserPlus } from 'lucide-react';
+import { type CounterData } from '../types';
 
 interface CounterCardProps {
   counter: CounterData;
@@ -32,9 +32,13 @@ export function CounterCard({
   // Evitar duplicación al mostrar: en modo consecutivo, la base puede venir
   // como número (baseValue) y/o como lista (baseMiembros). Consideramos sólo
   // uno de ellos, el mayor, para no sumar dos veces la misma base.
-  const baseCount = Math.max(counter.baseValue || 0, counter.baseMiembros?.length || 0);
+  const baseCount = Math.max(
+    counter.baseValue || 0,
+    counter.baseMiembros?.length || 0
+  );
   const totalValue = counter.value + counter.miembrosDelDia.length + baseCount;
-  const totalAddedMembers = counter.miembrosDelDia.length + (counter.baseMiembros?.length || 0);
+  const totalAddedMembers =
+    counter.miembrosDelDia.length + (counter.baseMiembros?.length || 0);
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-md">
@@ -56,8 +60,8 @@ export function CounterCard({
                   size="sm"
                   className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
                   onClick={() =>
-                    counter.categoria === "simpatizantes"
-                      ? onOpenDialog("simpatizantes")
+                    counter.categoria === 'simpatizantes'
+                      ? onOpenDialog('simpatizantes')
                       : onOpenDialog(counter.categoria)
                   }
                   aria-label={`Agregar ${counter.label}`}

@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const config = {
   reactStrictMode: true,
@@ -13,53 +13,53 @@ const config = {
   async headers() {
     return [
       {
-        source: "/manifest.json",
+        source: '/manifest.json',
         headers: [
           {
-            key: "Content-Type",
-            value: "application/manifest+json",
+            key: 'Content-Type',
+            value: 'application/manifest+json',
           },
           {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
       {
-        source: "/sw.js",
+        source: '/sw.js',
         headers: [
           {
-            key: "Content-Type",
-            value: "application/javascript",
+            key: 'Content-Type',
+            value: 'application/javascript',
           },
           {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
           },
           {
-            key: "Service-Worker-Allowed",
-            value: "/",
+            key: 'Service-Worker-Allowed',
+            value: '/',
           },
         ],
       },
       {
-        source: "/:path*",
+        source: '/:path*',
         headers: [
           {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
           },
           {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
-            key: "Referrer-Policy",
-            value: "origin-when-cross-origin",
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
           },
         ],
       },

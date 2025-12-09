@@ -1,56 +1,60 @@
-import type { Metadata, Viewport } from "next";
-import React, { ReactNode } from "react";
-import { ThemeProvider } from "@/shared/components/providers/theme-provider";
-import "./globals.css";
-import { Toaster } from "sonner";
-import { InstallPrompt, PWAUpdatePrompt, PWARegister } from "@/shared/components/pwa";
+import type { Metadata, Viewport } from 'next';
+import React, { type ReactNode } from 'react';
+import { ThemeProvider } from '@/shared/components/providers/theme-provider';
+import './globals.css';
+import { Toaster } from 'sonner';
+import {
+  InstallPrompt,
+  PWAUpdatePrompt,
+  PWARegister,
+} from '@/shared/components/pwa';
 
 // TODO: Agregar logo
 export const metadata: Metadata = {
   title: {
-    default: "SerUjier",
-    template: "%s | SerUjier",
+    default: 'SerUjier',
+    template: '%s | SerUjier',
   },
   description:
-    "Aplicación para gestión de ujieres, simpatizantes y miembros. Registra asistencias y administra información.",
-  keywords: ["ujier", "iglesia", "asistencia", "gestión", "simpatizantes"],
-  authors: [{ name: "SerUjier Team" }],
-  creator: "SerUjier",
-  publisher: "SerUjier",
+    'Aplicación para gestión de ujieres, simpatizantes y miembros. Registra asistencias y administra información.',
+  keywords: ['ujier', 'iglesia', 'asistencia', 'gestión', 'simpatizantes'],
+  authors: [{ name: 'SerUjier Team' }],
+  creator: 'SerUjier',
+  publisher: 'SerUjier',
   formatDetection: {
     telephone: false,
   },
-  manifest: "/manifest.json",
+  manifest: '/manifest.json',
   icons: {
-    icon: "./favicon.ico",
+    icon: './favicon.ico',
     apple: [
-      { url: "/placeholder-logo.png", sizes: "192x192", type: "image/png" },
+      { url: '/placeholder-logo.png', sizes: '192x192', type: 'image/png' },
     ],
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "SerUjier",
+    statusBarStyle: 'black-translucent',
+    title: 'SerUjier',
   },
   openGraph: {
-    type: "website",
-    locale: "es_ES",
-    siteName: "SerUjier",
-    title: "SerUjier - Gestión de Ujieres",
-    description: "Aplicación para gestión de ujieres, simpatizantes y miembros",
+    type: 'website',
+    locale: 'es_ES',
+    siteName: 'SerUjier',
+    title: 'SerUjier - Gestión de Ujieres',
+    description: 'Aplicación para gestión de ujieres, simpatizantes y miembros',
   },
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#4a90e2" },
-    { media: "(prefers-color-scheme: dark)", color: "#1e3a5f" },
+    { media: '(prefers-color-scheme: light)', color: '#4a90e2' },
+    { media: '(prefers-color-scheme: dark)', color: '#1e3a5f' },
   ],
-  viewportFit: "cover",
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from 'react';
 // import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Badge } from '@/shared/ui/badge';
 import {
   LogIn,
   User,
@@ -14,7 +14,7 @@ import {
   EyeOff,
   AlertCircle,
   ChevronDown,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface Usuario {
   id: string;
@@ -32,8 +32,8 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const [nombre, setNombre] = useState("");
-  const [password, setPassword] = useState("");
+  const [nombre, setNombre] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showUserList, setShowUserList] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,13 +49,13 @@ function LoginForm() {
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
-        const response = await fetch("/api/auth/usuarios-login");
+        const response = await fetch('/api/auth/usuarios-login');
         const data = await response.json();
         if (data.usuarios) {
           setUsuarios(data.usuarios);
         }
       } catch (error) {
-        console.error("Error fetching usuarios:", error);
+        console.error('Error fetching usuarios:', error);
       }
     };
     fetchUsuarios();
@@ -63,14 +63,14 @@ function LoginForm() {
 
   // Solo usuarios activos para el autocompletado, pero los admins siempre están disponibles
   const usuariosDisponibles = usuarios.filter(
-    (u) => u.activo || u.rol === "admin"
+    (u) => u.activo || u.rol === 'admin'
   );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!nombre.trim() || !password.trim()) {
-      setError("Por favor complete todos los campos");
+      setError('Por favor complete todos los campos');
       return;
     }
 
@@ -79,9 +79,9 @@ function LoginForm() {
 
     try {
       // Autenticar y crear sesión en un solo paso
-      const response = await fetch("/api/auth/usuarios-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/auth/usuarios-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: nombre.trim(),
           password: password.trim(),
@@ -92,12 +92,12 @@ function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Error de autenticación");
+        setError(data.error || 'Error de autenticación');
         return;
       }
 
       if (!data.success) {
-        setError(data.error || "Error de autenticación");
+        setError(data.error || 'Error de autenticación');
         return;
       }
 
@@ -106,17 +106,17 @@ function LoginForm() {
 
       // Usar window.location.href para forzar una recarga completa
       // Esto asegura que el middleware vea las cookies correctamente
-      window.location.href = "conteo";
+      window.location.href = 'conteo';
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Error de conexión. Intente nuevamente.");
+      console.error('Login error:', err);
+      setError('Error de conexión. Intente nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       onSubmit(e as React.FormEvent);
     }
@@ -124,7 +124,7 @@ function LoginForm() {
 
   const handleNombreSelect = (selectedNombre: string) => {
     setNombre(selectedNombre);
-    setPassword("");
+    setPassword('');
     setError(null);
     setShowUserList(false);
   };
@@ -152,9 +152,9 @@ function LoginForm() {
   };
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -194,7 +194,7 @@ function LoginForm() {
               <form onSubmit={onSubmit}>
                 {/* Nombre Field */}
                 <div className="relative" ref={dropdownRef}>
-                  <label 
+                  <label
                     htmlFor="nombre-input"
                     className="text-base font-medium text-gray-700 mb-2 flex items-center gap-2"
                   >
@@ -222,12 +222,16 @@ function LoginForm() {
                       size="sm"
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0"
                       onClick={() => setShowUserList(!showUserList)}
-                      aria-label={showUserList ? "Cerrar lista de usuarios" : "Abrir lista de usuarios"}
+                      aria-label={
+                        showUserList
+                          ? 'Cerrar lista de usuarios'
+                          : 'Abrir lista de usuarios'
+                      }
                       aria-expanded={showUserList}
                     >
                       <ChevronDown
                         className={`w-5 h-5 transition-transform ${
-                          showUserList ? "rotate-180" : ""
+                          showUserList ? 'rotate-180' : ''
                         }`}
                       />
                     </Button>
@@ -238,7 +242,7 @@ function LoginForm() {
 
                   {/* User List Dropdown */}
                   {showUserList && (
-                    <div 
+                    <div
                       className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] max-h-64 overflow-y-auto"
                       role="listbox"
                       aria-label="Lista de usuarios disponibles"
@@ -264,22 +268,27 @@ function LoginForm() {
                               <div>
                                 <div className="font-medium text-gray-800 flex items-center gap-2 text-base">
                                   {usuario.nombre}
-                                  {usuario.nombre === "admin" && (
-                                    <span className="text-yellow-500" aria-label="Usuario administrador">⭐</span>
+                                  {usuario.nombre === 'admin' && (
+                                    <span
+                                      className="text-yellow-500"
+                                      aria-label="Usuario administrador"
+                                    >
+                                      ⭐
+                                    </span>
                                   )}
                                 </div>
                               </div>
                               <div className="flex flex-col items-end gap-1">
                                 <Badge
                                   className={`text-sm ${
-                                    usuario.rol === "admin"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                                      : "bg-green-50 text-green-700 border-green-200"
+                                    usuario.rol === 'admin'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : 'bg-green-50 text-green-700 border-green-200'
                                   }`}
                                 >
                                   {usuario.rol}
                                 </Badge>
-                                {!usuario.activo && usuario.rol !== "admin" && (
+                                {!usuario.activo && usuario.rol !== 'admin' && (
                                   <Badge className="text-sm bg-red-50 text-red-700 border-red-200">
                                     Inactivo
                                   </Badge>
@@ -299,7 +308,7 @@ function LoginForm() {
 
                 {/* Password Field */}
                 <div>
-                  <label 
+                  <label
                     htmlFor="password-input"
                     className="text-base font-medium text-gray-700 mb-2 flex items-center gap-2"
                   >
@@ -309,7 +318,7 @@ function LoginForm() {
                   <div className="relative">
                     <Input
                       id="password-input"
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="Ingrese su contraseña"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -324,7 +333,11 @@ function LoginForm() {
                       size="sm"
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0"
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      aria-label={
+                        showPassword
+                          ? 'Ocultar contraseña'
+                          : 'Mostrar contraseña'
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -333,14 +346,17 @@ function LoginForm() {
                       )}
                     </Button>
                   </div>
-                  <div id="password-help" className="text-sm text-gray-500 mt-1">
+                  <div
+                    id="password-help"
+                    className="text-sm text-gray-500 mt-1"
+                  >
                     Use la contraseña asignada por el administrador
                   </div>
                 </div>
 
                 {/* Error Message */}
                 {error && (
-                  <div 
+                  <div
                     className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg"
                     role="alert"
                     aria-live="polite"
@@ -359,7 +375,10 @@ function LoginForm() {
                 >
                   {loading ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
+                      <div
+                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                        aria-hidden="true"
+                      />
                       <span>Verificando...</span>
                     </div>
                   ) : (
@@ -369,7 +388,10 @@ function LoginForm() {
                     </div>
                   )}
                 </Button>
-                <div id="login-help" className="text-sm text-gray-500 mt-2 text-center">
+                <div
+                  id="login-help"
+                  className="text-sm text-gray-500 mt-2 text-center"
+                >
                   Complete ambos campos para habilitar el botón
                 </div>
               </form>
@@ -401,11 +423,13 @@ function LoginForm() {
                 <div>
                   <div className="text-xl md:text-2xl font-bold text-blue-700">
                     {
-                      usuariosDisponibles.filter((u) => u.rol === "admin")
+                      usuariosDisponibles.filter((u) => u.rol === 'admin')
                         .length
                     }
                   </div>
-                  <div className="text-sm md:text-base text-gray-500">Administradores</div>
+                  <div className="text-sm md:text-base text-gray-500">
+                    Administradores
+                  </div>
                 </div>
               </div>
             </CardContent>

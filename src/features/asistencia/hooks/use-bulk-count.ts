@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { BulkCounts, ConteoState } from "@/features/asistencia/components/conteo/types";
+import { useState } from 'react';
+import { type BulkCounts, type ConteoState } from '../types';
 
 interface UseBulkCountProps {
   conteoState: ConteoState;
@@ -9,13 +9,13 @@ interface UseBulkCountProps {
 }
 
 const initialBulkCounts: BulkCounts = {
-  hermanos: "",
-  hermanas: "",
-  ninos: "",
-  adolescentes: "",
-  simpatizantes: "",
-  hermanosApartados: "",
-  hermanosVisitas: "",
+  hermanos: '',
+  hermanas: '',
+  ninos: '',
+  adolescentes: '',
+  simpatizantes: '',
+  hermanosApartados: '',
+  hermanosVisitas: '',
 };
 
 export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
@@ -39,8 +39,10 @@ export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
       ninos: conteoState.ninos + counts.ninos,
       adolescentes: conteoState.adolescentes + counts.adolescentes,
       simpatizantesCount: conteoState.simpatizantesCount + counts.simpatizantes,
-      hermanosApartados: conteoState.hermanosApartados + counts.hermanosApartados,
-      hermanosVisitasCount: conteoState.hermanosVisitasCount + counts.hermanosVisitas,
+      hermanosApartados:
+        conteoState.hermanosApartados + counts.hermanosApartados,
+      hermanosVisitasCount:
+        conteoState.hermanosVisitasCount + counts.hermanosVisitas,
     });
 
     resetBulkCounts();

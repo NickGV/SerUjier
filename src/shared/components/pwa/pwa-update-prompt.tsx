@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { RefreshCw } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Button } from '@/shared/ui/button';
+import { RefreshCw } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
+} from '@/shared/ui/card';
 
 export function PWAUpdatePrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -18,14 +18,14 @@ export function PWAUpdatePrompt() {
     useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then((reg) => {
-        reg.addEventListener("updatefound", () => {
+        reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
+            newWorker.addEventListener('statechange', () => {
               if (
-                newWorker.state === "installed" &&
+                newWorker.state === 'installed' &&
                 navigator.serviceWorker.controller
               ) {
                 setRegistration(reg);
@@ -40,7 +40,7 @@ export function PWAUpdatePrompt() {
 
   const handleUpdate = () => {
     if (registration?.waiting) {
-      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       window.location.reload();
     }
   };

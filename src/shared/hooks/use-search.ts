@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from 'react';
 
 interface UseSearchOptions<T> {
   items: T[];
@@ -20,8 +20,8 @@ export function useSearch<T>({
   searchFn,
   debounceMs = 300,
 }: UseSearchOptions<T>) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   // Debounce search term
   useEffect(() => {
@@ -42,8 +42,8 @@ export function useSearch<T>({
   }, [items, debouncedSearchTerm, searchFn]);
 
   const clearSearch = () => {
-    setSearchTerm("");
-    setDebouncedSearchTerm("");
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
   };
 
   return {
@@ -54,4 +54,3 @@ export function useSearch<T>({
     clearSearch,
   };
 }
-

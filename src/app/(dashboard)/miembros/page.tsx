@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useUser } from "@/shared/contexts/user-context";
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@/shared/contexts/user-context';
 import {
   fetchMiembros,
   addMiembro,
   updateMiembro,
   deleteMiembro,
-} from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
+} from '@/shared/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Badge } from '@/shared/ui/badge';
 import {
   UserCheck,
   Search,
@@ -25,23 +25,23 @@ import {
   Save,
   X,
   AlertTriangle,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
+} from '@/shared/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
-import { toast } from "sonner";
-import { Miembro } from "@/shared/types";
+} from '@/shared/ui/select';
+import { toast } from 'sonner';
+import { type Miembro } from '@/shared/types';
 
 export default function MiembrosPage() {
   const { user } = useUser();
@@ -49,19 +49,19 @@ export default function MiembrosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filtroCategoria, setFiltroCategoria] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('todos');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newMiembro, setNewMiembro] = useState<{
     nombre: string;
     telefono: string;
-    categoria: "hermano" | "hermana" | "nino" | "adolescente";
+    categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
     notas: string;
   }>({
-    nombre: "",
-    telefono: "",
-    categoria: "hermano",
-    notas: "",
+    nombre: '',
+    telefono: '',
+    categoria: 'hermano',
+    notas: '',
   });
 
   // Estados para edición y eliminación
@@ -79,7 +79,7 @@ export default function MiembrosPage() {
         setMiembros(data);
       } catch (err) {
         const msg =
-          err instanceof Error ? err.message : "Error cargando miembros";
+          err instanceof Error ? err.message : 'Error cargando miembros';
         setError(msg);
       } finally {
         setLoading(false);
@@ -90,7 +90,7 @@ export default function MiembrosPage() {
   }, []);
 
   // Verificar permisos - Solo admin y directiva pueden gestionar miembros
-  if (user && user.rol !== "admin" && user.rol !== "directiva") {
+  if (user && user.rol !== 'admin' && user.rol !== 'directiva') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -119,7 +119,7 @@ export default function MiembrosPage() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const categoriaMatch =
-      filtroCategoria === "todos" || miembro.categoria === filtroCategoria;
+      filtroCategoria === 'todos' || miembro.categoria === filtroCategoria;
     return nombreMatch && categoriaMatch;
   });
 
@@ -133,15 +133,15 @@ export default function MiembrosPage() {
         const result = await addMiembro(nuevoMiembro);
         setMiembros([...miembros, { ...nuevoMiembro, id: result.id }]);
         setNewMiembro({
-          nombre: "",
-          telefono: "",
-          categoria: "hermano",
-          notas: "",
+          nombre: '',
+          telefono: '',
+          categoria: 'hermano',
+          notas: '',
         });
         setShowAddDialog(false);
       } catch (err) {
-        console.error("Error adding miembro:", err);
-        setError("Error al agregar miembro");
+        console.error('Error adding miembro:', err);
+        setError('Error al agregar miembro');
       }
     }
   };
@@ -157,10 +157,10 @@ export default function MiembrosPage() {
       const updatedData = await fetchMiembros();
       setMiembros(updatedData);
       setShowDeleteConfirm(null);
-      toast.success("Miembro eliminado exitosamente");
+      toast.success('Miembro eliminado exitosamente');
     } catch (error) {
-      console.error("Error al eliminar miembro:", error);
-      toast.error("Error al eliminar el miembro. Intente nuevamente.");
+      console.error('Error al eliminar miembro:', error);
+      toast.error('Error al eliminar el miembro. Intente nuevamente.');
     } finally {
       setIsDeleting(false);
     }
@@ -185,10 +185,10 @@ export default function MiembrosPage() {
       const updatedData = await fetchMiembros();
       setMiembros(updatedData);
       setEditingMiembro(null);
-      toast.success("Miembro actualizado exitosamente");
+      toast.success('Miembro actualizado exitosamente');
     } catch (error) {
-      console.error("Error al actualizar miembro:", error);
-      toast.error("Error al actualizar el miembro. Intente nuevamente.");
+      console.error('Error al actualizar miembro:', error);
+      toast.error('Error al actualizar el miembro. Intente nuevamente.');
     } finally {
       setIsSaving(false);
     }
@@ -201,13 +201,13 @@ export default function MiembrosPage() {
 
   const getCategoriaIcon = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
+      case 'hermano':
         return <User className="w-4 h-4 text-slate-600" />;
-      case "hermana":
+      case 'hermana':
         return <Users className="w-4 h-4 text-rose-600" />;
-      case "nino":
+      case 'nino':
         return <Baby className="w-4 h-4 text-amber-600" />;
-      case "adolescente":
+      case 'adolescente':
         return <Zap className="w-4 h-4 text-purple-600" />;
       default:
         return <User className="w-4 h-4 text-gray-600" />;
@@ -216,29 +216,29 @@ export default function MiembrosPage() {
 
   const getCategoriaColor = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
-        return "bg-slate-50 text-slate-700 border-slate-200";
-      case "hermana":
-        return "bg-rose-50 text-rose-700 border-rose-200";
-      case "nino":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "adolescente":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+      case 'hermano':
+        return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'hermana':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'nino':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'adolescente':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
   const getCategoriaLabel = (categoria: string) => {
     switch (categoria) {
-      case "hermano":
-        return "Hermano";
-      case "hermana":
-        return "Hermana";
-      case "nino":
-        return "Niño";
-      case "adolescente":
-        return "Adolescente";
+      case 'hermano':
+        return 'Hermano';
+      case 'hermana':
+        return 'Hermana';
+      case 'nino':
+        return 'Niño';
+      case 'adolescente':
+        return 'Adolescente';
       default:
         return categoria;
     }
@@ -252,7 +252,7 @@ export default function MiembrosPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando miembros...</p>
         </div>
       </div>
@@ -304,25 +304,25 @@ export default function MiembrosPage() {
           <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
             <div>
               <div className="text-base sm:text-lg font-bold">
-                {contarPorCategoria("hermano")}
+                {contarPorCategoria('hermano')}
               </div>
               <div className="text-slate-200 text-xs">Hermanos</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-bold">
-                {contarPorCategoria("hermana")}
+                {contarPorCategoria('hermana')}
               </div>
               <div className="text-slate-200 text-xs">Hermanas</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-bold">
-                {contarPorCategoria("nino")}
+                {contarPorCategoria('nino')}
               </div>
               <div className="text-slate-200 text-xs">Niños</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-bold">
-                {contarPorCategoria("adolescente")}
+                {contarPorCategoria('adolescente')}
               </div>
               <div className="text-slate-200 text-xs">Adolesc.</div>
             </div>
@@ -396,7 +396,7 @@ export default function MiembrosPage() {
               <Select
                 value={newMiembro.categoria}
                 onValueChange={(
-                  value: "hermano" | "hermana" | "nino" | "adolescente"
+                  value: 'hermano' | 'hermana' | 'nino' | 'adolescente'
                 ) => setNewMiembro({ ...newMiembro, categoria: value })}
               >
                 <SelectTrigger>
@@ -489,9 +489,9 @@ export default function MiembrosPage() {
                       {getCategoriaLabel(miembro.categoria)}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Desde:{" "}
+                      Desde:{' '}
                       {new Date(miembro.fechaRegistro).toLocaleDateString(
-                        "es-ES"
+                        'es-ES'
                       )}
                     </Badge>
                   </div>
@@ -507,7 +507,7 @@ export default function MiembrosPage() {
                   >
                     Ver Perfil
                   </Button>
-                  {user?.rol === "admin" && (
+                  {user?.rol === 'admin' && (
                     <>
                       <Button
                         variant="outline"
@@ -542,9 +542,9 @@ export default function MiembrosPage() {
               No se encontraron miembros
             </h3>
             <p className="text-gray-500">
-              {searchTerm || filtroCategoria !== "todos"
-                ? "Intenta con un término de búsqueda diferente"
-                : "Aún no hay miembros registrados"}
+              {searchTerm || filtroCategoria !== 'todos'
+                ? 'Intenta con un término de búsqueda diferente'
+                : 'Aún no hay miembros registrados'}
             </p>
           </CardContent>
         </Card>
@@ -579,7 +579,7 @@ export default function MiembrosPage() {
                   onClick={() => handleDeleteMiembro(showDeleteConfirm)}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </Button>
               </div>
             </CardContent>
@@ -621,7 +621,7 @@ export default function MiembrosPage() {
                 <Select
                   value={editingMiembro.categoria}
                   onValueChange={(
-                    value: "hermano" | "hermana" | "nino" | "adolescente"
+                    value: 'hermano' | 'hermana' | 'nino' | 'adolescente'
                   ) =>
                     setEditingMiembro({ ...editingMiembro, categoria: value })
                   }
@@ -644,7 +644,7 @@ export default function MiembrosPage() {
                 </label>
                 <Input
                   placeholder="Número de teléfono"
-                  value={editingMiembro.telefono || ""}
+                  value={editingMiembro.telefono || ''}
                   onChange={(e) =>
                     setEditingMiembro({
                       ...editingMiembro,
@@ -660,7 +660,7 @@ export default function MiembrosPage() {
                 </label>
                 <Input
                   placeholder="Notas adicionales"
-                  value={editingMiembro.notas || ""}
+                  value={editingMiembro.notas || ''}
                   onChange={(e) =>
                     setEditingMiembro({
                       ...editingMiembro,
@@ -686,7 +686,7 @@ export default function MiembrosPage() {
                   disabled={isSaving || !editingMiembro.nombre.trim()}
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? "Guardando..." : "Guardar Cambios"}
+                  {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>
             </CardContent>

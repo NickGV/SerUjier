@@ -1,4 +1,4 @@
-import { MiembroSimplificado } from "@/shared/types";
+import { type MiembroSimplificado } from '@/shared/types';
 
 // Nota: Evitamos importar Simpatizante desde la página para no crear dependencias circulares.
 // Definimos un tipo mínimo local para las operaciones de conteo (subset de la entidad completa).
@@ -31,6 +31,8 @@ export interface ConteoStateBase {
   ujierSeleccionado: string;
   ujierPersonalizado: string;
   modoConsecutivo: boolean;
+  isEditMode: boolean;
+  editingRecordId: string | null;
   simpatizantesDelDia: SimpatizanteLite[];
   hermanosDelDia: MiembroSimplificado[];
   hermanasDelDia: MiembroSimplificado[];
@@ -75,7 +77,7 @@ export interface AsistenteInfo {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: "miembro" | "simpatizante";
+  tipo: 'miembro' | 'simpatizante';
   esBase?: boolean;
 }
 
@@ -89,18 +91,18 @@ export interface SimpatizantesDialogProps extends ConteoDialogProps {
   simpatizantesDelDia: SimpatizanteLite[];
   onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
   onAddNewSimpatizante: (
-    simpatizante: Omit<SimpatizanteLite, "id">,
+    simpatizante: Omit<SimpatizanteLite, 'id'>
   ) => Promise<void>;
   onRemoveSimpatizante: (id: string) => void;
   onClearAllSimpatizantes: () => void;
 }
 
 export type CategoriaPlural =
-  | "hermanos"
-  | "hermanas"
-  | "ninos"
-  | "adolescentes"
-  | "hermanosApartados";
+  | 'hermanos'
+  | 'hermanas'
+  | 'ninos'
+  | 'adolescentes'
+  | 'hermanosApartados';
 
 export interface MiembrosDialogProps extends ConteoDialogProps {
   categoria: CategoriaPlural; // hermanos | hermanas | ninos | adolescentes
@@ -115,7 +117,7 @@ export interface MiembrosDialogProps extends ConteoDialogProps {
 // Representa un miembro completo disponible para seleccionar (subset del modelo Miembro)
 export interface MiembroExtended extends MiembroSimplificado {
   telefono?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
+  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro?: string;
 }
@@ -125,7 +127,7 @@ export interface AsistentesDialogProps extends ConteoDialogProps {
   onRemoveAsistente: (
     id: string,
     categoria: string,
-    tipo: "miembro" | "simpatizante",
+    tipo: 'miembro' | 'simpatizante'
   ) => void;
 }
 

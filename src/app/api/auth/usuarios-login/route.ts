@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { adminDb, adminAuth } from "@/shared/lib/firebase-admin";
+import { NextResponse } from 'next/server';
+import { adminDb, adminAuth } from '@/shared/lib/firebase-admin';
 
 // Force dynamic rendering for this API route
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 // TODO: Verificar si se puede usar el hashPassword de utils.ts, arreglar el update de password del ujier para que use esta encriptacion
 // const encryptPassword = (password: string): string => {
@@ -27,41 +27,41 @@ const verifyPassword = (
     // 2. Agregar un punto: "nombre."
     // 3. Encriptar con btoa(password + "ujier_salt_2025")
 
-    const salt = "ujier_salt_2025";
+    const salt = 'ujier_salt_2025';
 
     // Normalizar el nombre de usuario para generar la contraseña base
-    const primerNombre = userName.split(" ")[0].toLowerCase();
+    const primerNombre = userName.split(' ')[0].toLowerCase();
     const nombreNormalizado = primerNombre
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Quitar tildes
-      .replace(/[^a-z]/g, ""); // Solo letras minúsculas
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quitar tildes
+      .replace(/[^a-z]/g, ''); // Solo letras minúsculas
 
-    const passwordEsperada = nombreNormalizado + ".";
+    const passwordEsperada = nombreNormalizado + '.';
 
     // Verificar si la contraseña ingresada coincide con la esperada
     if (password === passwordEsperada) {
       // Encriptar la contraseña esperada y compararla con la almacenada
       const encryptedExpected = Buffer.from(
         passwordEsperada + salt,
-        "utf8"
-      ).toString("base64");
+        'utf8'
+      ).toString('base64');
       return encryptedExpected === encryptedPassword;
     }
 
     // Fallback: intentar con la contraseña ingresada directamente
-    const encryptedInput = Buffer.from(password + salt, "utf8").toString(
-      "base64"
+    const encryptedInput = Buffer.from(password + salt, 'utf8').toString(
+      'base64'
     );
     return encryptedInput === encryptedPassword;
   } catch (error) {
-    console.error("Error verifying password:", error);
+    console.error('Error verifying password:', error);
     return false;
   }
 };
 
 export async function GET() {
   try {
-    const usuariosSnapshot = await adminDb.collection("usuarios").get();
+    const usuariosSnapshot = await adminDb.collection('usuarios').get();
     const usuarios = usuariosSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -69,9 +69,9 @@ export async function GET() {
 
     return NextResponse.json({ usuarios });
   } catch (error) {
-    console.error("Error fetching usuarios:", error);
+    console.error('Error fetching usuarios:', error);
     return NextResponse.json(
-      { error: "Error al obtener usuarios" },
+      { error: 'Error al obtener usuarios' },
       { status: 500 }
     );
   }
@@ -83,20 +83,20 @@ export async function POST(req: Request) {
 
     if (!nombre || !password) {
       return NextResponse.json(
-        { error: "Nombre y contraseña son requeridos" },
+        { error: 'Nombre y contraseña son requeridos' },
         { status: 400 }
       );
     }
 
     // Buscar usuario por nombre
     const usuariosSnapshot = await adminDb
-      .collection("usuarios")
-      .where("nombre", "==", nombre.trim())
+      .collection('usuarios')
+      .where('nombre', '==', nombre.trim())
       .get();
 
     if (usuariosSnapshot.empty) {
       return NextResponse.json(
-        { error: "Usuario no encontrado" },
+        { error: 'Usuario no encontrado' },
         { status: 401 }
       );
     }
@@ -105,8 +105,8 @@ export async function POST(req: Request) {
     const userData = userDoc.data();
 
     // Verificar si el usuario está activo (los admins siempre están activos)
-    if (!userData.activo && userData.rol !== "admin") {
-      return NextResponse.json({ error: "Usuario inactivo" }, { status: 401 });
+    if (!userData.activo && userData.rol !== 'admin') {
+      return NextResponse.json({ error: 'Usuario inactivo' }, { status: 401 });
     }
 
     // Verificar contraseña
@@ -117,13 +117,13 @@ export async function POST(req: Request) {
     );
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: "Contraseña incorrecta" },
+        { error: 'Contraseña incorrecta' },
         { status: 401 }
       );
     }
 
     // Preparar datos del usuario (sin la contraseña)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const { password: _, ...userWithoutPassword } = userData;
     const user = {
       id: userDoc.id,
@@ -146,28 +146,28 @@ export async function POST(req: Request) {
           customToken,
         });
 
-        response.cookies.set("session-user", JSON.stringify(user), {
+        response.cookies.set('session-user', JSON.stringify(user), {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
           maxAge: 60 * 60 * 24 * 7, // 7 días
-          path: "/",
+          path: '/',
         });
 
         // También crear cookie de sesión para middleware
-        response.cookies.set("session", customToken, {
+        response.cookies.set('session', customToken, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
           maxAge: 60 * 60 * 24 * 7, // 7 días
-          path: "/",
+          path: '/',
         });
 
         return response;
       } catch (sessionError) {
-        console.error("Error creating session:", sessionError);
+        console.error('Error creating session:', sessionError);
         return NextResponse.json(
-          { error: "Error al crear sesión" },
+          { error: 'Error al crear sesión' },
           { status: 500 }
         );
       }
@@ -179,9 +179,9 @@ export async function POST(req: Request) {
       user,
     });
   } catch (error) {
-    console.error("Error authenticating user:", error);
+    console.error('Error authenticating user:', error);
     return NextResponse.json(
-      { error: "Error al autenticar usuario" },
+      { error: 'Error al autenticar usuario' },
       { status: 500 }
     );
   }

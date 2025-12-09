@@ -1,35 +1,34 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server';
 
-const SESSION_COOKIE_NAME = "session";
+const SESSION_COOKIE_NAME = 'session';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Permitir recursos estáticos y API
   if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/public") ||
-    pathname.includes(".")
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/public') ||
+    pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
   // Permitir acceso a login
-  if (pathname.startsWith("/login")) {
+  if (pathname.startsWith('/login')) {
     return NextResponse.next();
   }
 
   // Verificar si hay sesión básica
   const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME);
-  const userCookie = req.cookies.get("session-user");
+  const userCookie = req.cookies.get('session-user');
   const hasSession = sessionCookie || userCookie;
 
   if (!hasSession) {
     const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.pathname = '/login';
+    url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
 
@@ -39,5 +38,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|.*\\..*|api).*)"],
+  matcher: ['/((?!_next|.*\\..*|api).*)'],
 };

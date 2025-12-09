@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/shared/ui/button";
-import { X, Download } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Button } from '@/shared/ui/button';
+import { X, Download } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -10,11 +10,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
+} from '@/shared/ui/card';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
 export function InstallPrompt() {
@@ -25,15 +25,15 @@ export function InstallPrompt() {
   useEffect(() => {
     // Verificar si ya está instalado
     const isStandalone = window.matchMedia(
-      "(display-mode: standalone)"
+      '(display-mode: standalone)'
     ).matches;
     if (isStandalone) {
       return;
     }
 
     // Verificar si ya se mostró antes
-    const promptDismissed = localStorage.getItem("pwa-prompt-dismissed");
-    if (promptDismissed === "true") {
+    const promptDismissed = localStorage.getItem('pwa-prompt-dismissed');
+    if (promptDismissed === 'true') {
       return;
     }
 
@@ -47,10 +47,10 @@ export function InstallPrompt() {
       }, 3000);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener('beforeinstallprompt', handler);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener('beforeinstallprompt', handler);
     };
   }, []);
 
@@ -62,8 +62,8 @@ export function InstallPrompt() {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
-    if (outcome === "accepted") {
-      console.log("PWA instalada");
+    if (outcome === 'accepted') {
+      console.info('PWA instalada');
     }
 
     setDeferredPrompt(null);
@@ -72,7 +72,7 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem("pwa-prompt-dismissed", "true");
+    localStorage.setItem('pwa-prompt-dismissed', 'true');
   };
 
   if (!showPrompt || !deferredPrompt) {

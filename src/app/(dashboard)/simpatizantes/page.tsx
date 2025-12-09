@@ -1,1 +1,1 @@
-export { default } from "@/features/simpatizantes/pages/SimpatizantesListPage";
+export { default } from '@/features/simpatizantes/pages/SimpatizantesListPage';

@@ -1,30 +1,24 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { usePersistentConteo } from "@/features/asistencia/hooks/use-persistent-conteo";
-import { useConteoCounters } from "@/features/asistencia/hooks/use-conteo-counters";
-import { useBulkCount } from "@/features/asistencia/hooks/use-bulk-count";
-import { useConteoSave } from "@/features/asistencia/hooks/use-conteo-save";
-import { useConteoEditMode } from "@/features/asistencia/hooks/use-conteo-edit-mode";
-import type { SimpatizanteLite, CategoriaPlural, ConteoStateWithIndex } from "@/features/asistencia/components/conteo";
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
+import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counters';
+import { useBulkCount } from '@/features/asistencia/hooks/use-bulk-count';
+import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
+import { useConteoEditMode } from '@/features/asistencia/hooks/use-conteo-edit-mode';
 import {
   fetchSimpatizantes,
   fetchMiembros,
   addSimpatizante,
   fetchUjieres,
-} from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import {
-  Plus,
-  Save,
-  Eye,
-  Loader2,
-  Calendar,
-} from "lucide-react";
-import { Miembro, MiembroSimplificado } from "@/shared/types";
+} from '@/shared/lib/utils';
+import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
+import { Plus, Save, Eye, Loader2, Calendar } from 'lucide-react';
+import { type Miembro, type MiembroSimplificado } from '@/shared/types';
 
 // Componentes modulares
 import {
@@ -38,13 +32,18 @@ import {
   ConteoHeader,
   EditModeBanner,
   ConsecutiveModeBanner,
-  getAllAsistentes,
-  calculateAllTotals,
-} from "@/features/asistencia/components/conteo";
+} from '@/features/asistencia/components';
+import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
+import { calculateAllTotals } from '../lib/calculations';
+import type {
+  SimpatizanteLite,
+  CategoriaPlural,
+  ConteoStateWithIndex,
+} from '@/features/asistencia/types';
 
 export default function ConteoPage() {
   const searchParams = useSearchParams();
-  const editId = searchParams.get("editId");
+  const editId = searchParams.get('editId');
 
   // Hook persistente para el conteo
   const {
@@ -76,6 +75,7 @@ export default function ConteoPage() {
       clearDayData,
       updateConteo,
       setDatosServicioBase,
+      conteoState,
     });
 
   // Hook para los contadores
@@ -122,8 +122,8 @@ export default function ConteoPage() {
   const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] =
     useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
-    CategoriaPlural | ""
-  >("");
+    CategoriaPlural | ''
+  >('');
 
   // Función para cargar datos desde Firebase
   const loadFirebaseData = async (isRefresh = false) => {
@@ -133,23 +133,19 @@ export default function ConteoPage() {
       } else {
         setLoading(true);
       }
-      
-      const [simpatizantesData, miembrosData, ujieresData] =
-        await Promise.all([
-          fetchSimpatizantes(),
-          fetchMiembros(),
-          fetchUjieres(),
-        ]);
+
+      const [simpatizantesData, miembrosData, ujieresData] = await Promise.all([
+        fetchSimpatizantes(),
+        fetchMiembros(),
+        fetchUjieres(),
+      ]);
       setSimpatizantes(simpatizantesData);
       setMiembros(miembrosData);
-      // Extraer solo los nombres de los ujieres activos
-      const nombresUjieres = ujieresData
-        .filter((ujier) => ujier.activo)
-        .map((ujier) => ujier.nombre)
-        .sort();
+      // Extraer solo los nombres de los ujieres activos usando la utilidad
+      const nombresUjieres = getActiveUjieres(ujieresData);
       setUjieres(nombresUjieres);
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error('Error loading data:', error);
     } finally {
       if (isRefresh) {
         setIsRefreshing(false);
@@ -177,12 +173,12 @@ export default function ConteoPage() {
       });
     },
 
-    handleAddNew: async (simpatizanteData: Omit<SimpatizanteLite, "id">) => {
+    handleAddNew: async (simpatizanteData: Omit<SimpatizanteLite, 'id'>) => {
       const withFecha = {
-        fechaRegistro: new Date().toISOString().split("T")[0],
+        fechaRegistro: new Date().toISOString().split('T')[0],
         ...simpatizanteData,
-      } as Required<Pick<SimpatizanteLite, "fechaRegistro">> &
-        Omit<SimpatizanteLite, "id">;
+      } as Required<Pick<SimpatizanteLite, 'fechaRegistro'>> &
+        Omit<SimpatizanteLite, 'id'>;
       const result = await addSimpatizante(withFecha);
       const creado: SimpatizanteLite = {
         id: (result as { id: string }).id,
@@ -214,7 +210,10 @@ export default function ConteoPage() {
   const categoriaKey = (c: CategoriaPlural) => `${c}DelDia` as const;
 
   const miembrosHandlers = {
-    handleAdd: (categoria: CategoriaPlural, newMiembros: MiembroSimplificado[]) => {
+    handleAdd: (
+      categoria: CategoriaPlural,
+      newMiembros: MiembroSimplificado[]
+    ) => {
       const key = categoriaKey(categoria);
       const currentList = conteoState[key] as MiembroSimplificado[];
       const updates: Partial<ConteoStateWithIndex> = {};
@@ -285,9 +284,9 @@ export default function ConteoPage() {
   };
 
   const handleOpenDialog = (categoria: string) => {
-    if (categoria === "simpatizantes") {
+    if (categoria === 'simpatizantes') {
       dialogHandlers.openSimpatizantes();
-    } else if (categoria === "hermanosVisitas") {
+    } else if (categoria === 'hermanosVisitas') {
       dialogHandlers.openHermanosVisitas();
     } else {
       dialogHandlers.openMiembros(categoria as CategoriaPlural);
@@ -295,11 +294,17 @@ export default function ConteoPage() {
   };
 
   // Handlers para los contadores
-  const handleCounterIncrement = (counter: { value: number; setter: (v: number) => void }) => {
+  const handleCounterIncrement = (counter: {
+    value: number;
+    setter: (v: number) => void;
+  }) => {
     counter.setter(counter.value + 1);
   };
 
-  const handleCounterDecrement = (counter: { value: number; setter: (v: number) => void }) => {
+  const handleCounterDecrement = (counter: {
+    value: number;
+    setter: (v: number) => void;
+  }) => {
     counter.setter(Math.max(0, counter.value - 1));
   };
 
@@ -346,16 +351,14 @@ export default function ConteoPage() {
     datosServicioBase?.miembrosAsistieron?.hermanas
       ? datosServicioBase.miembrosAsistieron.hermanas.length
       : 0) +
-    (conteoState.modoConsecutivo &&
-    datosServicioBase?.miembrosAsistieron?.ninos
+    (conteoState.modoConsecutivo && datosServicioBase?.miembrosAsistieron?.ninos
       ? datosServicioBase.miembrosAsistieron.ninos.length
       : 0) +
     (conteoState.modoConsecutivo &&
     datosServicioBase?.miembrosAsistieron?.adolescentes
       ? datosServicioBase.miembrosAsistieron.adolescentes.length
       : 0) +
-    (conteoState.modoConsecutivo &&
-    datosServicioBase?.simpatizantesAsistieron
+    (conteoState.modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
       ? datosServicioBase.simpatizantesAsistieron.length
       : 0);
 
@@ -363,11 +366,11 @@ export default function ConteoPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-slate-600">
             {loadingEdit
-              ? "Cargando datos para edición..."
-              : "Cargando datos..."}
+              ? 'Cargando datos para edición...'
+              : 'Cargando datos...'}
           </p>
         </div>
       </div>
@@ -491,7 +494,9 @@ export default function ConteoPage() {
             )
           }
           onClearAllMiembros={() =>
-            miembrosHandlers.handleClearAll(categoriaSeleccionada as CategoriaPlural)
+            miembrosHandlers.handleClearAll(
+              categoriaSeleccionada as CategoriaPlural
+            )
           }
         />
       )}
@@ -502,17 +507,17 @@ export default function ConteoPage() {
         asistentes={asistentes}
         onRemoveAsistente={(id, categoria, tipo) => {
           if (
-            tipo === "miembro" &&
+            tipo === 'miembro' &&
             [
-              "hermanos",
-              "hermanas",
-              "ninos",
-              "adolescentes",
-              "hermanosApartados",
+              'hermanos',
+              'hermanas',
+              'ninos',
+              'adolescentes',
+              'hermanosApartados',
             ].includes(categoria)
           ) {
             miembrosHandlers.handleRemove(categoria as CategoriaPlural, id);
-          } else if (categoria === "hermanosVisitas") {
+          } else if (categoria === 'hermanosVisitas') {
             hermanosVisitasHandlers.handleRemove(id);
           } else {
             simpatizantesHandlers.handleRemove(id);
@@ -543,11 +548,11 @@ export default function ConteoPage() {
         disabled={isSaving}
         className={`w-full h-12 md:h-14 ${
           isEditMode
-            ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
-            : "bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800"
+            ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
+            : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800'
         } active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4`}
         aria-label={
-          isEditMode ? "Actualizar registro" : "Guardar conteo de asistencia"
+          isEditMode ? 'Actualizar registro' : 'Guardar conteo de asistencia'
         }
       >
         {isSaving ? (
@@ -558,13 +563,13 @@ export default function ConteoPage() {
         <span className="flex-1 text-center">
           {isSaving
             ? isEditMode
-              ? "Actualizando..."
-              : "Guardando..."
+              ? 'Actualizando...'
+              : 'Guardando...'
             : isEditMode
-            ? "Actualizar Registro"
-            : conteoState.modoConsecutivo
-            ? "Guardar Conteo de Asistencia"
-            : "Guardar Conteo de Asistencia"}
+              ? 'Actualizar Registro'
+              : conteoState.modoConsecutivo
+                ? 'Guardar Conteo de Asistencia'
+                : 'Guardar Conteo de Asistencia'}
         </span>
       </Button>
 
@@ -618,9 +623,9 @@ export default function ConteoPage() {
                   Total: {datosServicioBase.total} asistentes
                 </div>
                 <div className="text-xs text-gray-500">
-                  H: {datosServicioBase.hermanos} | M:{" "}
+                  H: {datosServicioBase.hermanos} | M:{' '}
                   {datosServicioBase.hermanas} | N: {datosServicioBase.ninos} |
-                  A: {datosServicioBase.adolescentes} | S:{" "}
+                  A: {datosServicioBase.adolescentes} | S:{' '}
                   {datosServicioBase.simpatizantes}
                 </div>
               </div>
@@ -631,4 +636,3 @@ export default function ConteoPage() {
     </div>
   );
 }
-

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { UserProvider, useUser } from "@/shared/contexts/user-context";
-import { BottomNavigation } from "@/shared/components/bottom-navigation";
+import React from 'react';
+import { UserProvider, useUser } from '@/shared/contexts/user-context';
+import { BottomNavigation } from '@/shared/components/bottom-navigation';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, logout, isLoading } = useUser();
@@ -11,7 +11,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando...</p>
         </div>
       </div>
@@ -20,8 +20,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     // Redirect to login if not authenticated
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
     }
     return null;
   }

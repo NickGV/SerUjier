@@ -51,7 +51,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'H',
     color: 'slate',
     bgColor: 'bg-slate-50',
-    textColor: 'text-slate-600'
+    textColor: 'text-slate-600',
   },
   {
     key: 'hermanas',
@@ -59,7 +59,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'M',
     color: 'rose',
     bgColor: 'bg-rose-50',
-    textColor: 'text-rose-600'
+    textColor: 'text-rose-600',
   },
   {
     key: 'ninos',
@@ -67,7 +67,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'N',
     color: 'amber',
     bgColor: 'bg-amber-50',
-    textColor: 'text-amber-600'
+    textColor: 'text-amber-600',
   },
   {
     key: 'adolescentes',
@@ -75,7 +75,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'A',
     color: 'purple',
     bgColor: 'bg-purple-50',
-    textColor: 'text-purple-600'
+    textColor: 'text-purple-600',
   },
   {
     key: 'simpatizantes',
@@ -83,7 +83,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'S',
     color: 'emerald',
     bgColor: 'bg-emerald-50',
-    textColor: 'text-emerald-600'
+    textColor: 'text-emerald-600',
   },
   {
     key: 'hermanosApartados',
@@ -91,7 +91,7 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'HA',
     color: 'orange',
     bgColor: 'bg-orange-50',
-    textColor: 'text-orange-600'
+    textColor: 'text-orange-600',
   },
   {
     key: 'hermanosVisitas',
@@ -99,21 +99,50 @@ export const CATEGORIES: CategoryConfig[] = [
     shortLabel: 'HV',
     color: 'indigo',
     bgColor: 'bg-indigo-50',
-    textColor: 'text-indigo-600'
-  }
+    textColor: 'text-indigo-600',
+  },
 ];
 
-export const calculateCategoryStats = (filteredData: HistorialRecord[]): CategoryStats => {
-  const totalHermanos = filteredData.reduce((sum, record) => sum + record.hermanos, 0);
-  const totalHermanas = filteredData.reduce((sum, record) => sum + record.hermanas, 0);
-  const totalNinos = filteredData.reduce((sum, record) => sum + record.ninos, 0);
-  const totalAdolescentes = filteredData.reduce((sum, record) => sum + record.adolescentes, 0);
-  const totalSimpatizantes = filteredData.reduce((sum, record) => sum + record.simpatizantes, 0);
-  const totalHermanosApartados = filteredData.reduce((sum, record) => sum + (record.hermanosApartados || 0), 0);
-  const totalHermanosVisitas = filteredData.reduce((sum, record) => sum + (record.hermanosVisitas || 0), 0);
-  
-  const granTotal = totalHermanos + totalHermanas + totalNinos + totalAdolescentes + 
-                   totalSimpatizantes + totalHermanosApartados + totalHermanosVisitas;
+export const calculateCategoryStats = (
+  filteredData: HistorialRecord[]
+): CategoryStats => {
+  const totalHermanos = filteredData.reduce(
+    (sum, record) => sum + record.hermanos,
+    0
+  );
+  const totalHermanas = filteredData.reduce(
+    (sum, record) => sum + record.hermanas,
+    0
+  );
+  const totalNinos = filteredData.reduce(
+    (sum, record) => sum + record.ninos,
+    0
+  );
+  const totalAdolescentes = filteredData.reduce(
+    (sum, record) => sum + record.adolescentes,
+    0
+  );
+  const totalSimpatizantes = filteredData.reduce(
+    (sum, record) => sum + record.simpatizantes,
+    0
+  );
+  const totalHermanosApartados = filteredData.reduce(
+    (sum, record) => sum + (record.hermanosApartados || 0),
+    0
+  );
+  const totalHermanosVisitas = filteredData.reduce(
+    (sum, record) => sum + (record.hermanosVisitas || 0),
+    0
+  );
+
+  const granTotal =
+    totalHermanos +
+    totalHermanas +
+    totalNinos +
+    totalAdolescentes +
+    totalSimpatizantes +
+    totalHermanosApartados +
+    totalHermanosVisitas;
 
   return {
     totalHermanos,
@@ -123,58 +152,71 @@ export const calculateCategoryStats = (filteredData: HistorialRecord[]): Categor
     totalSimpatizantes,
     totalHermanosApartados,
     totalHermanosVisitas,
-    granTotal
+    granTotal,
   };
 };
 
-export const getCategoryValue = (record: HistorialRecord, categoryKey: string): number => {
+export const getCategoryValue = (
+  record: HistorialRecord,
+  categoryKey: string
+): number => {
   switch (categoryKey) {
-    case 'hermanos': return record.hermanos;
-    case 'hermanas': return record.hermanas;
-    case 'ninos': return record.ninos;
-    case 'adolescentes': return record.adolescentes;
-    case 'simpatizantes': return record.simpatizantes;
-    case 'hermanosApartados': return record.hermanosApartados || 0;
-    case 'hermanosVisitas': return record.hermanosVisitas || 0;
-    default: return 0;
+    case 'hermanos':
+      return record.hermanos;
+    case 'hermanas':
+      return record.hermanas;
+    case 'ninos':
+      return record.ninos;
+    case 'adolescentes':
+      return record.adolescentes;
+    case 'simpatizantes':
+      return record.simpatizantes;
+    case 'hermanosApartados':
+      return record.hermanosApartados || 0;
+    case 'hermanosVisitas':
+      return record.hermanosVisitas || 0;
+    default:
+      return 0;
   }
 };
 
 export const formatUjier = (ujier: string | string[]): string => {
-  return Array.isArray(ujier) ? ujier.join(", ") : ujier;
+  return Array.isArray(ujier) ? ujier.join(', ') : ujier;
 };
 
 export const formatDate = (dateString: string): string => {
-  return new Date(dateString + "T12:00:00").toLocaleDateString("es-ES", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+  return new Date(dateString + 'T12:00:00').toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   });
 };
 
 export const formatDateShort = (dateString: string): string => {
-  return new Date(dateString + "T12:00:00").toLocaleDateString("es-ES");
+  return new Date(dateString + 'T12:00:00').toLocaleDateString('es-ES');
 };
 
-export const getAttendeeNames = (attendees: Array<{ id: string; nombre: string }> | undefined): string => {
-  return attendees?.map((a) => a.nombre).join(", ") || "";
+export const getAttendeeNames = (
+  attendees: Array<{ id: string; nombre: string }> | undefined
+): string => {
+  return attendees?.map((a) => a.nombre).join(', ') || '';
 };
 
 export const generateCSVHeaders = (): string[] => {
   return [
-    "Fecha",
-    "Servicio",
-    "Ujier(es)",
-    ...CATEGORIES.map(cat => cat.label),
-    "Total",
-    "Simpatizantes Asistieron",
-    "Hermanos Asistieron",
-    "Hermanas Asistieron",
-    "Niños Asistieron",
-    "Adolescentes Asistieron",
-    "Hermanos Apartados Asistieron",
-    "Hermanos Visitas Asistieron",
+    'Fecha',
+    'Servicio',
+    'Ujier(es)',
+    ...CATEGORIES.map((cat) => cat.label),
+    'Total',
+    'Simpatizantes Asistieron',
+    'Hermanos Asistieron',
+    'Hermanas Asistieron',
+    'Niños Asistieron',
+    'Adolescentes Asistieron',
+    'Hermanos Apartados Asistieron',
+    'Hermanos Visitas Asistieron',
   ];
 };
 
@@ -183,7 +225,7 @@ export const generateCSVRow = (record: HistorialRecord): string[] => {
     record.fecha,
     `"${record.servicio}"`,
     `"${formatUjier(record.ujier)}"`,
-    ...CATEGORIES.map(cat => getCategoryValue(record, cat.key).toString()),
+    ...CATEGORIES.map((cat) => getCategoryValue(record, cat.key).toString()),
     record.total.toString(),
     `"${getAttendeeNames(record.simpatizantesAsistieron)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.hermanos)}"`,
@@ -198,46 +240,72 @@ export const generateCSVRow = (record: HistorialRecord): string[] => {
 export const generateExcelData = (record: HistorialRecord) => {
   const baseData: Record<string, string | number> = {
     Fecha: formatDateShort(record.fecha),
-    "Día de la Semana": new Date(record.fecha + "T12:00:00").toLocaleDateString("es-ES", {
-      weekday: "long",
-    }),
+    'Día de la Semana': new Date(record.fecha + 'T12:00:00').toLocaleDateString(
+      'es-ES',
+      {
+        weekday: 'long',
+      }
+    ),
     Servicio: record.servicio,
-    "Ujier(es)": formatUjier(record.ujier),
-    "Total Asistentes": record.total,
+    'Ujier(es)': formatUjier(record.ujier),
+    'Total Asistentes': record.total,
   };
 
   // Add category data
-  CATEGORIES.forEach(cat => {
+  CATEGORIES.forEach((cat) => {
     baseData[cat.label] = getCategoryValue(record, cat.key);
   });
 
   // Add attendee data
-  baseData["Simpatizantes que Asistieron"] = getAttendeeNames(record.simpatizantesAsistieron);
-  baseData["Hermanos que Asistieron"] = getAttendeeNames(record.miembrosAsistieron?.hermanos);
-  baseData["Hermanas que Asistieron"] = getAttendeeNames(record.miembrosAsistieron?.hermanas);
-  baseData["Niños que Asistieron"] = getAttendeeNames(record.miembrosAsistieron?.ninos);
-  baseData["Adolescentes que Asistieron"] = getAttendeeNames(record.miembrosAsistieron?.adolescentes);
-  baseData["Hermanos Apartados que Asistieron"] = getAttendeeNames(record.miembrosAsistieron?.hermanosApartados);
-  baseData["Hermanos Visitas que Asistieron"] = getAttendeeNames(record.hermanosVisitasAsistieron);
+  baseData['Simpatizantes que Asistieron'] = getAttendeeNames(
+    record.simpatizantesAsistieron
+  );
+  baseData['Hermanos que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.hermanos
+  );
+  baseData['Hermanas que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.hermanas
+  );
+  baseData['Niños que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.ninos
+  );
+  baseData['Adolescentes que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.adolescentes
+  );
+  baseData['Hermanos Apartados que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.hermanosApartados
+  );
+  baseData['Hermanos Visitas que Asistieron'] = getAttendeeNames(
+    record.hermanosVisitasAsistieron
+  );
 
   return baseData;
 };
 
-export const generateStatisticsData = (stats: CategoryStats, totalRegistros: number, promedioAsistencia: number, mayorAsistencia: number, menorAsistencia: number) => {
+export const generateStatisticsData = (
+  stats: CategoryStats,
+  totalRegistros: number,
+  promedioAsistencia: number,
+  mayorAsistencia: number,
+  menorAsistencia: number
+) => {
   return [
-    { Concepto: "Total de Registros", Valor: totalRegistros },
-    { Concepto: "Promedio de Asistencia", Valor: promedioAsistencia },
-    { Concepto: "Mayor Asistencia", Valor: mayorAsistencia },
-    { Concepto: "Menor Asistencia", Valor: menorAsistencia },
-    { Concepto: "", Valor: "" }, // Separador
-    { Concepto: "TOTALES POR CATEGORÍA", Valor: "" },
-    { Concepto: "Total Hermanos", Valor: stats.totalHermanos },
-    { Concepto: "Total Hermanas", Valor: stats.totalHermanas },
-    { Concepto: "Total Niños", Valor: stats.totalNinos },
-    { Concepto: "Total Adolescentes", Valor: stats.totalAdolescentes },
-    { Concepto: "Total Simpatizantes", Valor: stats.totalSimpatizantes },
-    { Concepto: "Total Hermanos Apartados", Valor: stats.totalHermanosApartados },
-    { Concepto: "Total Hermanos Visitas", Valor: stats.totalHermanosVisitas },
-    { Concepto: "GRAN TOTAL", Valor: stats.granTotal },
+    { Concepto: 'Total de Registros', Valor: totalRegistros },
+    { Concepto: 'Promedio de Asistencia', Valor: promedioAsistencia },
+    { Concepto: 'Mayor Asistencia', Valor: mayorAsistencia },
+    { Concepto: 'Menor Asistencia', Valor: menorAsistencia },
+    { Concepto: '', Valor: '' }, // Separador
+    { Concepto: 'TOTALES POR CATEGORÍA', Valor: '' },
+    { Concepto: 'Total Hermanos', Valor: stats.totalHermanos },
+    { Concepto: 'Total Hermanas', Valor: stats.totalHermanas },
+    { Concepto: 'Total Niños', Valor: stats.totalNinos },
+    { Concepto: 'Total Adolescentes', Valor: stats.totalAdolescentes },
+    { Concepto: 'Total Simpatizantes', Valor: stats.totalSimpatizantes },
+    {
+      Concepto: 'Total Hermanos Apartados',
+      Valor: stats.totalHermanosApartados,
+    },
+    { Concepto: 'Total Hermanos Visitas', Valor: stats.totalHermanosVisitas },
+    { Concepto: 'GRAN TOTAL', Valor: stats.granTotal },
   ];
 };

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   fetchSimpatizantes,
   addSimpatizante as addSimpatizanteToFirebase,
   updateSimpatizante as updateSimpatizanteInFirebase,
   deleteSimpatizante as deleteSimpatizanteFromFirebase,
-} from "@/shared/lib/utils";
+} from '@/shared/lib/utils';
 
 export interface Simpatizante {
   id: string;
@@ -24,8 +24,13 @@ interface UseSimpatizantesReturn {
   isAdding: boolean;
   isUpdating: boolean;
   isDeleting: boolean;
-  addSimpatizante: (data: Omit<Simpatizante, "id" | "fechaRegistro">) => Promise<void>;
-  updateSimpatizante: (id: string, data: Partial<Omit<Simpatizante, "id" | "fechaRegistro">>) => Promise<void>;
+  addSimpatizante: (
+    data: Omit<Simpatizante, 'id' | 'fechaRegistro'>
+  ) => Promise<void>;
+  updateSimpatizante: (
+    id: string,
+    data: Partial<Omit<Simpatizante, 'id' | 'fechaRegistro'>>
+  ) => Promise<void>;
   deleteSimpatizante: (id: string) => Promise<void>;
   refreshSimpatizantes: () => Promise<void>;
 }
@@ -53,7 +58,7 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
       setSimpatizantes(data);
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Error cargando simpatizantes";
+        err instanceof Error ? err.message : 'Error cargando simpatizantes';
       setError(msg);
       toast.error(msg);
     } finally {
@@ -65,10 +70,10 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
    * Add a new simpatizante
    */
   const addSimpatizanteHandler = async (
-    data: Omit<Simpatizante, "id" | "fechaRegistro">
+    data: Omit<Simpatizante, 'id' | 'fechaRegistro'>
   ) => {
     if (!data.nombre.trim()) {
-      toast.error("El nombre es requerido");
+      toast.error('El nombre es requerido');
       return;
     }
 
@@ -86,8 +91,8 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
       setSimpatizantes([...simpatizantes, created]);
       toast.success(`Simpatizante "${data.nombre}" agregado exitosamente`);
     } catch (err) {
-      console.error("Error adding simpatizante:", err);
-      const errorMsg = "Error al agregar simpatizante";
+      console.error('Error adding simpatizante:', err);
+      const errorMsg = 'Error al agregar simpatizante';
       setError(errorMsg);
       toast.error(errorMsg);
       throw err;
@@ -101,7 +106,7 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
    */
   const updateSimpatizanteHandler = async (
     id: string,
-    data: Partial<Omit<Simpatizante, "id" | "fechaRegistro">>
+    data: Partial<Omit<Simpatizante, 'id' | 'fechaRegistro'>>
   ) => {
     setIsUpdating(true);
     try {
@@ -111,8 +116,8 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
       );
       toast.success(`Simpatizante actualizado exitosamente`);
     } catch (err) {
-      console.error("Error updating simpatizante:", err);
-      const errorMsg = "Error al actualizar simpatizante";
+      console.error('Error updating simpatizante:', err);
+      const errorMsg = 'Error al actualizar simpatizante';
       setError(errorMsg);
       toast.error(errorMsg);
       throw err;
@@ -131,11 +136,11 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
       await deleteSimpatizanteFromFirebase(id);
       setSimpatizantes(simpatizantes.filter((s) => s.id !== id));
       toast.success(
-        `Simpatizante "${simpatizante?.nombre || ""}" eliminado exitosamente`
+        `Simpatizante "${simpatizante?.nombre || ''}" eliminado exitosamente`
       );
     } catch (err) {
-      console.error("Error deleting simpatizante:", err);
-      const errorMsg = "Error al eliminar simpatizante";
+      console.error('Error deleting simpatizante:', err);
+      const errorMsg = 'Error al eliminar simpatizante';
       setError(errorMsg);
       toast.error(errorMsg);
       throw err;
@@ -162,4 +167,3 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
     refreshSimpatizantes: loadSimpatizantes,
   };
 }
-

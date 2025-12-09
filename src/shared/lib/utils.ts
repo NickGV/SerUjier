@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import {
   collection,
   getDocs,
@@ -10,26 +10,28 @@ import {
   updateDoc,
   addDoc,
   deleteDoc,
-} from "firebase/firestore";
-import { db } from "./firebase";
+} from 'firebase/firestore';
+import { db } from './firebase';
 
 // Helper function to clean data objects before sending to Firebase
 // Removes undefined values and empty strings to avoid Firebase validation issues
-function cleanDataForFirebase<T extends Record<string, unknown>>(data: T): Partial<T> {
+function cleanDataForFirebase<T extends Record<string, unknown>>(
+  data: T
+): Partial<T> {
   const cleaned: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
-    if (value !== undefined && value !== null && value !== "") {
+    if (value !== undefined && value !== null && value !== '') {
       cleaned[key] = value;
     }
   }
-  
+
   return cleaned as Partial<T>;
 }
 
 // Función para hashear contraseñas (mismo algoritmo que en la API de login)
 export function hashPassword(password: string): string {
-  const salt = "ujier_salt_2025";
+  const salt = 'ujier_salt_2025';
   // Usar btoa para compatibilidad con el navegador
   return btoa(password + salt);
 }
@@ -41,7 +43,7 @@ export function cn(...inputs: ClassValue[]) {
 // Placeholder data fetchers. Replace with Firestore queries using db from lib/firebase.
 export async function fetchSimpatizantes() {
   try {
-    const querySnapshot = await getDocs(collection(db, "simpatizantes"));
+    const querySnapshot = await getDocs(collection(db, 'simpatizantes'));
 
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -54,7 +56,7 @@ export async function fetchSimpatizantes() {
       fechaRegistro: string;
     }>;
   } catch (error) {
-    console.error("Error fetching simpatizantes:", error);
+    console.error('Error fetching simpatizantes:', error);
     throw error;
   }
 }
@@ -68,17 +70,17 @@ export async function addSimpatizante(simpatizante: {
   try {
     // Clean the data to remove undefined/empty values before sending to Firebase
     const cleanedData = cleanDataForFirebase(simpatizante);
-    const docRef = await addDoc(collection(db, "simpatizantes"), cleanedData);
+    const docRef = await addDoc(collection(db, 'simpatizantes'), cleanedData);
     return { id: docRef.id };
   } catch (error) {
-    console.error("Error adding simpatizante:", error);
+    console.error('Error adding simpatizante:', error);
     throw error;
   }
 }
 
 export async function fetchMiembros() {
   try {
-    const q = query(collection(db, "miembros"), orderBy("nombre", "asc"));
+    const q = query(collection(db, 'miembros'), orderBy('nombre', 'asc'));
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((doc) => ({
@@ -88,12 +90,12 @@ export async function fetchMiembros() {
       id: string;
       nombre: string;
       telefono?: string;
-      categoria: "hermano" | "hermana" | "nino" | "adolescente";
+      categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
       notas?: string;
       fechaRegistro: string;
     }>;
   } catch (error) {
-    console.error("Error fetching miembros:", error);
+    console.error('Error fetching miembros:', error);
     throw error;
   }
 }
@@ -101,15 +103,15 @@ export async function fetchMiembros() {
 export async function addMiembro(miembro: {
   nombre: string;
   telefono?: string;
-  categoria: "hermano" | "hermana" | "nino" | "adolescente";
+  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro: string;
 }) {
   try {
-    const docRef = await addDoc(collection(db, "miembros"), miembro);
+    const docRef = await addDoc(collection(db, 'miembros'), miembro);
     return { id: docRef.id };
   } catch (error) {
-    console.error("Error adding miembro:", error);
+    console.error('Error adding miembro:', error);
     throw error;
   }
 }
@@ -119,32 +121,32 @@ export async function updateMiembro(
   data: Partial<{
     nombre: string;
     telefono?: string;
-    categoria: "hermano" | "hermana" | "nino" | "adolescente";
+    categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
     notas?: string;
   }>
 ) {
   try {
-    const miembroRef = doc(db, "miembros", id);
+    const miembroRef = doc(db, 'miembros', id);
     await updateDoc(miembroRef, data);
   } catch (error) {
-    console.error("Error updating miembro:", error);
+    console.error('Error updating miembro:', error);
     throw error;
   }
 }
 
 export async function deleteMiembro(id: string) {
   try {
-    const miembroRef = doc(db, "miembros", id);
+    const miembroRef = doc(db, 'miembros', id);
     await deleteDoc(miembroRef);
   } catch (error) {
-    console.error("Error deleting miembro:", error);
+    console.error('Error deleting miembro:', error);
     throw error;
   }
 }
 
 export async function getMiembroById(id: string) {
   try {
-    const miembroRef = doc(db, "miembros", id);
+    const miembroRef = doc(db, 'miembros', id);
     const miembroSnap = await getDoc(miembroRef);
 
     if (miembroSnap.exists()) {
@@ -155,22 +157,22 @@ export async function getMiembroById(id: string) {
         id: string;
         nombre: string;
         telefono?: string;
-        categoria: "hermano" | "hermana" | "nino" | "adolescente";
+        categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
         notas?: string;
         fechaRegistro: string;
       };
     } else {
-      throw new Error("Miembro no encontrado");
+      throw new Error('Miembro no encontrado');
     }
   } catch (error) {
-    console.error("Error fetching miembro by id:", error);
+    console.error('Error fetching miembro by id:', error);
     throw error;
   }
 }
 
 export async function fetchUjieres() {
   try {
-    const q = query(collection(db, "usuarios"), orderBy("nombre", "asc"));
+    const q = query(collection(db, 'usuarios'), orderBy('nombre', 'asc'));
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((doc) => ({
@@ -180,12 +182,12 @@ export async function fetchUjieres() {
       id: string;
       nombre: string;
       password: string;
-      rol: "admin" | "directiva" | "ujier";
+      rol: 'admin' | 'directiva' | 'ujier';
       activo: boolean;
       fechaCreacion: string;
     }>;
   } catch (error) {
-    console.error("Error fetching ujieres:", error);
+    console.error('Error fetching ujieres:', error);
     throw error;
   }
 }
@@ -193,7 +195,7 @@ export async function fetchUjieres() {
 export async function addUjier(ujier: {
   nombre: string;
   password: string;
-  rol: "admin" | "directiva" | "ujier";
+  rol: 'admin' | 'directiva' | 'ujier';
   activo: boolean;
   fechaCreacion: string;
 }) {
@@ -205,12 +207,12 @@ export async function addUjier(ujier: {
     };
 
     const docRef = await addDoc(
-      collection(db, "usuarios"),
+      collection(db, 'usuarios'),
       ujierWithHashedPassword
     );
     return { id: docRef.id };
   } catch (error) {
-    console.error("Error adding ujier:", error);
+    console.error('Error adding ujier:', error);
     throw error;
   }
 }
@@ -220,7 +222,7 @@ export async function updateUjier(
   data: Partial<{
     nombre: string;
     password: string;
-    rol: "admin" | "directiva" | "ujier";
+    rol: 'admin' | 'directiva' | 'ujier';
     activo: boolean;
   }>
 ) {
@@ -231,28 +233,27 @@ export async function updateUjier(
       updateData.password = hashPassword(updateData.password);
     }
 
-    const ujierRef = doc(db, "usuarios", id);
+    const ujierRef = doc(db, 'usuarios', id);
     await updateDoc(ujierRef, updateData);
-
   } catch (error) {
-    console.error("Error updating ujier:", error);
+    console.error('Error updating ujier:', error);
     throw error;
   }
 }
 
 export async function deleteUjier(id: string) {
   try {
-    const ujierRef = doc(db, "usuarios", id);
+    const ujierRef = doc(db, 'usuarios', id);
     await deleteDoc(ujierRef);
   } catch (error) {
-    console.error("Error deleting ujier:", error);
+    console.error('Error deleting ujier:', error);
     throw error;
   }
 }
 
 export async function getUjierById(id: string) {
   try {
-    const ujierRef = doc(db, "usuarios", id);
+    const ujierRef = doc(db, 'usuarios', id);
     const ujierSnap = await getDoc(ujierRef);
 
     if (ujierSnap.exists()) {
@@ -263,15 +264,15 @@ export async function getUjierById(id: string) {
         id: string;
         nombre: string;
         password: string;
-        rol: "admin" | "directiva" | "ujier";
+        rol: 'admin' | 'directiva' | 'ujier';
         activo: boolean;
         fechaCreacion: string;
       };
     } else {
-      throw new Error("Usuario no encontrado");
+      throw new Error('Usuario no encontrado');
     }
   } catch (error) {
-    console.error("Error fetching ujier by id:", error);
+    console.error('Error fetching ujier by id:', error);
     throw error;
   }
 }
@@ -287,24 +288,23 @@ export async function updateSimpatizante(
   try {
     // Clean the data to remove undefined/empty values before sending to Firebase
     const cleanedData = cleanDataForFirebase(data);
-    
+
     // Only proceed if there's actually data to update
     if (Object.keys(cleanedData).length === 0) {
       return;
     }
-    
-    const simpatizanteRef = doc(db, "simpatizantes", id);
-    await updateDoc(simpatizanteRef, cleanedData);
 
+    const simpatizanteRef = doc(db, 'simpatizantes', id);
+    await updateDoc(simpatizanteRef, cleanedData);
   } catch (error) {
-    console.error("Error updating simpatizante:", error);
+    console.error('Error updating simpatizante:', error);
     throw error;
   }
 }
 
 export async function getSimpatizanteById(id: string) {
   try {
-    const simpatizanteRef = doc(db, "simpatizantes", id);
+    const simpatizanteRef = doc(db, 'simpatizantes', id);
     const simpatizanteSnap = await getDoc(simpatizanteRef);
 
     if (simpatizanteSnap.exists()) {
@@ -319,28 +319,27 @@ export async function getSimpatizanteById(id: string) {
         fechaRegistro: string;
       };
     } else {
-      throw new Error("Simpatizante no encontrado");
+      throw new Error('Simpatizante no encontrado');
     }
   } catch (error) {
-    console.error("Error fetching simpatizante by id:", error);
+    console.error('Error fetching simpatizante by id:', error);
     throw error;
   }
 }
 
 export async function deleteSimpatizante(id: string) {
   try {
-    const simpatizanteRef = doc(db, "simpatizantes", id);
+    const simpatizanteRef = doc(db, 'simpatizantes', id);
     await deleteDoc(simpatizanteRef);
-
   } catch (error) {
-    console.error("Error deleting simpatizante:", error);
+    console.error('Error deleting simpatizante:', error);
     throw error;
   }
 }
 
 export async function fetchHistorial() {
   try {
-    const q = query(collection(db, "historial"), orderBy("fecha", "desc"));
+    const q = query(collection(db, 'historial'), orderBy('fecha', 'desc'));
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((doc) => ({
@@ -367,10 +366,14 @@ export async function fetchHistorial() {
         adolescentes?: Array<{ id: string; nombre: string }>;
         hermanosApartados?: Array<{ id: string; nombre: string }>;
       };
-      hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
+      hermanosVisitasAsistieron?: Array<{
+        id: string;
+        nombre: string;
+        iglesia?: string;
+      }>;
     }>;
   } catch (error) {
-    console.error("Error fetching historial:", error);
+    console.error('Error fetching historial:', error);
     throw error;
   }
 }
@@ -395,13 +398,17 @@ export async function saveConteo(conteoData: {
     adolescentes?: Array<{ id: string; nombre: string }>;
     hermanosApartados?: Array<{ id: string; nombre: string }>;
   };
-  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
+  hermanosVisitasAsistieron?: Array<{
+    id: string;
+    nombre: string;
+    iglesia?: string;
+  }>;
 }) {
   try {
-    const docRef = await addDoc(collection(db, "historial"), conteoData);
+    const docRef = await addDoc(collection(db, 'historial'), conteoData);
     return { id: docRef.id };
   } catch (error) {
-    console.error("Error saving conteo:", error);
+    console.error('Error saving conteo:', error);
     throw error;
   }
 }
@@ -428,31 +435,35 @@ export async function updateHistorialRecord(
       adolescentes?: Array<{ id: string; nombre: string }>;
       hermanosApartados?: Array<{ id: string; nombre: string }>;
     };
-    hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
+    hermanosVisitasAsistieron?: Array<{
+      id: string;
+      nombre: string;
+      iglesia?: string;
+    }>;
   }>
 ) {
   try {
-    const historialRef = doc(db, "historial", id);
+    const historialRef = doc(db, 'historial', id);
     await updateDoc(historialRef, data);
   } catch (error) {
-    console.error("Error updating historial record:", error);
+    console.error('Error updating historial record:', error);
     throw error;
   }
 }
 
 export async function deleteHistorialRecord(id: string) {
   try {
-    const historialRef = doc(db, "historial", id);
+    const historialRef = doc(db, 'historial', id);
     await deleteDoc(historialRef);
   } catch (error) {
-    console.error("Error deleting historial record:", error);
+    console.error('Error deleting historial record:', error);
     throw error;
   }
 }
 
 export async function getHistorialRecordById(id: string) {
   try {
-    const historialRef = doc(db, "historial", id);
+    const historialRef = doc(db, 'historial', id);
     const historialSnap = await getDoc(historialRef);
 
     if (historialSnap.exists()) {
@@ -480,13 +491,17 @@ export async function getHistorialRecordById(id: string) {
           adolescentes?: Array<{ id: string; nombre: string }>;
           hermanosApartados?: Array<{ id: string; nombre: string }>;
         };
-        hermanosVisitasAsistieron?: Array<{ id: string; nombre: string; iglesia?: string }>;
+        hermanosVisitasAsistieron?: Array<{
+          id: string;
+          nombre: string;
+          iglesia?: string;
+        }>;
       };
     } else {
-      throw new Error("Registro de historial no encontrado");
+      throw new Error('Registro de historial no encontrado');
     }
   } catch (error) {
-    console.error("Error fetching historial record by id:", error);
+    console.error('Error fetching historial record by id:', error);
     throw error;
   }
 }

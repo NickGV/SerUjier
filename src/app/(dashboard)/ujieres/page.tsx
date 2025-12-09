@@ -1,13 +1,18 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useUser } from "@/shared/contexts/user-context";
-import { fetchUjieres, addUjier, updateUjier, deleteUjier } from "@/shared/lib/utils";
-import { RoleGuard } from "@/shared/components/role-guard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@/shared/contexts/user-context';
+import {
+  fetchUjieres,
+  addUjier,
+  updateUjier,
+  deleteUjier,
+} from '@/shared/lib/utils';
+import { RoleGuard } from '@/shared/components/role-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Badge } from '@/shared/ui/badge';
 import {
   Search,
   Plus,
@@ -22,35 +27,35 @@ import {
   Save,
   X,
   AlertTriangle,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from '@/shared/ui/select';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { toast } from "sonner";
+} from '@/shared/ui/dialog';
+import { toast } from 'sonner';
 
 interface Ujier {
   id: string;
   nombre: string;
   password: string;
-  rol: "admin" | "directiva" | "ujier";
+  rol: 'admin' | 'directiva' | 'ujier';
   activo: boolean;
   fechaCreacion: string;
 }
 
 export default function UjieresPage() {
   return (
-    <RoleGuard route="ujieres" allowedRoles={["admin", "directiva"]}>
+    <RoleGuard route="ujieres" allowedRoles={['admin', 'directiva']}>
       <UjieresContent />
     </RoleGuard>
   );
@@ -62,17 +67,17 @@ function UjieresContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('todos');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newUsuario, setNewUsuario] = useState<{
     nombre: string;
     password: string;
-    rol: "admin" | "directiva" | "ujier";
+    rol: 'admin' | 'directiva' | 'ujier';
   }>({
-    nombre: "",
-    password: "",
-    rol: "ujier",
+    nombre: '',
+    password: '',
+    rol: 'ujier',
   });
 
   // Estados para edición y eliminación
@@ -83,8 +88,8 @@ function UjieresContent() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isAdmin = user?.rol === "admin";
-  const isDirectiva = user?.rol === "directiva";
+  const isAdmin = user?.rol === 'admin';
+  const isDirectiva = user?.rol === 'directiva';
 
   useEffect(() => {
     const loadUjieres = async () => {
@@ -93,7 +98,7 @@ function UjieresContent() {
         setUjieres(data);
       } catch (err) {
         const msg =
-          err instanceof Error ? err.message : "Error cargando usuarios";
+          err instanceof Error ? err.message : 'Error cargando usuarios';
         setError(msg);
       } finally {
         setLoading(false);
@@ -107,14 +112,14 @@ function UjieresContent() {
     const matchesSearch = usuario.nombre
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === "todos" || usuario.rol === filterRole;
+    const matchesRole = filterRole === 'todos' || usuario.rol === filterRole;
     return matchesSearch && matchesRole;
   });
 
   const roleStats = {
-    admin: ujieres.filter((u) => u.rol === "admin").length,
-    directiva: ujieres.filter((u) => u.rol === "directiva").length,
-    ujier: ujieres.filter((u) => u.rol === "ujier").length,
+    admin: ujieres.filter((u) => u.rol === 'admin').length,
+    directiva: ujieres.filter((u) => u.rol === 'directiva').length,
+    ujier: ujieres.filter((u) => u.rol === 'ujier').length,
     activos: ujieres.filter((u) => u.activo).length,
     inactivos: ujieres.filter((u) => !u.activo).length,
   };
@@ -130,18 +135,18 @@ function UjieresContent() {
       };
       const result = await addUjier(nuevoUsuario);
       setUjieres([...ujieres, { ...nuevoUsuario, id: result.id }]);
-      setNewUsuario({ nombre: "", password: "", rol: "ujier" });
+      setNewUsuario({ nombre: '', password: '', rol: 'ujier' });
       setIsAddDialogOpen(false);
     } catch (err) {
-      console.error("Error adding usuario:", err);
-      setError("Error al agregar usuario");
+      console.error('Error adding usuario:', err);
+      setError('Error al agregar usuario');
     }
   };
 
   const toggleUsuarioStatus = async (usuario: Ujier) => {
     if (!isAdmin && !isDirectiva) return;
-    if (isDirectiva && usuario.rol === "admin") return;
-    if (usuario.rol === "admin" || usuario.rol === "directiva") return;
+    if (isDirectiva && usuario.rol === 'admin') return;
+    if (usuario.rol === 'admin' || usuario.rol === 'directiva') return;
 
     try {
       const updatedData = { activo: !usuario.activo };
@@ -150,8 +155,8 @@ function UjieresContent() {
         ujieres.map((u) => (u.id === usuario.id ? { ...u, ...updatedData } : u))
       );
     } catch (err) {
-      console.error("Error updating usuario:", err);
-      setError("Error al actualizar usuario");
+      console.error('Error updating usuario:', err);
+      setError('Error al actualizar usuario');
     }
   };
 
@@ -166,10 +171,10 @@ function UjieresContent() {
       const updatedData = await fetchUjieres();
       setUjieres(updatedData);
       setShowDeleteConfirm(null);
-      toast.success("Usuario eliminado exitosamente");
+      toast.success('Usuario eliminado exitosamente');
     } catch (error) {
-      console.error("Error al eliminar usuario:", error);
-      toast.error("Error al eliminar el usuario. Intente nuevamente.");
+      console.error('Error al eliminar usuario:', error);
+      toast.error('Error al eliminar el usuario. Intente nuevamente.');
     } finally {
       setIsDeleting(false);
     }
@@ -194,10 +199,10 @@ function UjieresContent() {
       const updatedData = await fetchUjieres();
       setUjieres(updatedData);
       setEditingUsuario(null);
-      toast.success("Usuario actualizado exitosamente");
+      toast.success('Usuario actualizado exitosamente');
     } catch (error) {
-      console.error("Error al actualizar usuario:", error);
-      toast.error("Error al actualizar el usuario. Intente nuevamente.");
+      console.error('Error al actualizar usuario:', error);
+      toast.error('Error al actualizar el usuario. Intente nuevamente.');
     } finally {
       setIsSaving(false);
     }
@@ -210,31 +215,31 @@ function UjieresContent() {
 
   const getRoleDisplayName = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "Administrador";
-      case "directiva":
-        return "Directiva";
+      case 'admin':
+        return 'Administrador';
+      case 'directiva':
+        return 'Directiva';
       default:
-        return "Ujier";
+        return 'Ujier';
     }
   };
 
   const getRoleColor = (rol: string) => {
     switch (rol) {
-      case "admin":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "directiva":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+      case 'admin':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'directiva':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
-        return "bg-green-50 text-green-700 border-green-200";
+        return 'bg-green-50 text-green-700 border-green-200';
     }
   };
 
   const getRoleIcon = (rol: string) => {
     switch (rol) {
-      case "admin":
+      case 'admin':
         return <Crown className="w-4 h-4 text-red-600" />;
-      case "directiva":
+      case 'directiva':
         return <UserCog className="w-4 h-4 text-blue-600" />;
       default:
         return <User className="w-4 h-4 text-green-600" />;
@@ -245,7 +250,7 @@ function UjieresContent() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando usuarios...</p>
         </div>
       </div>
@@ -381,7 +386,7 @@ function UjieresContent() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block flex items-center gap-1">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                   <User className="w-4 h-4" />
                   Nombre Completo *
                 </label>
@@ -416,7 +421,7 @@ function UjieresContent() {
                 </label>
                 <Select
                   value={newUsuario.rol}
-                  onValueChange={(value: "admin" | "directiva" | "ujier") =>
+                  onValueChange={(value: 'admin' | 'directiva' | 'ujier') =>
                     setNewUsuario({ ...newUsuario, rol: value })
                   }
                 >
@@ -508,21 +513,21 @@ function UjieresContent() {
                       variant="outline"
                       className={`text-xs ${
                         usuario.activo
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-red-50 text-red-700 border-red-200"
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : 'bg-red-50 text-red-700 border-red-200'
                       }`}
                     >
-                      {usuario.activo ? "Activo" : "Inactivo"}
+                      {usuario.activo ? 'Activo' : 'Inactivo'}
                     </Badge>
                   </div>
                   <div className="text-xs text-gray-500">
-                    Creado:{" "}
+                    Creado:{' '}
                     {new Date(usuario.fechaCreacion).toLocaleDateString(
-                      "es-ES",
+                      'es-ES',
                       {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
                       }
                     )}
                   </div>
@@ -539,14 +544,14 @@ function UjieresContent() {
                         toggleUsuarioStatus(usuario);
                       }}
                       disabled={
-                        (isDirectiva && usuario.rol === "admin") ||
-                        usuario.rol === "admin" ||
-                        usuario.rol === "directiva"
+                        (isDirectiva && usuario.rol === 'admin') ||
+                        usuario.rol === 'admin' ||
+                        usuario.rol === 'directiva'
                       }
                       className={
                         usuario.activo
-                          ? "text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                          : "text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                          ? 'text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200'
+                          : 'text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200'
                       }
                     >
                       {usuario.activo ? (
@@ -599,9 +604,9 @@ function UjieresContent() {
               No se encontraron usuarios
             </h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm || filterRole !== "todos"
-                ? "Intente ajustar los filtros de búsqueda"
-                : "No hay usuarios registrados en el sistema"}
+              {searchTerm || filterRole !== 'todos'
+                ? 'Intente ajustar los filtros de búsqueda'
+                : 'No hay usuarios registrados en el sistema'}
             </p>
           </CardContent>
         </Card>
@@ -659,7 +664,7 @@ function UjieresContent() {
                   onClick={() => handleDeleteUsuario(showDeleteConfirm)}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Eliminando..." : "Eliminar"}
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
                 </Button>
               </div>
             </CardContent>
@@ -720,7 +725,7 @@ function UjieresContent() {
                 </label>
                 <Select
                   value={editingUsuario.rol}
-                  onValueChange={(value: "admin" | "directiva" | "ujier") =>
+                  onValueChange={(value: 'admin' | 'directiva' | 'ujier') =>
                     setEditingUsuario({ ...editingUsuario, rol: value })
                   }
                 >
@@ -770,11 +775,11 @@ function UjieresContent() {
                   Estado
                 </label>
                 <Select
-                  value={editingUsuario.activo ? "activo" : "inactivo"}
+                  value={editingUsuario.activo ? 'activo' : 'inactivo'}
                   onValueChange={(value) =>
                     setEditingUsuario({
                       ...editingUsuario,
-                      activo: value === "activo",
+                      activo: value === 'activo',
                     })
                   }
                 >
@@ -818,7 +823,7 @@ function UjieresContent() {
                   }
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? "Guardando..." : "Guardar Cambios"}
+                  {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>
               </div>
             </CardContent>

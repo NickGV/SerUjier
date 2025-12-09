@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { useState, useEffect } from 'react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { Loader2 } from "lucide-react";
-import { Simpatizante } from "@/features/simpatizantes/hooks/use-simpatizantes";
+} from '@/shared/ui/dialog';
+import { Loader2 } from 'lucide-react';
+import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 
 interface EditSimpatizanteDialogProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface EditSimpatizanteDialogProps {
   simpatizante: Simpatizante | null;
   onUpdate: (
     id: string,
-    data: Partial<Omit<Simpatizante, "id" | "fechaRegistro">>
+    data: Partial<Omit<Simpatizante, 'id' | 'fechaRegistro'>>
   ) => Promise<void>;
   isUpdating: boolean;
 }
@@ -31,18 +31,18 @@ export function EditSimpatizanteDialog({
   isUpdating,
 }: EditSimpatizanteDialogProps) {
   const [formData, setFormData] = useState({
-    nombre: "",
-    telefono: "",
-    notas: "",
+    nombre: '',
+    telefono: '',
+    notas: '',
   });
 
   // Update form data when simpatizante changes
   useEffect(() => {
     if (simpatizante) {
       setFormData({
-        nombre: simpatizante.nombre || "",
-        telefono: simpatizante.telefono || "",
-        notas: simpatizante.notas || "",
+        nombre: simpatizante.nombre || '',
+        telefono: simpatizante.telefono || '',
+        notas: simpatizante.notas || '',
       });
     }
   }, [simpatizante]);
@@ -54,26 +54,27 @@ export function EditSimpatizanteDialog({
 
     try {
       // Create clean data object - only include fields with actual values
-      const cleanData: { nombre?: string; telefono?: string; notas?: string } = {};
-      
+      const cleanData: { nombre?: string; telefono?: string; notas?: string } =
+        {};
+
       // Always include nombre since it's required
       cleanData.nombre = formData.nombre.trim();
-      
+
       // Only add optional fields if they have actual content
       const telefonoTrimmed = formData.telefono.trim();
       if (telefonoTrimmed) {
         cleanData.telefono = telefonoTrimmed;
       }
-      
+
       const notasTrimmed = formData.notas.trim();
       if (notasTrimmed) {
         cleanData.notas = notasTrimmed;
       }
-      
+
       await onUpdate(simpatizante.id, cleanData);
       onClose();
     } catch (error) {
-      console.error("Error al actualizar simpatizante:", error);
+      console.error('Error al actualizar simpatizante:', error);
     }
   };
 
@@ -156,7 +157,7 @@ export function EditSimpatizanteDialog({
                   Actualizando...
                 </>
               ) : (
-                "Guardar"
+                'Guardar'
               )}
             </Button>
           </div>
@@ -165,4 +166,3 @@ export function EditSimpatizanteDialog({
     </Dialog>
   );
 }
-

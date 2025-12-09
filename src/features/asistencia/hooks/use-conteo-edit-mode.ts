@@ -1,21 +1,25 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { getHistorialRecordById } from "@/shared/lib/utils";
-import { DatosServicioBase } from "@/shared/types";
-import { HistorialRecord } from "@/features/historial/components/historial/utils";
-import { ConteoState } from "@/features/asistencia/components/conteo/types";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { getHistorialRecordById } from '@/shared/lib/utils';
+import { type DatosServicioBase } from '@/shared/types';
+import { type HistorialRecord } from '@/features/historial/components/historial/utils';
+import { type ConteoState } from '@/features/asistencia/types';
 
 interface UseConteoEditModeProps {
   editId: string | null;
   isLoaded: boolean;
   loading: boolean;
-  loadHistorialData: (historialData: HistorialRecord) => void;
+  loadHistorialData: (
+    historialData: HistorialRecord,
+    editRecordId?: string
+  ) => void;
   clearDayData: () => void;
   updateConteo: (updates: Partial<ConteoState>) => void;
   setDatosServicioBase: (data: DatosServicioBase | null) => void;
+  conteoState: ConteoState;
 }
 
 interface UseConteoEditModeReturn {
@@ -40,29 +44,34 @@ export function useConteoEditMode({
   clearDayData,
   updateConteo,
   setDatosServicioBase,
+  conteoState,
 }: UseConteoEditModeProps): UseConteoEditModeReturn {
   const router = useRouter();
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(false);
 
   /**
    * Effect to load history data when in edit mode
+   * Also checks if we're already in edit mode from persistent state
    */
   useEffect(() => {
     const loadEditData = async () => {
-      if (editId && isLoaded && !loading) {
+      // Si ya estamos en modo edición (desde localStorage), no recargar
+      if (conteoState.isEditMode && conteoState.editingRecordId && !editId) {
+        // Ya estamos en modo edición, no hacer nada
+        return;
+      }
+
+      // Si hay un editId en la URL y no hemos cargado aún
+      if (editId && isLoaded && !loading && !conteoState.isEditMode) {
         try {
           setLoadingEdit(true);
           const historialRecord = await getHistorialRecordById(editId);
-          loadHistorialData(historialRecord);
-          setIsEditMode(true);
-          setEditingRecordId(editId);
-          toast.success("Datos cargados para edición");
+          loadHistorialData(historialRecord, editId);
+          toast.success('Datos cargados para edición');
         } catch (error) {
-          console.error("Error cargando registro para edición:", error);
-          toast.error("Error al cargar el registro para edición");
-          router.push("/historial");
+          console.error('Error cargando registro para edición:', error);
+          toast.error('Error al cargar el registro para edición');
+          router.push('/historial');
         } finally {
           setLoadingEdit(false);
         }
@@ -70,7 +79,15 @@ export function useConteoEditMode({
     };
 
     loadEditData();
-  }, [editId, isLoaded, loading, loadHistorialData, router]);
+  }, [
+    editId,
+    isLoaded,
+    loading,
+    loadHistorialData,
+    router,
+    conteoState.isEditMode,
+    conteoState.editingRecordId,
+  ]);
 
   /**
    * Cancels edit mode and clears data
@@ -78,7 +95,7 @@ export function useConteoEditMode({
   const handleCancelEdit = () => {
     if (
       confirm(
-        "¿Desea cancelar la edición? Los cambios no guardados se perderán.",
+        '¿Desea cancelar la edición? Los cambios no guardados se perderán.'
       )
     ) {
       // Clear everything and reset states
@@ -88,16 +105,16 @@ export function useConteoEditMode({
       // Reset consecutive mode if it was active
       updateConteo({
         modoConsecutivo: false,
-        tipoServicio: "dominical",
+        tipoServicio: 'dominical',
       });
 
-      router.push("/historial");
+      router.push('/historial');
     }
   };
 
   return {
-    isEditMode,
-    editingRecordId,
+    isEditMode: conteoState.isEditMode,
+    editingRecordId: conteoState.editingRecordId,
     loadingEdit,
     handleCancelEdit,
   };
