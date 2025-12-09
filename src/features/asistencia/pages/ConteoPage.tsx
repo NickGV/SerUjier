@@ -32,12 +32,14 @@ import {
   ConteoHeader,
   EditModeBanner,
   ConsecutiveModeBanner,
-  getAllAsistentes,
-  calculateAllTotals,
-  type SimpatizanteLite,
-  type CategoriaPlural,
-  type ConteoStateWithIndex,
-} from '@/features/asistencia/components/conteo';
+} from '@/features/asistencia/components';
+import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
+import { calculateAllTotals } from '../lib/calculations';
+import type {
+  SimpatizanteLite,
+  CategoriaPlural,
+  ConteoStateWithIndex,
+} from '@/features/asistencia/types';
 
 export default function ConteoPage() {
   const searchParams = useSearchParams();

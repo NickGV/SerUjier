@@ -386,7 +386,7 @@ function UjieresContent() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block flex items-center gap-1">
+                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
                   <User className="w-4 h-4" />
                   Nombre Completo *
                 </label>

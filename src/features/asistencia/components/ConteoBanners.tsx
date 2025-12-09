@@ -4,7 +4,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Calendar, Edit3, X } from 'lucide-react';
 import { type DatosServicioBase } from '@/shared/types';
-import { servicios } from './constants';
+import { servicios } from '../constants';
 
 interface EditModeBannerProps {
   onCancel: () => void;

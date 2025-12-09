@@ -9,7 +9,7 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Input } from '@/shared/ui/input';
 import { useRouter } from 'next/navigation';
-import { servicios } from '@/features/asistencia/components/conteo/constants';
+import { servicios } from '@/features/asistencia/constants';
 import {
   Calendar,
   Filter,
@@ -569,7 +569,7 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + 'T12:00:00')
    Ujier(es): ${
      Array.isArray(record.ujier) ? record.ujier.join(', ') : record.ujier
    }
-   
+
    CONTEO POR CATEGORÍAS:
    - Hermanos: ${record.hermanos}
    - Hermanas: ${record.hermanas}
@@ -577,7 +577,7 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + 'T12:00:00')
    - Adolescentes: ${record.adolescentes}
    - Simpatizantes: ${record.simpatizantes}
    - TOTAL: ${record.total}
-   
+
    ASISTENTES CON NOMBRE:
    ${
      record.simpatizantesAsistieron && record.simpatizantesAsistieron.length > 0

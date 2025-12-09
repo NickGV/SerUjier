@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { getHistorialRecordById } from '@/shared/lib/utils';
 import { type DatosServicioBase } from '@/shared/types';
 import { type HistorialRecord } from '@/features/historial/components/historial/utils';
-import { type ConteoState } from '@/features/asistencia/components/conteo/types';
+import { type ConteoState } from '@/features/asistencia/types';
 
 interface UseConteoEditModeProps {
   editId: string | null;

@@ -21,9 +21,9 @@ import {
   User,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { type MiembrosDialogProps } from './types';
+import { type MiembrosDialogProps } from '../types';
 import { type MiembroSimplificado } from '@/shared/types';
-import { getCategoriaColor, getMiembrosPorCategoria } from './utils';
+import { getCategoriaColor, getMiembrosPorCategoria } from '../utils/helpers';
 
 export function MiembrosDialog({
   isOpen,

@@ -1,4 +1,4 @@
-import { type ConteoState } from './types';
+import { type ConteoState } from '../types';
 import { type DatosServicioBase } from '@/shared/types';
 
 /**

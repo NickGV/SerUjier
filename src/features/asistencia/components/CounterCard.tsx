@@ -4,7 +4,7 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Plus, Minus, Edit3, UserPlus } from 'lucide-react';
-import { type CounterData } from './types';
+import { type CounterData } from '../types';
 
 interface CounterCardProps {
   counter: CounterData;

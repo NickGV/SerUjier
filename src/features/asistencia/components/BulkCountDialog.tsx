@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
-import { type BulkCounts, type ConteoDialogProps } from './types';
+import { type BulkCounts, type ConteoDialogProps } from '../types';
 
 interface BulkCountDialogProps extends ConteoDialogProps {
   bulkCounts: BulkCounts;

@@ -1,4 +1,8 @@
-import type { AsistenteInfo, SimpatizanteLite, MiembroExtended } from './types';
+import type {
+  AsistenteInfo,
+  SimpatizanteLite,
+  MiembroExtended,
+} from '../types';
 import {
   type MiembroSimplificado,
   type DatosServicioBase,

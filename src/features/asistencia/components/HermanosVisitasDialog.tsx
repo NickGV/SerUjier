@@ -13,7 +13,7 @@ import {
 } from '@/shared/ui/dialog';
 import { X, Plus, CheckCircle, Trash2, Users, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { type HermanosVisitasDialogProps } from './types';
+import { type HermanosVisitasDialogProps } from '../types';
 
 export function HermanosVisitasDialog({
   isOpen,

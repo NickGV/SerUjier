@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { type ConteoState } from '@/features/asistencia/components/conteo/types';
+import { type ConteoState } from '@/features/asistencia/types';
 import { type DatosServicioBase } from '@/shared/types';
 import {
   calculateAllTotals,
   buildConteoData,
   type ConteoDataResult,
-} from '@/features/asistencia/components/conteo/calculations';
+} from '@/features/asistencia/lib/calculations';
 import { saveConteo, updateHistorialRecord } from '@/shared/lib/utils';
-import { servicios } from '@/features/asistencia/components/conteo/constants';
+import { servicios } from '../constants';
 
 interface UseConteoSaveProps {
   conteoState: ConteoState;

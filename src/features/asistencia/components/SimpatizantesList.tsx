@@ -4,8 +4,8 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { User, Users, Trash2 } from 'lucide-react';
-import { type SimpatizanteLite } from './types';
-import { getCategoriaColor } from './utils';
+import { type SimpatizanteLite } from '../types';
+import { getCategoriaColor } from '../utils/helpers';
 
 interface SimpatizantesListProps {
   simpatizantesDelDia: SimpatizanteLite[];

@@ -21,8 +21,8 @@ import {
   User,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { type SimpatizantesDialogProps } from './types';
-import { getCategoriaColor } from './utils';
+import { type SimpatizantesDialogProps } from '../types';
+import { getCategoriaColor } from '../utils/helpers';
 
 export function SimpatizantesDialog({
   isOpen,

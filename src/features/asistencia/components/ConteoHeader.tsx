@@ -21,7 +21,7 @@ import {
   X,
   RefreshCw,
 } from 'lucide-react';
-import { servicios } from './constants';
+import { servicios } from '../constants';
 
 interface ConteoHeaderProps {
   fecha: string;

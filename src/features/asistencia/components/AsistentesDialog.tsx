@@ -12,8 +12,8 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 import { Search, X, Users, User, Trash2 } from 'lucide-react';
-import { type AsistentesDialogProps } from './types';
-import { getCategoriaLabel, getCategoriaColor } from './utils';
+import { type AsistentesDialogProps } from '../types';
+import { getCategoriaLabel, getCategoriaColor } from '../utils/helpers';
 
 export function AsistentesDialog({
   isOpen,

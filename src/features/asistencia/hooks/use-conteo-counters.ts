@@ -4,9 +4,9 @@ import { useState } from 'react';
 import {
   type CounterData,
   type ConteoState,
-} from '@/features/asistencia/components/conteo/types';
+} from '@/features/asistencia/types';
 import { type MiembroSimplificado } from '@/shared/types';
-import { CATEGORIA_COLORS } from '@/features/asistencia/components/conteo/constants';
+import { CATEGORIA_COLORS } from '../constants';
 
 interface UseConteoCountersProps {
   conteoState: ConteoState;

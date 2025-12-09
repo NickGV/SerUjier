@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  type BulkCounts,
-  type ConteoState,
-} from '@/features/asistencia/components/conteo/types';
+import { type BulkCounts, type ConteoState } from '../types';
 
 interface UseBulkCountProps {
   conteoState: ConteoState;
