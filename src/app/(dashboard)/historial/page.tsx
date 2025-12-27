@@ -1,29 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useUser } from '@/shared/contexts/user-context';
-import { fetchHistorial, deleteHistorialRecord } from '@/shared/lib/utils';
-import { RoleGuard } from '@/shared/components/role-guard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
-import { Input } from '@/shared/ui/input';
-import { useRouter } from 'next/navigation';
 import { servicios } from '@/features/asistencia/constants';
-import {
-  Calendar,
-  Filter,
-  Eye,
-  Users,
-  Download,
-  FileText,
-  BarChart3,
-  CalendarDays,
-  Search,
-  Trash2,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
+import { RoleGuard } from '@/shared/components/role-guard';
+import { useUser } from '@/shared/contexts/user-context';
+import { deleteHistorialRecord, fetchHistorial } from '@/shared/lib/utils';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
 import {
   Select,
   SelectContent,
@@ -31,6 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import {
+  AlertTriangle,
+  BarChart3,
+  Calendar,
+  CalendarDays,
+  Download,
+  Eye,
+  FileText,
+  Filter,
+  RefreshCw,
+  Search,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface HistorialRecordAPI {
@@ -89,6 +89,9 @@ function HistorialContent() {
     null
   );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isExportingText, setIsExportingText] = useState(false);
 
   const loadHistorialData = async (isRefresh = false) => {
     try {
@@ -269,96 +272,109 @@ function HistorialContent() {
     setSearchTerm('');
   };
 
-  const downloadCSV = () => {
-    const headers = [
-      'Fecha',
-      'Servicio',
-      'Ujier(es)',
-      'Hermanos',
-      'Hermanas',
-      'Niños',
-      'Adolescentes',
-      'Simpatizantes',
-      'Hermanos Apartados',
-      'Hermanos Visitas',
-      'Total',
-      'Simpatizantes Asistieron',
-      'Hermanos Asistieron',
-      'Hermanas Asistieron',
-      'Niños Asistieron',
-      'Adolescentes Asistieron',
-      'Hermanos Apartados Asistieron',
-      'Hermanos Visitas Asistieron',
-    ];
+  const downloadCSV = async () => {
+    setIsExportingCSV(true);
+    try {
+      const headers = [
+        'Fecha',
+        'Servicio',
+        'Ujier(es)',
+        'Hermanos',
+        'Hermanas',
+        'Niños',
+        'Adolescentes',
+        'Simpatizantes',
+        'Hermanos Apartados',
+        'Hermanos Visitas',
+        'Total',
+        'Simpatizantes Asistieron',
+        'Hermanos Asistieron',
+        'Hermanas Asistieron',
+        'Niños Asistieron',
+        'Adolescentes Asistieron',
+        'Hermanos Apartados Asistieron',
+        'Hermanos Visitas Asistieron',
+      ];
 
-    const csvContent = [
-      headers.join(','),
-      ...filteredData.map((record) =>
-        [
-          record.fecha,
-          `"${record.servicio}"`,
-          `"${
-            Array.isArray(record.ujier) ? record.ujier.join('; ') : record.ujier
-          }"`,
-          record.hermanos,
-          record.hermanas,
-          record.ninos,
-          record.adolescentes,
-          record.simpatizantes,
-          record.hermanosApartados || 0,
-          record.hermanosVisitas || 0,
-          record.total,
-          `"${
-            record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
-            ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanos
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanas
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join('; ') ||
-            ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.adolescentes
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanosApartados
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.hermanosVisitasAsistieron?.map((h) => h.nombre).join('; ') ||
-            ''
-          }"`,
-        ].join(',')
-      ),
-    ].join('\n');
+      const csvContent = [
+        headers.join(','),
+        ...filteredData.map((record) =>
+          [
+            record.fecha,
+            `"${record.servicio}"`,
+            `"${
+              Array.isArray(record.ujier)
+                ? record.ujier.join('; ')
+                : record.ujier
+            }"`,
+            record.hermanos,
+            record.hermanas,
+            record.ninos,
+            record.adolescentes,
+            record.simpatizantes,
+            record.hermanosApartados || 0,
+            record.hermanosVisitas || 0,
+            record.total,
+            `"${
+              record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
+              ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanos
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanas
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.ninos
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.adolescentes
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanosApartados
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.hermanosVisitasAsistieron
+                ?.map((h) => h.nombre)
+                .join('; ') || ''
+            }"`,
+          ].join(',')
+        ),
+      ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `informe_asistencia_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `informe_asistencia_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al exportar CSV:', error);
+      toast.error('Error al generar el archivo CSV');
+    } finally {
+      setIsExportingCSV(false);
+    }
   };
 
   const downloadExcel = async () => {
+    setIsExportingExcel(true);
     try {
       // Importar xlsx dinámicamente
       const XLSX = await import('xlsx');
@@ -493,11 +509,15 @@ function HistorialContent() {
       toast.error(
         'Error al generar el archivo Excel. Por favor, intente nuevamente.'
       );
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
-  const downloadDetailedReport = () => {
-    const reportContent = `
+  const downloadDetailedReport = async () => {
+    setIsExportingText(true);
+    try {
+      const reportContent = `
 INFORME DETALLADO DE ASISTENCIA
 ===============================
 
@@ -508,22 +528,22 @@ FILTROS APLICADOS:
 - Fecha fin: ${fechaFin || 'Sin filtro'}
 - Búsqueda: ${searchTerm || 'Sin filtro'}
 - Fecha de generación: ${new Date().toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })}
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
 
 RESUMEN EJECUTIVO:
 ==================
 - Total de registros analizados: ${totalRegistros}
 - Período analizado: ${
-      fechaInicio && fechaFin
-        ? `${fechaInicio} a ${fechaFin}`
-        : 'Todos los registros'
-    }
+        fechaInicio && fechaFin
+          ? `${fechaInicio} a ${fechaFin}`
+          : 'Todos los registros'
+      }
 - Gran total de asistentes: ${granTotal} personas
 - Promedio de asistencia por servicio: ${promedioAsistencia} personas
 - Mayor asistencia registrada: ${mayorAsistencia} personas
@@ -532,20 +552,20 @@ RESUMEN EJECUTIVO:
 ESTADÍSTICAS POR CATEGORÍA:
 ===========================
 - Hermanos: ${totalHermanos} (${((totalHermanos / granTotal) * 100).toFixed(
-      1
-    )}%)
+        1
+      )}%)
 - Hermanas: ${totalHermanas} (${((totalHermanas / granTotal) * 100).toFixed(
-      1
-    )}%)
+        1
+      )}%)
 - Niños: ${totalNinos} (${((totalNinos / granTotal) * 100).toFixed(1)}%)
 - Adolescentes: ${totalAdolescentes} (${(
-      (totalAdolescentes / granTotal) *
-      100
-    ).toFixed(1)}%)
+        (totalAdolescentes / granTotal) *
+        100
+      ).toFixed(1)}%)
 - Simpatizantes: ${totalSimpatizantes} (${(
-      (totalSimpatizantes / granTotal) *
-      100
-    ).toFixed(1)}%)
+        (totalSimpatizantes / granTotal) *
+        100
+      ).toFixed(1)}%)
 
 DETALLE DE REGISTROS:
 =====================
@@ -639,20 +659,26 @@ NOTAS FINALES:
 - Para consultas adicionales, contacte al administrador del sistema
     `.trim();
 
-    const blob = new Blob([reportContent], {
-      type: 'text/plain;charset=utf-8;',
-    });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `informe_detallado_${new Date().toISOString().split('T')[0]}.txt`
-    );
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([reportContent], {
+        type: 'text/plain;charset=utf-8;',
+      });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `informe_detallado_${new Date().toISOString().split('T')[0]}.txt`
+      );
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al exportar informe:', error);
+      toast.error('Error al generar el informe');
+    } finally {
+      setIsExportingText(false);
+    }
   };
 
   // Función para eliminar registro
@@ -1016,28 +1042,58 @@ NOTAS FINALES:
                 variant="outline"
                 size="sm"
                 onClick={downloadCSV}
+                disabled={isExportingCSV}
                 className="bg-transparent border-green-200 text-green-700 hover:bg-green-50 text-xs"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                CSV
+                {isExportingCSV ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    CSV
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={downloadExcel}
+                disabled={isExportingExcel}
                 className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 text-xs"
               >
-                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Excel
+                {isExportingExcel ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    Excel
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={downloadDetailedReport}
+                disabled={isExportingText}
                 className="bg-transparent border-purple-200 text-purple-700 hover:bg-purple-50 text-xs"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Detallado
+                {isExportingText ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    Detallado
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

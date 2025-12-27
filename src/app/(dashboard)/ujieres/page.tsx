@@ -1,33 +1,25 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useUser } from '@/shared/contexts/user-context';
-import {
-  fetchUjieres,
-  addUjier,
-  updateUjier,
-  deleteUjier,
-} from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Badge } from '@/shared/ui/badge';
+import { useUser } from '@/shared/contexts/user-context';
+import { sortByNombre } from '@/shared/lib/sort-utils';
 import {
-  Search,
-  Plus,
-  Eye,
-  EyeOff,
-  User,
-  Shield,
-  Crown,
-  UserCog,
-  Edit3,
-  Trash2,
-  Save,
-  X,
-  AlertTriangle,
-} from 'lucide-react';
+  addUjier,
+  deleteUjier,
+  fetchUjieres,
+  updateUjier,
+} from '@/shared/lib/utils';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 import {
   Select,
   SelectContent,
@@ -36,12 +28,21 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/shared/ui/dialog';
+  AlertTriangle,
+  Crown,
+  Edit3,
+  Eye,
+  EyeOff,
+  Plus,
+  Save,
+  Search,
+  Shield,
+  Trash2,
+  User,
+  UserCog,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface Ujier {
@@ -115,6 +116,9 @@ function UjieresContent() {
     const matchesRole = filterRole === 'todos' || usuario.rol === filterRole;
     return matchesSearch && matchesRole;
   });
+
+  // Ordenar usuarios alfabéticamente
+  const sortedUsuarios = sortByNombre(filteredUsuarios);
 
   const roleStats = {
     admin: ujieres.filter((u) => u.rol === 'admin').length,
@@ -488,7 +492,7 @@ function UjieresContent() {
 
       {/* Users List */}
       <div className="space-y-3">
-        {filteredUsuarios.map((usuario) => (
+        {sortedUsuarios.map((usuario) => (
           <Card
             key={usuario.id}
             className="bg-white/80 backdrop-blur-sm border-0 shadow-md"

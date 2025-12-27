@@ -1,31 +1,17 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { useUser } from '@/shared/contexts/user-context';
+import { sortByNombre } from '@/shared/lib/sort-utils';
 import {
-  fetchMiembros,
   addMiembro,
-  updateMiembro,
   deleteMiembro,
+  fetchMiembros,
+  updateMiembro,
 } from '@/shared/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import { type Miembro } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
-import {
-  UserCheck,
-  Search,
-  Plus,
-  Users,
-  User,
-  Baby,
-  Zap,
-  Edit3,
-  Trash2,
-  Save,
-  X,
-  AlertTriangle,
-} from 'lucide-react';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 import {
   Select,
   SelectContent,
@@ -40,8 +27,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import {
+  AlertTriangle,
+  Baby,
+  Edit3,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+  User,
+  UserCheck,
+  Users,
+  X,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { type Miembro } from '@/shared/types';
 
 export default function MiembrosPage() {
   const { user } = useUser();
@@ -122,6 +123,9 @@ export default function MiembrosPage() {
       filtroCategoria === 'todos' || miembro.categoria === filtroCategoria;
     return nombreMatch && categoriaMatch;
   });
+
+  // Ordenar miembros alfabéticamente
+  const sortedMiembros = sortByNombre(filteredMiembros);
 
   const addNewMiembro = async () => {
     if (newMiembro.nombre.trim()) {
@@ -459,7 +463,7 @@ export default function MiembrosPage() {
 
       {/* Members List */}
       <div className="space-y-3">
-        {filteredMiembros.map((miembro) => (
+        {sortedMiembros.map((miembro) => (
           <Card
             key={miembro.id}
             className="bg-white/80 backdrop-blur-sm border-0 shadow-md"

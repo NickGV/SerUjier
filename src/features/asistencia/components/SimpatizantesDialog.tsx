@@ -1,28 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Card, CardContent } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 import {
-  Search,
-  X,
-  Plus,
   CheckCircle,
+  Plus,
+  Search,
   Trash2,
-  Users,
   User,
+  Users,
+  X,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { type SimpatizantesDialogProps } from '../types';
 import { getCategoriaColor } from '../utils/helpers';
+import { sortByNombre } from '@/shared/lib/sort-utils';
 
 export function SimpatizantesDialog({
   isOpen,
@@ -64,7 +65,10 @@ export function SimpatizantesDialog({
     }
   }, [isOpen]);
 
-  const filteredSimpatizantes = simpatizantes.filter(
+  // Ordenar simpatizantes alfabéticamente
+  const sortedSimpatizantes = sortByNombre(simpatizantes);
+
+  const filteredSimpatizantes = sortedSimpatizantes.filter(
     (s) =>
       s.nombre.toLowerCase().includes(searchDebounce.toLowerCase()) &&
       !simpatizantesDelDia.find((sd) => sd.id === s.id)

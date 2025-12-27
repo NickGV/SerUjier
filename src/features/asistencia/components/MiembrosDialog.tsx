@@ -1,29 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Card, CardContent } from '@/shared/ui/card';
+import { type MiembroSimplificado } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 import {
-  Search,
-  X,
-  Plus,
   CheckCircle,
+  Plus,
+  Search,
   Trash2,
-  Users,
   User,
+  Users,
+  X,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { type MiembrosDialogProps } from '../types';
-import { type MiembroSimplificado } from '@/shared/types';
 import { getCategoriaColor, getMiembrosPorCategoria } from '../utils/helpers';
+import { sortByNombre } from '@/shared/lib/sort-utils';
 
 export function MiembrosDialog({
   isOpen,
@@ -61,7 +62,10 @@ export function MiembrosDialog({
     categoria
   );
 
-  const filteredMembers = categorizedMembers.filter((miembro) => {
+  // Ordenar miembros alfabéticamente
+  const sortedCategorizedMembers = sortByNombre(categorizedMembers);
+
+  const filteredMembers = sortedCategorizedMembers.filter((miembro) => {
     const nombreMatch = miembro.nombre
       .toLowerCase()
       .includes(searchDebounce.toLowerCase());

@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
-import { User, Users, Trash2, Edit3 } from 'lucide-react';
 import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { sortByNombre } from '@/shared/lib/sort-utils';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Edit3, Trash2, User, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface SimpatizantesListProps {
   simpatizantes: Simpatizante[];
@@ -40,9 +41,12 @@ export function SimpatizantesList({
     );
   }
 
+  // Ordenar simpatizantes alfabéticamente
+  const sortedSimpatizantes = sortByNombre(simpatizantes);
+
   return (
     <div className="space-y-3">
-      {simpatizantes.map((simpatizante) => (
+      {sortedSimpatizantes.map((simpatizante) => (
         <Card
           key={simpatizante.id}
           className="bg-white/80 backdrop-blur-sm border-0 shadow-md cursor-pointer"

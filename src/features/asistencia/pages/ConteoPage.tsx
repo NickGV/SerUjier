@@ -1,45 +1,45 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
-import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counters';
 import { useBulkCount } from '@/features/asistencia/hooks/use-bulk-count';
-import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
+import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counters';
 import { useConteoEditMode } from '@/features/asistencia/hooks/use-conteo-edit-mode';
+import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
+import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
+import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
 import {
-  fetchSimpatizantes,
-  fetchMiembros,
   addSimpatizante,
+  fetchMiembros,
+  fetchSimpatizantes,
   fetchUjieres,
 } from '@/shared/lib/utils';
-import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
+import { type Miembro, type MiembroSimplificado } from '@/shared/types';
+import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-import { Badge } from '@/shared/ui/badge';
-import { Plus, Save, Eye, Loader2, Calendar } from 'lucide-react';
-import { type Miembro, type MiembroSimplificado } from '@/shared/types';
+import { Calendar, Eye, Loader2, Plus, Save } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Componentes modulares
 import {
-  CounterCard,
-  SimpatizantesList,
-  BulkCountDialog,
-  SimpatizantesDialog,
-  MiembrosDialog,
   AsistentesDialog,
-  HermanosVisitasDialog,
-  ConteoHeader,
-  EditModeBanner,
+  BulkCountDialog,
   ConsecutiveModeBanner,
+  ConteoHeader,
+  CounterCard,
+  EditModeBanner,
+  HermanosVisitasDialog,
+  MiembrosDialog,
+  SimpatizantesDialog,
+  SimpatizantesList,
 } from '@/features/asistencia/components';
-import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
-import { calculateAllTotals } from '../lib/calculations';
 import type {
-  SimpatizanteLite,
   CategoriaPlural,
   ConteoStateWithIndex,
+  SimpatizanteLite,
 } from '@/features/asistencia/types';
+import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
+import { calculateAllTotals } from '../lib/calculations';
 
 export default function ConteoPage() {
   const searchParams = useSearchParams();
@@ -159,6 +159,18 @@ export default function ConteoPage() {
   useEffect(() => {
     loadFirebaseData();
   }, []);
+
+  // Limpiar selección de ujieres al desmontar el componente (al salir de la página)
+  useEffect(() => {
+    return () => {
+      // Cleanup: limpiar selección de ujieres al salir
+      updateConteo({
+        selectedUjieres: [],
+        ujierSeleccionado: '',
+        ujierPersonalizado: '',
+      });
+    };
+  }, [updateConteo]);
 
   // ========== HANDLERS AGRUPADOS ==========
 
