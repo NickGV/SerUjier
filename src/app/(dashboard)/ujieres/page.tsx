@@ -141,9 +141,11 @@ function UjieresContent() {
       setUjieres([...ujieres, { ...nuevoUsuario, id: result.id }]);
       setNewUsuario({ nombre: '', password: '', rol: 'ujier' });
       setIsAddDialogOpen(false);
+      toast.success('Usuario agregado exitosamente');
     } catch (err) {
       console.error('Error adding usuario:', err);
       setError('Error al agregar usuario');
+      toast.error('Error al agregar el usuario. Intente nuevamente.');
     }
   };
 
@@ -158,9 +160,13 @@ function UjieresContent() {
       setUjieres(
         ujieres.map((u) => (u.id === usuario.id ? { ...u, ...updatedData } : u))
       );
+      toast.success(
+        `Usuario ${updatedData.activo ? 'activado' : 'desactivado'} exitosamente`
+      );
     } catch (err) {
       console.error('Error updating usuario:', err);
       setError('Error al actualizar usuario');
+      toast.error('Error al actualizar el estado del usuario.');
     }
   };
 

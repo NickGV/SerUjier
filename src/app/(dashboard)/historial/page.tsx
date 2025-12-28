@@ -1,6 +1,5 @@
 'use client';
 
-import { servicios } from '@/features/asistencia/constants';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { useUser } from '@/shared/contexts/user-context';
 import { deleteHistorialRecord, fetchHistorial } from '@/shared/lib/utils';
@@ -79,7 +78,6 @@ function HistorialContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [filtroServicio, setFiltroServicio] = useState('todos');
-  const [filtroUjier, setFiltroUjier] = useState('todos');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -113,10 +111,17 @@ function HistorialContent() {
         })
       );
       setHistorial(normalizedData);
+
+      if (isRefresh) {
+        toast.success('Historial actualizado exitosamente');
+      }
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : 'Error cargando historial';
       setError(msg);
+      if (isRefresh) {
+        toast.error('Error al actualizar el historial');
+      }
     } finally {
       if (isRefresh) {
         setIsRefreshing(false);
@@ -155,28 +160,23 @@ function HistorialContent() {
     );
   }
 
+  // Obtener servicios únicos del historial
+  const serviciosUnicos = Array.from(
+    new Set(historial.map((record) => record.servicio))
+  ).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
   const filteredData = historial.filter((record) => {
-    // Filtro por servicio (comparación exacta con el value guardado)
+    // Filtro por servicio (comparación exacta)
     const servicioMatch =
       filtroServicio === 'todos' || record.servicio === filtroServicio;
 
-    // Filtro por ujier (comparación exacta)
+    // Búsqueda general (busca en servicio y en ujieres)
     const ujierArray = Array.isArray(record.ujier)
       ? record.ujier
       : [record.ujier];
-    const ujierMatch =
-      filtroUjier === 'todos' ||
-      ujierArray.some((ujier) => ujier === filtroUjier);
-
-    // Búsqueda general (solo si hay searchTerm, busca en el label del servicio y en ujieres)
     const searchTermMatch =
       searchTerm === '' ||
-      (
-        servicios.find((s) => s.value === record.servicio)?.label ||
-        record.servicio
-      )
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      record.servicio.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ujierArray.some((ujier: string) =>
         ujier.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -195,7 +195,7 @@ function HistorialContent() {
       }
     }
 
-    return servicioMatch && ujierMatch && fechaMatch && searchTermMatch;
+    return servicioMatch && fechaMatch && searchTermMatch;
   });
 
   // Estadísticas para el informe
@@ -266,7 +266,6 @@ function HistorialContent() {
 
   const clearAllFilters = () => {
     setFiltroServicio('todos');
-    setFiltroUjier('todos');
     setFechaInicio('');
     setFechaFin('');
     setSearchTerm('');
@@ -523,7 +522,6 @@ INFORME DETALLADO DE ASISTENCIA
 
 FILTROS APLICADOS:
 - Servicio: ${filtroServicio === 'todos' ? 'Todos' : filtroServicio}
-- Ujier: ${filtroUjier === 'todos' ? 'Todos' : filtroUjier}
 - Fecha inicio: ${fechaInicio || 'Sin filtro'}
 - Fecha fin: ${fechaFin || 'Sin filtro'}
 - Búsqueda: ${searchTerm || 'Sin filtro'}
@@ -769,7 +767,6 @@ NOTAS FINALES:
               {filteredData.length} registros encontrados
             </Badge>
             {(filtroServicio !== 'todos' ||
-              filtroUjier !== 'todos' ||
               fechaInicio ||
               fechaFin ||
               searchTerm) && (
@@ -805,51 +802,22 @@ NOTAS FINALES:
             />
           </div>
 
-          {/* Filtros básicos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">
-                Servicio
-              </label>
-              <Select value={filtroServicio} onValueChange={setFiltroServicio}>
-                <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {servicios.map((servicio) => (
-                    <SelectItem key={servicio.value} value={servicio.value}>
-                      {servicio.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">Ujier</label>
-              <Select value={filtroUjier} onValueChange={setFiltroUjier}>
-                <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {Array.from(
-                    new Set(
-                      historial.flatMap((record) =>
-                        Array.isArray(record.ujier)
-                          ? record.ujier
-                          : [record.ujier]
-                      )
-                    )
-                  ).map((ujier) => (
-                    <SelectItem key={ujier} value={ujier}>
-                      {ujier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Filtro de servicio */}
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Servicio</label>
+            <Select value={filtroServicio} onValueChange={setFiltroServicio}>
+              <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="Seleccionar servicio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los servicios</SelectItem>
+                {serviciosUnicos.map((servicio) => (
+                  <SelectItem key={servicio} value={servicio}>
+                    {servicio}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Filtros de fecha */}
@@ -976,51 +944,6 @@ NOTAS FINALES:
                   {menorAsistencia}
                 </div>
                 <div className="text-slate-200 text-xs">Mínimo</div>
-              </div>
-            </div>
-
-            {/* Totales por categoría */}
-            <div className="mt-3 pt-3 border-t border-slate-500">
-              <div className="text-xs text-slate-200 mb-2 text-center">
-                Total General: {granTotal} asistentes
-              </div>
-              <div className="grid grid-cols-7 gap-1 text-center">
-                <div>
-                  <div className="text-sm font-semibold">{totalHermanos}</div>
-                  <div className="text-xs text-slate-300">H</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">{totalHermanas}</div>
-                  <div className="text-xs text-slate-300">M</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">{totalNinos}</div>
-                  <div className="text-xs text-slate-300">N</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalAdolescentes}
-                  </div>
-                  <div className="text-xs text-slate-300">A</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalSimpatizantes}
-                  </div>
-                  <div className="text-xs text-slate-300">S</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalHermanosApartados}
-                  </div>
-                  <div className="text-xs text-slate-300">HA</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalHermanosVisitas}
-                  </div>
-                  <div className="text-xs text-slate-300">HV</div>
-                </div>
               </div>
             </div>
           </CardContent>

@@ -471,6 +471,11 @@ export default function ConteoPage() {
         onClose={() => setShowSimpatizantesDialog(false)}
         simpatizantes={simpatizantes}
         simpatizantesDelDia={conteoState.simpatizantesDelDia}
+        baseSimpatizantes={
+          conteoState.modoConsecutivo
+            ? datosServicioBase?.simpatizantesAsistieron || []
+            : []
+        }
         onAddSimpatizantes={simpatizantesHandlers.handleAdd}
         onAddNewSimpatizante={simpatizantesHandlers.handleAddNew}
         onRemoveSimpatizante={simpatizantesHandlers.handleRemove}

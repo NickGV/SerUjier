@@ -89,6 +89,7 @@ export interface ConteoDialogProps {
 export interface SimpatizantesDialogProps extends ConteoDialogProps {
   simpatizantes: SimpatizanteLite[];
   simpatizantesDelDia: SimpatizanteLite[];
+  baseSimpatizantes: SimpatizanteLite[];
   onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
   onAddNewSimpatizante: (
     simpatizante: Omit<SimpatizanteLite, 'id'>

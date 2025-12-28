@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { type ConteoState } from '@/features/asistencia/types';
-import { type DatosServicioBase } from '@/shared/types';
 import {
-  calculateAllTotals,
   buildConteoData,
+  calculateAllTotals,
   type ConteoDataResult,
 } from '@/features/asistencia/lib/calculations';
+import { type ConteoState } from '@/features/asistencia/types';
 import { saveConteo, updateHistorialRecord } from '@/shared/lib/utils';
+import { type DatosServicioBase } from '@/shared/types';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { servicios } from '../constants';
 
 interface UseConteoSaveProps {
@@ -223,8 +223,10 @@ export function useConteoSave({
    * Continue with Sunday service after evangelism/missionary
    */
   const continuarConDominical = () => {
-    // Activate consecutive mode and reset day counters/lists.
-    // Keep selected ushers.
+    // Activate consecutive mode and reset counters and lists.
+    // The base members are now saved in datosServicioBase and will be shown from there.
+    // Clear the day lists so they're ready for NEW members in the Sunday service.
+    // The base members will be displayed in dialogs via baseMiembros prop (from datosServicioBase).
     updateConteo({
       modoConsecutivo: true,
       tipoServicio: 'dominical',
@@ -235,6 +237,7 @@ export function useConteoSave({
       simpatizantesCount: 0,
       hermanosApartados: 0,
       hermanosVisitasCount: 0,
+      // Clear the lists - base members are in datosServicioBase and shown via baseMiembros
       simpatizantesDelDia: [],
       hermanosDelDia: [],
       hermanasDelDia: [],

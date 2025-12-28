@@ -143,9 +143,11 @@ export default function MiembrosPage() {
           notas: '',
         });
         setShowAddDialog(false);
+        toast.success('Miembro agregado exitosamente');
       } catch (err) {
         console.error('Error adding miembro:', err);
         setError('Error al agregar miembro');
+        toast.error('Error al agregar el miembro. Intente nuevamente.');
       }
     }
   };

@@ -1,5 +1,6 @@
 'use client';
 
+import { sortByNombre } from '@/shared/lib/sort-utils';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -23,13 +24,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { type SimpatizantesDialogProps } from '../types';
 import { getCategoriaColor } from '../utils/helpers';
-import { sortByNombre } from '@/shared/lib/sort-utils';
 
 export function SimpatizantesDialog({
   isOpen,
   onClose,
   simpatizantes,
   simpatizantesDelDia,
+  baseSimpatizantes,
   onAddSimpatizantes,
   onAddNewSimpatizante,
   onRemoveSimpatizante,
@@ -71,7 +72,8 @@ export function SimpatizantesDialog({
   const filteredSimpatizantes = sortedSimpatizantes.filter(
     (s) =>
       s.nombre.toLowerCase().includes(searchDebounce.toLowerCase()) &&
-      !simpatizantesDelDia.find((sd) => sd.id === s.id)
+      !simpatizantesDelDia.find((sd) => sd.id === s.id) &&
+      !baseSimpatizantes.find((bs) => bs.id === s.id)
   );
 
   const toggleSimpatizanteSelection = (simpatizanteId: string) => {
@@ -315,13 +317,48 @@ export function SimpatizantesDialog({
                   )}
                 </div>
               </div>
+              {/* Simpatizantes base (del servicio anterior) */}
+              {baseSimpatizantes.length > 0 && (
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-blue-700 flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Base del servicio anterior ({baseSimpatizantes.length})
+                    </h4>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1 pr-1 border rounded-lg p-3 bg-blue-50/50">
+                    {baseSimpatizantes.map((simpatizante) => (
+                      <div
+                        key={simpatizante.id}
+                        className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm border border-blue-200"
+                      >
+                        <span className="text-blue-800 truncate flex-1 min-w-0">
+                          {simpatizante.nombre}
+                          {simpatizante.telefono && (
+                            <span className="text-blue-600 ml-2">
+                              📞 {simpatizante.telefono}
+                            </span>
+                          )}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-100 text-blue-700 text-xs"
+                        >
+                          Base
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Simpatizantes ya agregados */}
               {simpatizantesDelDia.length > 0 && (
                 <div className="flex-shrink-0 ">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
-                      Ya agregados ({simpatizantesDelDia.length})
+                      Agregados en esta sesión ({simpatizantesDelDia.length})
                     </h4>
                     <Button
                       variant="ghost"

@@ -1,6 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import {
+  AddSimpatizanteDialog,
+  DeleteSimpatizanteDialog,
+  EditSimpatizanteDialog,
+  SimpatizantesFilters,
+  SimpatizantesHeader,
+  SimpatizantesList,
+} from '@/features/simpatizantes/components/simpatizantes';
 import {
   useSimpatizantes,
   type Simpatizante,
@@ -8,14 +15,8 @@ import {
 import { useSearch } from '@/shared/hooks/use-search';
 import { Button } from '@/shared/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
-import {
-  SimpatizantesHeader,
-  SimpatizantesFilters,
-  SimpatizantesList,
-  AddSimpatizanteDialog,
-  EditSimpatizanteDialog,
-  DeleteSimpatizanteDialog,
-} from '@/features/simpatizantes/components/simpatizantes';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 const SimpatizantesPage = () => {
   const {
@@ -75,6 +76,9 @@ const SimpatizantesPage = () => {
     setIsRefreshing(true);
     try {
       await refreshSimpatizantes();
+      toast.success('Datos actualizados exitosamente');
+    } catch (_error) {
+      toast.error('Error al actualizar los datos');
     } finally {
       setIsRefreshing(false);
     }

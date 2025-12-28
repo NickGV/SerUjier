@@ -1,5 +1,6 @@
 'use client';
 
+import { sortByNombre } from '@/shared/lib/sort-utils';
 import { type MiembroSimplificado } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -24,7 +25,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { type MiembrosDialogProps } from '../types';
 import { getCategoriaColor, getMiembrosPorCategoria } from '../utils/helpers';
-import { sortByNombre } from '@/shared/lib/sort-utils';
 
 export function MiembrosDialog({
   isOpen,
@@ -304,6 +304,36 @@ export function MiembrosDialog({
               )}
             </div>
           </div>
+
+          {/* Miembros base (del servicio anterior) */}
+          {baseMiembros.length > 0 && (
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-blue-700 flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Base del servicio anterior ({baseMiembros.length})
+                </h4>
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+                {baseMiembros.map((miembro: MiembroSimplificado) => (
+                  <div
+                    key={miembro.id}
+                    className="flex items-center justify-between p-2 bg-blue-50 rounded text-sm border border-blue-200"
+                  >
+                    <span className="text-blue-800 truncate flex-1 min-w-0">
+                      {miembro.nombre}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="bg-blue-100 text-blue-700 text-xs"
+                    >
+                      Base
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Ya agregados */}
           {miembrosDelDia.length > 0 && (
