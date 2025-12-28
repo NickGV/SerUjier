@@ -1,7 +1,7 @@
 'use client';
 
-import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 import { sortByNombre } from '@/shared/lib/sort-utils';
+import { type Simpatizante } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -79,14 +79,15 @@ export function SimpatizantesList({
                     </Badge>
                     <span className="text-xs text-gray-500">
                       Desde:{' '}
-                      {new Date(simpatizante.fechaRegistro).toLocaleDateString(
-                        'es-ES',
-                        {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        }
-                      )}
+                      {simpatizante.fechaRegistro
+                        ? new Date(
+                            simpatizante.fechaRegistro
+                          ).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })
+                        : 'N/A'}
                     </span>
                   </div>
                 </div>

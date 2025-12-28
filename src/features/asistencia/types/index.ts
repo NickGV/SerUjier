@@ -1,14 +1,7 @@
-import { type MiembroSimplificado } from '@/shared/types';
+import { type MiembroSimplificado, type Simpatizante } from '@/shared/types';
 
-// Nota: Evitamos importar Simpatizante desde la página para no crear dependencias circulares.
-// Definimos un tipo mínimo local para las operaciones de conteo (subset de la entidad completa).
-export interface SimpatizanteLite {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-}
+// Usamos el tipo Simpatizante de shared/types para mantener consistencia
+export type SimpatizanteLite = Simpatizante;
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
 export interface HermanoVisita {

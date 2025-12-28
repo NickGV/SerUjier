@@ -8,11 +8,9 @@ import {
   SimpatizantesHeader,
   SimpatizantesList,
 } from '@/features/simpatizantes/components/simpatizantes';
-import {
-  useSimpatizantes,
-  type Simpatizante,
-} from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { useSimpatizantes } from '@/features/simpatizantes/hooks/use-simpatizantes';
 import { useSearch } from '@/shared/hooks/use-search';
+import { type Simpatizante } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';

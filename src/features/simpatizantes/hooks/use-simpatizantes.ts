@@ -1,21 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import {
-  fetchSimpatizantes,
   addSimpatizante as addSimpatizanteToFirebase,
-  updateSimpatizante as updateSimpatizanteInFirebase,
   deleteSimpatizante as deleteSimpatizanteFromFirebase,
+  fetchSimpatizantes,
+  updateSimpatizante as updateSimpatizanteInFirebase,
 } from '@/shared/lib/utils';
-
-export interface Simpatizante {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro: string;
-}
+import { type Simpatizante } from '@/shared/types';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface UseSimpatizantesReturn {
   simpatizantes: Simpatizante[];

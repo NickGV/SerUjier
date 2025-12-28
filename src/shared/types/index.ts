@@ -10,9 +10,13 @@ export type Ujier = User & {
   additionalField: string; // Replace with actual fields
 };
 
-export type Simpatizante = User & {
-  additionalField: string; // Replace with actual fields
-};
+export interface Simpatizante {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+}
 
 // Categories of members
 export type miembroCategoria = 'hermano' | 'hermana' | 'nino' | 'adolescente';

@@ -1,6 +1,6 @@
 'use client';
 
-import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { type Simpatizante } from '@/shared/types';
 import {
   AlertDialog,
   AlertDialogAction,
