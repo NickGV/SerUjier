@@ -6,7 +6,7 @@ import {
   type ConteoDataResult,
 } from '@/features/asistencia/lib/calculations';
 import { type ConteoState } from '@/features/asistencia/types';
-import { saveConteo, updateHistorialRecord } from '@/shared/lib/utils';
+import { saveConteo, updateHistorialRecord } from '@/shared/firebase';
 import { type DatosServicioBase } from '@/shared/types';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';

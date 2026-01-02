@@ -10,6 +10,7 @@ Ujier App es una plataforma web construida con Next.js para gestionar ujieres, s
 - **Historial enriquecido** con filtros por fecha, servicio y ujier, además de exportaciones en CSV, Excel y reportes de texto detallados.
 - **Gestión de ujieres y simpatizantes** con activación/desactivación, edición de perfiles y control de estados.
 - **Experiencia PWA y mobile-first** gracias a Tailwind CSS, componentes de Radix UI y service worker para instalación y uso offline básico.
+- **Arquitectura modular y escalable** con componentes reutilizables, hooks centralizados y tipado TypeScript robusto.
 
 ## Stack tecnológico
 
@@ -18,6 +19,7 @@ Ujier App es una plataforma web construida con Next.js para gestionar ujieres, s
 - **Datos y autenticación**: Firebase (cliente y Admin SDK) y Cloud Firestore.
 - **Visualización**: Recharts para gráficas y XLSX para exportes avanzados.
 - **Calidad**: ESLint con configuración Next.js y soporte para componentes accesibles.
+- **Arquitectura**: Componentes genéricos, hooks compartidos y módulos Firebase especializados.
 
 ## Estructura del proyecto
 
@@ -27,12 +29,19 @@ src/
 │  ├─ (auth)/           # Flujos de autenticación
 │  ├─ (dashboard)/      # Módulos del panel principal
 │  └─ api/              # Endpoints serverless (auth, ujieres, users, health)
-├─ components/          # Componentes UI reutilizables y específicos por módulo
-├─ contexts/            # Contextos globales (por ejemplo, usuario)
-├─ hooks/               # Hooks personalizados para conteo, toasts y estados
-├─ lib/                 # Integraciones con Firebase, utilidades y helpers
-├─ styles/              # Estilos globales
-└─ types/               # Tipos compartidos y extensiones
+├─ shared/              # Componentes y utilidades compartidas
+│  ├─ components/       # Componentes UI reutilizables (SelectableListDialog)
+│  ├─ hooks/            # Hooks genéricos (useFirebaseCRUD, useDebounce)
+│  ├─ firebase/         # Módulos Firebase especializados
+│  ├─ types/            # Tipos centralizados
+│  ├─ ui/               # Componentes UI base (shadcn/ui)
+│  └─ lib/              # Utilidades y helpers
+├─ features/            # Módulos de negocio
+│  ├─ asistencia/       # Sistema de conteo y diálogos
+│  ├─ simpatizantes/    # Gestión de simpatizantes
+│  ├─ miembros/         # Gestión de miembros
+│  ├─ ujieres/          # Gestión de ujieres
+│  └─ historial/        # Historial y reportes
 public/
 ├─ manifest.json        # Configuración PWA
 ├─ sw.js                # Service worker personalizado
@@ -90,6 +99,29 @@ FIREBASE_SERVICE_ACCOUNT_BASE64= # Alternativa base64 al bloque anterior
 5. **Abrir la aplicación** en `http://localhost:3000`.
 
 Para generar una build de producción ejecuta `npm run build` y luego `npm start`.
+
+## Componentes y Hooks Clave
+
+### Componentes Reutilizables
+
+- **SelectableListDialog**: Componente genérico para selección de items con búsqueda, filtrado y selección múltiple
+- **CounterCard**: Tarjeta para mostrar contadores con acciones
+- **BulkCountDialog**: Diálogo para conteo masivo
+
+### Hooks Compartidos
+
+- **useFirebaseCRUD**: Hook genérico para operaciones CRUD con Firebase
+- **useDebounce**: Hook para manejar delayed updates
+- **useSimpatizantes**: Hook específico para gestión de simpatizantes
+- **useMiembros**: Hook específico para gestión de miembros
+- **useUjieres**: Hook específico para gestión de ujieres
+
+### Módulos Firebase
+
+- **simpatizantes.ts**: CRUD operations para simpatizantes
+- **miembros.ts**: CRUD operations para miembros
+- **historial.ts**: CRUD operations para historial
+- **usuarios.ts**: CRUD operations para usuarios con autenticación
 
 ## Scripts disponibles
 

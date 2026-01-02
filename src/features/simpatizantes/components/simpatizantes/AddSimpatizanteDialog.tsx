@@ -15,7 +15,9 @@ import { useState } from 'react';
 interface AddSimpatizanteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: Omit<Simpatizante, 'id' | 'fechaRegistro'>) => Promise<void>;
+  onAdd: (
+    data: Omit<Simpatizante, 'id' | 'fechaRegistro'> & { nombre: string }
+  ) => Promise<void>;
   isAdding: boolean;
 }
 

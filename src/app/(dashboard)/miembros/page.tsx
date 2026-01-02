@@ -496,9 +496,11 @@ export default function MiembrosPage() {
                     </Badge>
                     <Badge variant="outline" className="text-xs">
                       Desde:{' '}
-                      {new Date(miembro.fechaRegistro).toLocaleDateString(
-                        'es-ES'
-                      )}
+                      {miembro.fechaRegistro
+                        ? new Date(miembro.fechaRegistro).toLocaleDateString(
+                            'es-ES'
+                          )
+                        : 'N/A'}
                     </Badge>
                   </div>
                 </div>

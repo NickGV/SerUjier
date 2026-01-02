@@ -1,7 +1,7 @@
 import { type MiembroSimplificado, type Simpatizante } from '@/shared/types';
 
 // Usamos el tipo Simpatizante de shared/types para mantener consistencia
-export type SimpatizanteLite = Simpatizante;
+export type SimpatizanteLite = Simpatizante & { [key: string]: unknown };
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
 export interface HermanoVisita {
@@ -114,6 +114,7 @@ export interface MiembroExtended extends MiembroSimplificado {
   categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
 }
 
 export interface AsistentesDialogProps extends ConteoDialogProps {

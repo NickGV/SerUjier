@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { getHistorialRecordById } from '@/shared/lib/utils';
-import { type DatosServicioBase } from '@/shared/types';
-import { type HistorialRecord } from '@/features/historial/components/historial/utils';
 import { type ConteoState } from '@/features/asistencia/types';
+import {
+  getHistorialRecordById,
+  type HistorialRecord,
+} from '@/shared/firebase';
+import { type DatosServicioBase } from '@/shared/types';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface UseConteoEditModeProps {
   editId: string | null;

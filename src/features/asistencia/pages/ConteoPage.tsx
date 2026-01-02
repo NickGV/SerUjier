@@ -11,8 +11,12 @@ import {
   fetchMiembros,
   fetchSimpatizantes,
   fetchUjieres,
-} from '@/shared/lib/utils';
-import { type Miembro, type MiembroSimplificado } from '@/shared/types';
+} from '@/shared/firebase';
+import {
+  type Miembro,
+  type MiembroSimplificado,
+  type Simpatizante,
+} from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -59,7 +63,7 @@ export default function ConteoPage() {
   const datosServicioBase = conteoState.datosServicioBase;
 
   // Estados para datos de Firebase
-  const [simpatizantes, setSimpatizantes] = useState<SimpatizanteLite[]>([]);
+  const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -176,7 +180,7 @@ export default function ConteoPage() {
 
   // Handlers para simpatizantes
   const simpatizantesHandlers = {
-    handleAdd: (newSimpatizantes: SimpatizanteLite[]) => {
+    handleAdd: (newSimpatizantes: Simpatizante[]) => {
       updateConteo({
         simpatizantesDelDia: [
           ...conteoState.simpatizantesDelDia,
@@ -185,12 +189,13 @@ export default function ConteoPage() {
       });
     },
 
-    handleAddNew: async (simpatizanteData: Omit<SimpatizanteLite, 'id'>) => {
+    handleAddNew: async (
+      simpatizanteData: Omit<SimpatizanteLite, 'id'> & { nombre: string }
+    ) => {
       const withFecha = {
         fechaRegistro: new Date().toISOString().split('T')[0],
         ...simpatizanteData,
-      } as Required<Pick<SimpatizanteLite, 'fechaRegistro'>> &
-        Omit<SimpatizanteLite, 'id'>;
+      };
       const result = await addSimpatizante(withFecha);
       const creado: SimpatizanteLite = {
         id: (result as { id: string }).id,
@@ -473,7 +478,8 @@ export default function ConteoPage() {
         simpatizantesDelDia={conteoState.simpatizantesDelDia}
         baseSimpatizantes={
           conteoState.modoConsecutivo
-            ? datosServicioBase?.simpatizantesAsistieron || []
+            ? (datosServicioBase?.simpatizantesAsistieron as SimpatizanteLite[]) ||
+              []
             : []
         }
         onAddSimpatizantes={simpatizantesHandlers.handleAdd}

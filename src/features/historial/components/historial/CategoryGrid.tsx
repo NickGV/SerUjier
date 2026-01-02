@@ -1,5 +1,5 @@
-import React from 'react';
-import { CATEGORIES, getCategoryValue, type HistorialRecord } from './utils';
+import { type HistorialRecord } from '@/shared/firebase';
+import { CATEGORIES, getCategoryValue } from './utils';
 
 interface CategoryGridProps {
   record: HistorialRecord;
