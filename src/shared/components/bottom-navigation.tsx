@@ -4,14 +4,13 @@ import { type User } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import {
   Calculator,
-  Users,
-  UserCheck,
   Clock,
-  Settings,
   LogOut,
-  // Home,
+  Settings,
+  UserCheck,
+  Users,
 } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 // TODO: Hacer el componente de BottomNavigation que aparezca dependiendo de los permisos del usuario, para ello debo crear un panel de permisos en el dashboard de admin
 
 interface BottomNavigationProps {
@@ -58,7 +57,7 @@ export function BottomNavigation({
     },
     {
       id: 'ujieres',
-      label: 'Usuarios',
+      label: 'Gestión de Usuarios',
       icon: Settings,
       description: 'Gestionar usuarios',
       path: '/ujieres',
@@ -97,7 +96,7 @@ export function BottomNavigation({
     },
     {
       id: 'ujieres',
-      label: 'Usuarios',
+      label: 'Gestión de Usuarios',
       icon: Settings,
       description: 'Ver usuarios',
       path: '/ujieres',

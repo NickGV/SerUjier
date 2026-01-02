@@ -209,8 +209,11 @@ function HistorialContent() {
       : 0;
   const mayorAsistencia =
     filteredData.length > 0 ? Math.max(...filteredData.map((r) => r.total)) : 0;
+  const nonZeroRecords = filteredData.filter((r) => r.total > 0);
   const menorAsistencia =
-    filteredData.length > 0 ? Math.min(...filteredData.map((r) => r.total)) : 0;
+    nonZeroRecords.length > 0
+      ? Math.min(...nonZeroRecords.map((r) => r.total))
+      : 0;
 
   // Estadísticas adicionales por categoría
   const totalHermanos = filteredData.reduce(

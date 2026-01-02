@@ -56,10 +56,8 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
         fechaRegistro: new Date().toISOString(),
       };
       await addItem(nuevoSimpatizante);
-      toast.success(`Simpatizante "${data.nombre}" agregado exitosamente`);
     } catch (err) {
       console.error('Error adding simpatizante:', err);
-      toast.error('Error al agregar simpatizante');
       throw err;
     }
   };
@@ -70,24 +68,17 @@ export function useSimpatizantes(): UseSimpatizantesReturn {
   ) => {
     try {
       await updateItem(id, data);
-      toast.success('Simpatizante actualizado exitosamente');
     } catch (err) {
       console.error('Error updating simpatizante:', err);
-      toast.error('Error al actualizar simpatizante');
       throw err;
     }
   };
 
   const deleteSimpatizante = async (id: string) => {
     try {
-      const simpatizante = simpatizantes.find((s) => s.id === id);
       await deleteItem(id);
-      toast.success(
-        `Simpatizante "${simpatizante?.nombre || ''}" eliminado exitosamente`
-      );
     } catch (err) {
       console.error('Error deleting simpatizante:', err);
-      toast.error('Error al eliminar simpatizante');
       throw err;
     }
   };

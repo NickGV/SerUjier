@@ -48,10 +48,8 @@ export function useMiembros(): UseMiembrosReturn {
 
     try {
       await addItem(data);
-      toast.success(`Miembro "${data.nombre}" agregado exitosamente`);
     } catch (err) {
       console.error('Error adding miembro:', err);
-      toast.error('Error al agregar miembro');
       throw err;
     }
   };
@@ -59,24 +57,17 @@ export function useMiembros(): UseMiembrosReturn {
   const updateMiembro = async (id: string, data: Partial<Miembro>) => {
     try {
       await updateItem(id, data);
-      toast.success('Miembro actualizado exitosamente');
     } catch (err) {
       console.error('Error updating miembro:', err);
-      toast.error('Error al actualizar miembro');
       throw err;
     }
   };
 
   const deleteMiembro = async (id: string) => {
     try {
-      const miembro = miembros.find((m) => m.id === id);
       await deleteItem(id);
-      toast.success(
-        `Miembro "${miembro?.nombre || ''}" eliminado exitosamente`
-      );
     } catch (err) {
       console.error('Error deleting miembro:', err);
-      toast.error('Error al eliminar miembro');
       throw err;
     }
   };

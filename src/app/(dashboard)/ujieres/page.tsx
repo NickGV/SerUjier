@@ -317,7 +317,7 @@ function UjieresContent() {
               <div className="text-base sm:text-lg font-bold">
                 {roleStats.admin}
               </div>
-              <div className="text-slate-200 text-xs">Admins</div>
+              <div className="text-slate-200 text-xs">Administradores</div>
             </div>
             <div>
               <div className="text-base sm:text-lg font-bold">

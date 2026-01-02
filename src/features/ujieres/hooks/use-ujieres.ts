@@ -53,10 +53,8 @@ export function useUjieres(): UseUjieresReturn {
 
     try {
       await addItem(data);
-      toast.success(`Ujier "${data.nombre}" agregado exitosamente`);
     } catch (err) {
       console.error('Error adding ujier:', err);
-      toast.error('Error al agregar ujier');
       throw err;
     }
   };
@@ -64,22 +62,17 @@ export function useUjieres(): UseUjieresReturn {
   const updateUjier = async (id: string, data: Partial<Usuario>) => {
     try {
       await updateItem(id, data);
-      toast.success('Ujier actualizado exitosamente');
     } catch (err) {
       console.error('Error updating ujier:', err);
-      toast.error('Error al actualizar ujier');
       throw err;
     }
   };
 
   const deleteUjier = async (id: string) => {
     try {
-      const ujier = ujieres.find((u) => u.id === id);
       await deleteItem(id);
-      toast.success(`Ujier "${ujier?.nombre || ''}" eliminado exitosamente`);
     } catch (err) {
       console.error('Error deleting ujier:', err);
-      toast.error('Error al eliminar ujier');
       throw err;
     }
   };
