@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { db } from '../lib/firebase';
+import { db } from '../lib';
 
 // Tipo para las opciones de configuración del hook
 export interface UseFirebaseCRUDOptions<_T> {
