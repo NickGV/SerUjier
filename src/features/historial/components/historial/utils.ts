@@ -1,28 +1,6 @@
 // Utility functions for history pages
 
-export interface HistorialRecord {
-  id: string;
-  fecha: string;
-  servicio: string;
-  ujier: string | string[];
-  hermanos: number;
-  hermanas: number;
-  ninos: number;
-  adolescentes: number;
-  simpatizantes: number;
-  hermanosApartados?: number;
-  hermanosVisitas?: number;
-  total: number;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-  miembrosAsistieron?: {
-    hermanos?: Array<{ id: string; nombre: string }>;
-    hermanas?: Array<{ id: string; nombre: string }>;
-    ninos?: Array<{ id: string; nombre: string }>;
-    adolescentes?: Array<{ id: string; nombre: string }>;
-    hermanosApartados?: Array<{ id: string; nombre: string }>;
-  };
-  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
-}
+import { type HistorialRecord } from '@/shared/firebase';
 
 export interface CategoryStats {
   totalHermanos: number;

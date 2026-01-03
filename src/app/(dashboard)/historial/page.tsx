@@ -1,29 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useUser } from '@/shared/contexts/user-context';
-import { fetchHistorial, deleteHistorialRecord } from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
+import { useUser } from '@/shared/contexts/user-context';
+import { deleteHistorialRecord, fetchHistorial } from '@/shared/lib/utils';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
-import { useRouter } from 'next/navigation';
-import { servicios } from '@/features/asistencia/constants';
-import {
-  Calendar,
-  Filter,
-  Eye,
-  Users,
-  Download,
-  FileText,
-  BarChart3,
-  CalendarDays,
-  Search,
-  Trash2,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -31,6 +14,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import {
+  AlertTriangle,
+  BarChart3,
+  Calendar,
+  CalendarDays,
+  Download,
+  Eye,
+  FileText,
+  Filter,
+  RefreshCw,
+  Search,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface HistorialRecordAPI {
@@ -79,7 +78,6 @@ function HistorialContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [filtroServicio, setFiltroServicio] = useState('todos');
-  const [filtroUjier, setFiltroUjier] = useState('todos');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,6 +87,9 @@ function HistorialContent() {
     null
   );
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isExportingText, setIsExportingText] = useState(false);
 
   const loadHistorialData = async (isRefresh = false) => {
     try {
@@ -110,10 +111,17 @@ function HistorialContent() {
         })
       );
       setHistorial(normalizedData);
+
+      if (isRefresh) {
+        toast.success('Historial actualizado exitosamente');
+      }
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : 'Error cargando historial';
       setError(msg);
+      if (isRefresh) {
+        toast.error('Error al actualizar el historial');
+      }
     } finally {
       if (isRefresh) {
         setIsRefreshing(false);
@@ -152,28 +160,23 @@ function HistorialContent() {
     );
   }
 
+  // Obtener servicios únicos del historial
+  const serviciosUnicos = Array.from(
+    new Set(historial.map((record) => record.servicio))
+  ).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
   const filteredData = historial.filter((record) => {
-    // Filtro por servicio (comparación exacta con el value guardado)
+    // Filtro por servicio (comparación exacta)
     const servicioMatch =
       filtroServicio === 'todos' || record.servicio === filtroServicio;
 
-    // Filtro por ujier (comparación exacta)
+    // Búsqueda general (busca en servicio y en ujieres)
     const ujierArray = Array.isArray(record.ujier)
       ? record.ujier
       : [record.ujier];
-    const ujierMatch =
-      filtroUjier === 'todos' ||
-      ujierArray.some((ujier) => ujier === filtroUjier);
-
-    // Búsqueda general (solo si hay searchTerm, busca en el label del servicio y en ujieres)
     const searchTermMatch =
       searchTerm === '' ||
-      (
-        servicios.find((s) => s.value === record.servicio)?.label ||
-        record.servicio
-      )
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      record.servicio.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ujierArray.some((ujier: string) =>
         ujier.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -192,7 +195,7 @@ function HistorialContent() {
       }
     }
 
-    return servicioMatch && ujierMatch && fechaMatch && searchTermMatch;
+    return servicioMatch && fechaMatch && searchTermMatch;
   });
 
   // Estadísticas para el informe
@@ -206,8 +209,11 @@ function HistorialContent() {
       : 0;
   const mayorAsistencia =
     filteredData.length > 0 ? Math.max(...filteredData.map((r) => r.total)) : 0;
+  const nonZeroRecords = filteredData.filter((r) => r.total > 0);
   const menorAsistencia =
-    filteredData.length > 0 ? Math.min(...filteredData.map((r) => r.total)) : 0;
+    nonZeroRecords.length > 0
+      ? Math.min(...nonZeroRecords.map((r) => r.total))
+      : 0;
 
   // Estadísticas adicionales por categoría
   const totalHermanos = filteredData.reduce(
@@ -263,102 +269,114 @@ function HistorialContent() {
 
   const clearAllFilters = () => {
     setFiltroServicio('todos');
-    setFiltroUjier('todos');
     setFechaInicio('');
     setFechaFin('');
     setSearchTerm('');
   };
 
-  const downloadCSV = () => {
-    const headers = [
-      'Fecha',
-      'Servicio',
-      'Ujier(es)',
-      'Hermanos',
-      'Hermanas',
-      'Niños',
-      'Adolescentes',
-      'Simpatizantes',
-      'Hermanos Apartados',
-      'Hermanos Visitas',
-      'Total',
-      'Simpatizantes Asistieron',
-      'Hermanos Asistieron',
-      'Hermanas Asistieron',
-      'Niños Asistieron',
-      'Adolescentes Asistieron',
-      'Hermanos Apartados Asistieron',
-      'Hermanos Visitas Asistieron',
-    ];
+  const downloadCSV = async () => {
+    setIsExportingCSV(true);
+    try {
+      const headers = [
+        'Fecha',
+        'Servicio',
+        'Ujier(es)',
+        'Hermanos',
+        'Hermanas',
+        'Niños',
+        'Adolescentes',
+        'Simpatizantes',
+        'Hermanos Apartados',
+        'Hermanos Visitas',
+        'Total',
+        'Simpatizantes Asistieron',
+        'Hermanos Asistieron',
+        'Hermanas Asistieron',
+        'Niños Asistieron',
+        'Adolescentes Asistieron',
+        'Hermanos Apartados Asistieron',
+        'Hermanos Visitas Asistieron',
+      ];
 
-    const csvContent = [
-      headers.join(','),
-      ...filteredData.map((record) =>
-        [
-          record.fecha,
-          `"${record.servicio}"`,
-          `"${
-            Array.isArray(record.ujier) ? record.ujier.join('; ') : record.ujier
-          }"`,
-          record.hermanos,
-          record.hermanas,
-          record.ninos,
-          record.adolescentes,
-          record.simpatizantes,
-          record.hermanosApartados || 0,
-          record.hermanosVisitas || 0,
-          record.total,
-          `"${
-            record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
-            ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanos
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanas
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join('; ') ||
-            ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.adolescentes
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.miembrosAsistieron?.hermanosApartados
-              ?.map((m) => m.nombre)
-              .join('; ') || ''
-          }"`,
-          `"${
-            record.hermanosVisitasAsistieron?.map((h) => h.nombre).join('; ') ||
-            ''
-          }"`,
-        ].join(',')
-      ),
-    ].join('\n');
+      const csvContent = [
+        headers.join(','),
+        ...filteredData.map((record) =>
+          [
+            record.fecha,
+            `"${record.servicio}"`,
+            `"${
+              Array.isArray(record.ujier)
+                ? record.ujier.join('; ')
+                : record.ujier
+            }"`,
+            record.hermanos,
+            record.hermanas,
+            record.ninos,
+            record.adolescentes,
+            record.simpatizantes,
+            record.hermanosApartados || 0,
+            record.hermanosVisitas || 0,
+            record.total,
+            `"${
+              record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
+              ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanos
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanas
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.ninos
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.adolescentes
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.miembrosAsistieron?.hermanosApartados
+                ?.map((m) => m.nombre)
+                .join('; ') || ''
+            }"`,
+            `"${
+              record.hermanosVisitasAsistieron
+                ?.map((h) => h.nombre)
+                .join('; ') || ''
+            }"`,
+          ].join(',')
+        ),
+      ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `informe_asistencia_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `informe_asistencia_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al exportar CSV:', error);
+      toast.error('Error al generar el archivo CSV');
+    } finally {
+      setIsExportingCSV(false);
+    }
   };
 
   const downloadExcel = async () => {
+    setIsExportingExcel(true);
     try {
       // Importar xlsx dinámicamente
       const XLSX = await import('xlsx');
@@ -493,37 +511,40 @@ function HistorialContent() {
       toast.error(
         'Error al generar el archivo Excel. Por favor, intente nuevamente.'
       );
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
-  const downloadDetailedReport = () => {
-    const reportContent = `
+  const downloadDetailedReport = async () => {
+    setIsExportingText(true);
+    try {
+      const reportContent = `
 INFORME DETALLADO DE ASISTENCIA
 ===============================
 
 FILTROS APLICADOS:
 - Servicio: ${filtroServicio === 'todos' ? 'Todos' : filtroServicio}
-- Ujier: ${filtroUjier === 'todos' ? 'Todos' : filtroUjier}
 - Fecha inicio: ${fechaInicio || 'Sin filtro'}
 - Fecha fin: ${fechaFin || 'Sin filtro'}
 - Búsqueda: ${searchTerm || 'Sin filtro'}
 - Fecha de generación: ${new Date().toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })}
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
 
 RESUMEN EJECUTIVO:
 ==================
 - Total de registros analizados: ${totalRegistros}
 - Período analizado: ${
-      fechaInicio && fechaFin
-        ? `${fechaInicio} a ${fechaFin}`
-        : 'Todos los registros'
-    }
+        fechaInicio && fechaFin
+          ? `${fechaInicio} a ${fechaFin}`
+          : 'Todos los registros'
+      }
 - Gran total de asistentes: ${granTotal} personas
 - Promedio de asistencia por servicio: ${promedioAsistencia} personas
 - Mayor asistencia registrada: ${mayorAsistencia} personas
@@ -532,20 +553,20 @@ RESUMEN EJECUTIVO:
 ESTADÍSTICAS POR CATEGORÍA:
 ===========================
 - Hermanos: ${totalHermanos} (${((totalHermanos / granTotal) * 100).toFixed(
-      1
-    )}%)
+        1
+      )}%)
 - Hermanas: ${totalHermanas} (${((totalHermanas / granTotal) * 100).toFixed(
-      1
-    )}%)
+        1
+      )}%)
 - Niños: ${totalNinos} (${((totalNinos / granTotal) * 100).toFixed(1)}%)
 - Adolescentes: ${totalAdolescentes} (${(
-      (totalAdolescentes / granTotal) *
-      100
-    ).toFixed(1)}%)
+        (totalAdolescentes / granTotal) *
+        100
+      ).toFixed(1)}%)
 - Simpatizantes: ${totalSimpatizantes} (${(
-      (totalSimpatizantes / granTotal) *
-      100
-    ).toFixed(1)}%)
+        (totalSimpatizantes / granTotal) *
+        100
+      ).toFixed(1)}%)
 
 DETALLE DE REGISTROS:
 =====================
@@ -639,20 +660,26 @@ NOTAS FINALES:
 - Para consultas adicionales, contacte al administrador del sistema
     `.trim();
 
-    const blob = new Blob([reportContent], {
-      type: 'text/plain;charset=utf-8;',
-    });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `informe_detallado_${new Date().toISOString().split('T')[0]}.txt`
-    );
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const blob = new Blob([reportContent], {
+        type: 'text/plain;charset=utf-8;',
+      });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `informe_detallado_${new Date().toISOString().split('T')[0]}.txt`
+      );
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error al exportar informe:', error);
+      toast.error('Error al generar el informe');
+    } finally {
+      setIsExportingText(false);
+    }
   };
 
   // Función para eliminar registro
@@ -743,7 +770,6 @@ NOTAS FINALES:
               {filteredData.length} registros encontrados
             </Badge>
             {(filtroServicio !== 'todos' ||
-              filtroUjier !== 'todos' ||
               fechaInicio ||
               fechaFin ||
               searchTerm) && (
@@ -779,51 +805,22 @@ NOTAS FINALES:
             />
           </div>
 
-          {/* Filtros básicos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">
-                Servicio
-              </label>
-              <Select value={filtroServicio} onValueChange={setFiltroServicio}>
-                <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {servicios.map((servicio) => (
-                    <SelectItem key={servicio.value} value={servicio.value}>
-                      {servicio.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-600 mb-1 block">Ujier</label>
-              <Select value={filtroUjier} onValueChange={setFiltroUjier}>
-                <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {Array.from(
-                    new Set(
-                      historial.flatMap((record) =>
-                        Array.isArray(record.ujier)
-                          ? record.ujier
-                          : [record.ujier]
-                      )
-                    )
-                  ).map((ujier) => (
-                    <SelectItem key={ujier} value={ujier}>
-                      {ujier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Filtro de servicio */}
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Servicio</label>
+            <Select value={filtroServicio} onValueChange={setFiltroServicio}>
+              <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
+                <SelectValue placeholder="Seleccionar servicio" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos los servicios</SelectItem>
+                {serviciosUnicos.map((servicio) => (
+                  <SelectItem key={servicio} value={servicio}>
+                    {servicio}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Filtros de fecha */}
@@ -952,51 +949,6 @@ NOTAS FINALES:
                 <div className="text-slate-200 text-xs">Mínimo</div>
               </div>
             </div>
-
-            {/* Totales por categoría */}
-            <div className="mt-3 pt-3 border-t border-slate-500">
-              <div className="text-xs text-slate-200 mb-2 text-center">
-                Total General: {granTotal} asistentes
-              </div>
-              <div className="grid grid-cols-7 gap-1 text-center">
-                <div>
-                  <div className="text-sm font-semibold">{totalHermanos}</div>
-                  <div className="text-xs text-slate-300">H</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">{totalHermanas}</div>
-                  <div className="text-xs text-slate-300">M</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">{totalNinos}</div>
-                  <div className="text-xs text-slate-300">N</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalAdolescentes}
-                  </div>
-                  <div className="text-xs text-slate-300">A</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalSimpatizantes}
-                  </div>
-                  <div className="text-xs text-slate-300">S</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalHermanosApartados}
-                  </div>
-                  <div className="text-xs text-slate-300">HA</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold">
-                    {totalHermanosVisitas}
-                  </div>
-                  <div className="text-xs text-slate-300">HV</div>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -1016,28 +968,58 @@ NOTAS FINALES:
                 variant="outline"
                 size="sm"
                 onClick={downloadCSV}
+                disabled={isExportingCSV}
                 className="bg-transparent border-green-200 text-green-700 hover:bg-green-50 text-xs"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                CSV
+                {isExportingCSV ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    CSV
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={downloadExcel}
+                disabled={isExportingExcel}
                 className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50 text-xs"
               >
-                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Excel
+                {isExportingExcel ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    Excel
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={downloadDetailedReport}
+                disabled={isExportingText}
                 className="bg-transparent border-purple-200 text-purple-700 hover:bg-purple-50 text-xs"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Detallado
+                {isExportingText ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    Detallado
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

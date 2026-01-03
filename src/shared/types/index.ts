@@ -10,9 +10,14 @@ export type Ujier = User & {
   additionalField: string; // Replace with actual fields
 };
 
-export type Simpatizante = User & {
-  additionalField: string; // Replace with actual fields
-};
+export interface Simpatizante {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
+}
 
 // Categories of members
 export type miembroCategoria = 'hermano' | 'hermana' | 'nino' | 'adolescente';
@@ -23,7 +28,8 @@ export interface Miembro {
   telefono?: string;
   categoria: miembroCategoria;
   notas?: string;
-  fechaRegistro: string;
+  fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
 }
 
 export interface MiembroSimplificado {

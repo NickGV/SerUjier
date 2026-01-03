@@ -1,9 +1,9 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { type Simpatizante } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Users } from 'lucide-react';
-import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
 
 interface SimpatizantesHeaderProps {
   totalCount: number;

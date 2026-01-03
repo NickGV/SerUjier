@@ -1,14 +1,7 @@
-import { type MiembroSimplificado } from '@/shared/types';
+import { type MiembroSimplificado, type Simpatizante } from '@/shared/types';
 
-// Nota: Evitamos importar Simpatizante desde la página para no crear dependencias circulares.
-// Definimos un tipo mínimo local para las operaciones de conteo (subset de la entidad completa).
-export interface SimpatizanteLite {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-}
+// Usamos el tipo Simpatizante de shared/types para mantener consistencia
+export type SimpatizanteLite = Simpatizante & { [key: string]: unknown };
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
 export interface HermanoVisita {
@@ -89,6 +82,7 @@ export interface ConteoDialogProps {
 export interface SimpatizantesDialogProps extends ConteoDialogProps {
   simpatizantes: SimpatizanteLite[];
   simpatizantesDelDia: SimpatizanteLite[];
+  baseSimpatizantes: SimpatizanteLite[];
   onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
   onAddNewSimpatizante: (
     simpatizante: Omit<SimpatizanteLite, 'id'>
@@ -120,6 +114,7 @@ export interface MiembroExtended extends MiembroSimplificado {
   categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
   notas?: string;
   fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
 }
 
 export interface AsistentesDialogProps extends ConteoDialogProps {

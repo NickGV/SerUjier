@@ -42,6 +42,9 @@ Ser Ujier es una aplicación web que te permite llevar el control de asistencia 
 
 - Usar la función **Bulk Count** para sumar rápido grupos grandes.
 - Seleccionar simpatizantes/miembros de listas para marcar su asistencia.
+- Buscar simpatizantes/miembros por nombre mientras seleccionas.
+- Ver avatares coloreados según categoría de miembro.
+- Agregar nuevos simpatizantes directamente desde el diálogo de selección.
 
 ## 6. Módulo de Historial
 
@@ -102,6 +105,29 @@ Si tienes dudas, problemas o sugerencias:
 
 - Contacta al administrador del sistema.
 - Explica el problema, incluye capturas si puedes y menciona tu navegador y rol.
+
+---
+
+## 15. Mejoras Recientes (Última Actualización)
+
+### Mejoras en la Interfaz
+
+- **Diálogos unificados**: Los diálogos de selección ahora son más rápidos y consistentes.
+- **Búsqueda instantánea**: Encuentra simpatizantes y miembros mientras escribes.
+- **Mejor visualización**: Avatares de colores para identificar rápidamente categorías.
+- **Agregado rápido**: Añade nuevos simpatizantes sin salir del diálogo de conteo.
+
+### Mejoras en Rendimiento
+
+- **Carga más rápida**: La aplicación ahora responde más rápidamente.
+- **Mejor experiencia móvil**: Interfaz optimizada para uso en celulares.
+- **Menos errores**: Mayor estabilidad y menos mensajes de error.
+
+### Nuevas Funcionalidades
+
+- **Modo consecutivo**: Si activas esta opción, la app recordará quiénes asistieron la vez anterior.
+- **Exportación mejorada**: Los reportes ahora incluyen más detalles y formato mejorado.
+- **Atajos de teclado**: Usa Tab para navegar entre campos y Enter para confirmar acciones.
 
 ---
 

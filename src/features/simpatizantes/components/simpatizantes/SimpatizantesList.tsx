@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
+import { sortByNombre } from '@/shared/lib/sort-utils';
+import { type Simpatizante } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
-import { User, Users, Trash2, Edit3 } from 'lucide-react';
-import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Edit3, Trash2, User, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface SimpatizantesListProps {
   simpatizantes: Simpatizante[];
@@ -40,9 +41,12 @@ export function SimpatizantesList({
     );
   }
 
+  // Ordenar simpatizantes alfabéticamente
+  const sortedSimpatizantes = sortByNombre(simpatizantes);
+
   return (
     <div className="space-y-3">
-      {simpatizantes.map((simpatizante) => (
+      {sortedSimpatizantes.map((simpatizante) => (
         <Card
           key={simpatizante.id}
           className="bg-white/80 backdrop-blur-sm border-0 shadow-md cursor-pointer"
@@ -75,14 +79,15 @@ export function SimpatizantesList({
                     </Badge>
                     <span className="text-xs text-gray-500">
                       Desde:{' '}
-                      {new Date(simpatizante.fechaRegistro).toLocaleDateString(
-                        'es-ES',
-                        {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        }
-                      )}
+                      {simpatizante.fechaRegistro
+                        ? new Date(
+                            simpatizante.fechaRegistro
+                          ).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })
+                        : 'N/A'}
                     </span>
                   </div>
                 </div>

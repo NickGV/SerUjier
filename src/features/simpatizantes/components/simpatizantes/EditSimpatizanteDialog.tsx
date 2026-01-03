@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { type Simpatizante } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
 import { Loader2 } from 'lucide-react';
-import { type Simpatizante } from '@/features/simpatizantes/hooks/use-simpatizantes';
+import { useEffect, useState } from 'react';
 
 interface EditSimpatizanteDialogProps {
   isOpen: boolean;

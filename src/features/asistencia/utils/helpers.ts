@@ -1,12 +1,12 @@
+import {
+  type DatosServicioBase,
+  type MiembroSimplificado,
+} from '@/shared/types';
 import type {
   AsistenteInfo,
-  SimpatizanteLite,
   MiembroExtended,
+  SimpatizanteLite,
 } from '../types';
-import {
-  type MiembroSimplificado,
-  type DatosServicioBase,
-} from '@/shared/types';
 
 export const getMiembrosPorCategoria = (
   miembros: MiembroExtended[],

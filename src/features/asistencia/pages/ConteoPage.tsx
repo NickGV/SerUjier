@@ -1,45 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
-import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counters';
 import { useBulkCount } from '@/features/asistencia/hooks/use-bulk-count';
-import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
+import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counters';
 import { useConteoEditMode } from '@/features/asistencia/hooks/use-conteo-edit-mode';
-import {
-  fetchSimpatizantes,
-  fetchMiembros,
-  addSimpatizante,
-  fetchUjieres,
-} from '@/shared/lib/utils';
+import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
+import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
 import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
+import {
+  addSimpatizante,
+  fetchMiembros,
+  fetchSimpatizantes,
+  fetchUjieres,
+} from '@/shared/firebase';
+import {
+  type Miembro,
+  type MiembroSimplificado,
+  type Simpatizante,
+} from '@/shared/types';
+import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-import { Badge } from '@/shared/ui/badge';
-import { Plus, Save, Eye, Loader2, Calendar } from 'lucide-react';
-import { type Miembro, type MiembroSimplificado } from '@/shared/types';
+import { Calendar, Eye, Loader2, Plus, Save } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Componentes modulares
 import {
-  CounterCard,
-  SimpatizantesList,
-  BulkCountDialog,
-  SimpatizantesDialog,
-  MiembrosDialog,
   AsistentesDialog,
-  HermanosVisitasDialog,
-  ConteoHeader,
-  EditModeBanner,
+  BulkCountDialog,
   ConsecutiveModeBanner,
+  ConteoHeader,
+  CounterCard,
+  EditModeBanner,
+  HermanosVisitasDialog,
+  MiembrosDialog,
+  SimpatizantesDialog,
+  SimpatizantesList,
 } from '@/features/asistencia/components';
-import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
-import { calculateAllTotals } from '../lib/calculations';
 import type {
-  SimpatizanteLite,
   CategoriaPlural,
   ConteoStateWithIndex,
+  SimpatizanteLite,
 } from '@/features/asistencia/types';
+import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
+import { calculateAllTotals } from '../lib/calculations';
 
 export default function ConteoPage() {
   const searchParams = useSearchParams();
@@ -59,7 +63,7 @@ export default function ConteoPage() {
   const datosServicioBase = conteoState.datosServicioBase;
 
   // Estados para datos de Firebase
-  const [simpatizantes, setSimpatizantes] = useState<SimpatizanteLite[]>([]);
+  const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -160,11 +164,23 @@ export default function ConteoPage() {
     loadFirebaseData();
   }, []);
 
+  // Limpiar selección de ujieres al desmontar el componente (al salir de la página)
+  useEffect(() => {
+    return () => {
+      // Cleanup: limpiar selección de ujieres al salir
+      updateConteo({
+        selectedUjieres: [],
+        ujierSeleccionado: '',
+        ujierPersonalizado: '',
+      });
+    };
+  }, [updateConteo]);
+
   // ========== HANDLERS AGRUPADOS ==========
 
   // Handlers para simpatizantes
   const simpatizantesHandlers = {
-    handleAdd: (newSimpatizantes: SimpatizanteLite[]) => {
+    handleAdd: (newSimpatizantes: Simpatizante[]) => {
       updateConteo({
         simpatizantesDelDia: [
           ...conteoState.simpatizantesDelDia,
@@ -173,12 +189,13 @@ export default function ConteoPage() {
       });
     },
 
-    handleAddNew: async (simpatizanteData: Omit<SimpatizanteLite, 'id'>) => {
+    handleAddNew: async (
+      simpatizanteData: Omit<SimpatizanteLite, 'id'> & { nombre: string }
+    ) => {
       const withFecha = {
         fechaRegistro: new Date().toISOString().split('T')[0],
         ...simpatizanteData,
-      } as Required<Pick<SimpatizanteLite, 'fechaRegistro'>> &
-        Omit<SimpatizanteLite, 'id'>;
+      };
       const result = await addSimpatizante(withFecha);
       const creado: SimpatizanteLite = {
         id: (result as { id: string }).id,
@@ -459,6 +476,12 @@ export default function ConteoPage() {
         onClose={() => setShowSimpatizantesDialog(false)}
         simpatizantes={simpatizantes}
         simpatizantesDelDia={conteoState.simpatizantesDelDia}
+        baseSimpatizantes={
+          conteoState.modoConsecutivo
+            ? (datosServicioBase?.simpatizantesAsistieron as SimpatizanteLite[]) ||
+              []
+            : []
+        }
         onAddSimpatizantes={simpatizantesHandlers.handleAdd}
         onAddNewSimpatizante={simpatizantesHandlers.handleAddNew}
         onRemoveSimpatizante={simpatizantesHandlers.handleRemove}
