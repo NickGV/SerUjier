@@ -1,6 +1,5 @@
-// Exportar utilidades de lib
-export * from './auth';
+// Exportar utilidades de lib (solo cliente)
+// NOTA: auth.ts y firebase-admin.ts son server-only, importar directamente
 export * from './firebase';
-export * from './firebase-admin';
 export * from './sort-utils';
 export * from './utils';
