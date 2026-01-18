@@ -21,6 +21,7 @@ export {
   CardHeader,
   CardTitle,
 } from './card';
+export { Checkbox } from './checkbox';
 export {
   Dialog,
   DialogContent,

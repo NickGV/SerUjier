@@ -1,5 +1,6 @@
 'use client';
 
+import { usePermisos } from '@/shared/hooks/use-permisos';
 import { type User } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import {
@@ -11,7 +12,14 @@ import {
   Users,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-// TODO: Hacer el componente de BottomNavigation que aparezca dependiendo de los permisos del usuario, para ello debo crear un panel de permisos en el dashboard de admin
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  path: string;
+}
 
 interface BottomNavigationProps {
   currentUser: User;
@@ -24,9 +32,10 @@ export function BottomNavigation({
 }: BottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { canView, isAdmin, isLoading } = usePermisos();
 
-  const adminNavItems = [
-    // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
+  // Items base que siempre están disponibles
+  const baseNavItems: NavItem[] = [
     {
       id: 'conteo',
       label: 'Conteo',
@@ -34,103 +43,98 @@ export function BottomNavigation({
       description: 'Registrar asistencia',
       path: '/conteo',
     },
-    {
-      id: 'simpatizantes',
-      label: 'Simpatizantes',
-      icon: Users,
-      description: 'Gestionar visitantes',
-      path: '/simpatizantes',
-    },
-    {
-      id: 'miembros',
-      label: 'Miembros',
-      icon: UserCheck,
-      description: 'Gestionar miembros',
-      path: '/miembros',
-    },
-    {
-      id: 'historial',
-      label: 'Historial',
-      icon: Clock,
-      description: 'Ver registros',
-      path: '/historial',
-    },
-    {
-      id: 'ujieres',
-      label: 'Gestión de Usuarios',
-      icon: Settings,
-      description: 'Gestionar usuarios',
-      path: '/ujieres',
-    },
   ];
 
-  const directivaNavItems = [
-    // { id: "dashboard", label: "Inicio", icon: Home, description: "Panel principal", path: "/" },
-    {
-      id: 'conteo',
-      label: 'Conteo',
-      icon: Calculator,
-      description: 'Registrar asistencia',
-      path: '/conteo',
-    },
-    {
-      id: 'simpatizantes',
-      label: 'Simpatizantes',
-      icon: Users,
-      description: 'Gestionar visitantes',
-      path: '/simpatizantes',
-    },
-    {
-      id: 'miembros',
-      label: 'Miembros',
-      icon: UserCheck,
-      description: 'Gestionar miembros',
-      path: '/miembros',
-    },
-    {
-      id: 'historial',
-      label: 'Historial',
-      icon: Clock,
-      description: 'Ver registros',
-      path: '/historial',
-    },
-    {
-      id: 'ujieres',
-      label: 'Gestión de Usuarios',
-      icon: Settings,
-      description: 'Ver usuarios',
-      path: '/ujieres',
-    },
-  ];
-
-  const ujierNavItems = [
-    {
-      id: 'conteo',
-      label: 'Conteo',
-      icon: Calculator,
-      description: 'Registrar asistencia',
-      path: '/conteo',
-    },
-    {
-      id: 'simpatizantes',
-      label: 'Simpatizantes',
-      icon: Users,
-      description: 'Gestionar visitantes',
-      path: '/simpatizantes',
-    },
-  ];
-
-  const getNavItems = () => {
-    switch (currentUser?.rol) {
-      case 'admin':
-        return adminNavItems;
-      case 'directiva':
-        return directivaNavItems;
-      case 'ujier':
-        return ujierNavItems;
-      default:
-        return ujierNavItems;
+  // Construir navegación basada en permisos
+  const getNavItems = (): NavItem[] => {
+    // Si está cargando, mostrar solo conteo
+    if (isLoading) {
+      return baseNavItems;
     }
+
+    // Admin siempre ve todo
+    if (isAdmin) {
+      return [
+        ...baseNavItems,
+        {
+          id: 'simpatizantes',
+          label: 'Simpatizantes',
+          icon: Users,
+          description: 'Gestionar visitantes',
+          path: '/simpatizantes',
+        },
+        {
+          id: 'miembros',
+          label: 'Miembros',
+          icon: UserCheck,
+          description: 'Gestionar miembros',
+          path: '/miembros',
+        },
+        {
+          id: 'historial',
+          label: 'Historial',
+          icon: Clock,
+          description: 'Ver registros',
+          path: '/historial',
+        },
+        {
+          id: 'ujieres',
+          label: 'Usuarios',
+          icon: Settings,
+          description: 'Gestionar usuarios',
+          path: '/ujieres',
+        },
+      ];
+    }
+
+    // Para otros usuarios, construir basado en permisos
+    const items: NavItem[] = [...baseNavItems];
+
+    // Simpatizantes - si puede ver
+    if (canView('simpatizantes')) {
+      items.push({
+        id: 'simpatizantes',
+        label: 'Simpatizantes',
+        icon: Users,
+        description: 'Gestionar visitantes',
+        path: '/simpatizantes',
+      });
+    }
+
+    // Miembros - si puede ver
+    if (canView('miembros')) {
+      items.push({
+        id: 'miembros',
+        label: 'Miembros',
+        icon: UserCheck,
+        description: 'Gestionar miembros',
+        path: '/miembros',
+      });
+    }
+
+    // Historial - si puede ver
+    if (canView('historial')) {
+      items.push({
+        id: 'historial',
+        label: 'Historial',
+        icon: Clock,
+        description: 'Ver registros',
+        path: '/historial',
+      });
+    }
+
+    // Usuarios - si puede ver
+    if (canView('usuarios')) {
+      items.push({
+        id: 'ujieres',
+        label: 'Usuarios',
+        icon: Settings,
+        description: 'Gestionar usuarios',
+        path: '/ujieres',
+      });
+    }
+
+    return items;
   };
 
   const navItems = getNavItems();

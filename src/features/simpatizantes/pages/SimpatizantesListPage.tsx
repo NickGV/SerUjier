@@ -10,6 +10,7 @@ import {
 } from '@/features/simpatizantes/components/simpatizantes';
 import { useSimpatizantes } from '@/features/simpatizantes/hooks/use-simpatizantes';
 import { useSearch } from '@/shared/hooks/use-search';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { type Simpatizante } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
@@ -29,6 +30,14 @@ const SimpatizantesPage = () => {
     deleteSimpatizante,
     refreshSimpatizantes,
   } = useSimpatizantes();
+
+  // Permisos del módulo simpatizantes
+  const {
+    canCreate,
+    canEdit,
+    canDelete,
+    isLoading: permisosLoading,
+  } = useModulePermissions('simpatizantes');
 
   // Search functionality
   const {
@@ -54,11 +63,19 @@ const SimpatizantesPage = () => {
 
   // Handlers
   const handleEdit = (simpatizante: Simpatizante) => {
+    if (!canEdit) {
+      toast.error('No tienes permiso para editar simpatizantes');
+      return;
+    }
     setEditingSimpatizante(simpatizante);
     setShowEditDialog(true);
   };
 
   const handleDelete = (simpatizante: Simpatizante) => {
+    if (!canDelete) {
+      toast.error('No tienes permiso para eliminar simpatizantes');
+      return;
+    }
     setDeletingSimpatizante(simpatizante);
     setShowDeleteDialog(true);
   };
@@ -82,7 +99,15 @@ const SimpatizantesPage = () => {
     }
   };
 
-  if (loading) {
+  const handleAddClick = () => {
+    if (!canCreate) {
+      toast.error('No tienes permiso para crear simpatizantes');
+      return;
+    }
+    setShowAddDialog(true);
+  };
+
+  if (loading || permisosLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -132,51 +157,59 @@ const SimpatizantesPage = () => {
           {isRefreshing ? 'Actualizando...' : 'Actualizar Datos'}
         </Button>
 
-        <Button
-          onClick={() => setShowAddDialog(true)}
-          className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Agregar Nuevo Simpatizante
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={handleAddClick}
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Agregar Nuevo Simpatizante
+          </Button>
+        )}
       </div>
 
       <SimpatizantesList
         simpatizantes={filteredSimpatizantes}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={canEdit ? handleEdit : undefined}
+        onDelete={canDelete ? handleDelete : undefined}
         searchTerm={searchTerm}
       />
 
       {/* Dialogs */}
-      <AddSimpatizanteDialog
-        isOpen={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
-        onAdd={addSimpatizante}
-        isAdding={isAdding}
-      />
+      {canCreate && (
+        <AddSimpatizanteDialog
+          isOpen={showAddDialog}
+          onClose={() => setShowAddDialog(false)}
+          onAdd={addSimpatizante}
+          isAdding={isAdding}
+        />
+      )}
 
-      <EditSimpatizanteDialog
-        isOpen={showEditDialog}
-        onClose={() => {
-          setShowEditDialog(false);
-          setEditingSimpatizante(null);
-        }}
-        simpatizante={editingSimpatizante}
-        onUpdate={updateSimpatizante}
-        isUpdating={isUpdating}
-      />
+      {canEdit && (
+        <EditSimpatizanteDialog
+          isOpen={showEditDialog}
+          onClose={() => {
+            setShowEditDialog(false);
+            setEditingSimpatizante(null);
+          }}
+          simpatizante={editingSimpatizante}
+          onUpdate={updateSimpatizante}
+          isUpdating={isUpdating}
+        />
+      )}
 
-      <DeleteSimpatizanteDialog
-        isOpen={showDeleteDialog}
-        onClose={() => {
-          setShowDeleteDialog(false);
-          setDeletingSimpatizante(null);
-        }}
-        simpatizante={deletingSimpatizante}
-        onConfirm={handleDeleteConfirm}
-        isDeleting={isDeleting}
-      />
+      {canDelete && (
+        <DeleteSimpatizanteDialog
+          isOpen={showDeleteDialog}
+          onClose={() => {
+            setShowDeleteDialog(false);
+            setDeletingSimpatizante(null);
+          }}
+          simpatizante={deletingSimpatizante}
+          onConfirm={handleDeleteConfirm}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 };

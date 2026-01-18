@@ -1,7 +1,9 @@
 'use client';
 
+import { PermisosDialog } from '@/features/ujieres/components/PermisosDialog';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { useUser } from '@/shared/contexts/user-context';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { sortByNombre } from '@/shared/lib/sort-utils';
 import {
   addUjier,
@@ -33,6 +35,7 @@ import {
   Edit3,
   Eye,
   EyeOff,
+  Key,
   Plus,
   Save,
   Search,
@@ -56,7 +59,7 @@ interface Ujier {
 
 export default function UjieresPage() {
   return (
-    <RoleGuard route="ujieres" allowedRoles={['admin', 'directiva']}>
+    <RoleGuard requiredPermission="usuarios.view">
       <UjieresContent />
     </RoleGuard>
   );
@@ -81,7 +84,7 @@ function UjieresContent() {
     rol: 'ujier',
   });
 
-  // Estados para edición y eliminación
+  // Estados para edici?n y eliminaci?n
   const [editingUsuario, setEditingUsuario] = useState<Ujier | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null
@@ -89,8 +92,20 @@ function UjieresContent() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isAdmin = user?.rol === 'admin';
-  const isDirectiva = user?.rol === 'directiva';
+  // Estado para el di?logo de permisos
+  const [permisosDialogOpen, setPermisosDialogOpen] = useState(false);
+  const [selectedUsuarioPermisos, setSelectedUsuarioPermisos] =
+    useState<Ujier | null>(null);
+
+  // Permisos del m?dulo usuarios
+  const {
+    canCreate,
+    canEdit,
+    canDelete,
+    canActivate,
+    isLoading: permisosLoading,
+    isAdmin,
+  } = useModulePermissions('usuarios');
 
   useEffect(() => {
     const loadUjieres = async () => {
@@ -117,7 +132,7 @@ function UjieresContent() {
     return matchesSearch && matchesRole;
   });
 
-  // Ordenar usuarios alfabéticamente
+  // Ordenar usuarios alfab?ticamente
   const sortedUsuarios = sortByNombre(filteredUsuarios);
 
   const roleStats = {
@@ -130,6 +145,11 @@ function UjieresContent() {
 
   const handleAddUsuario = async () => {
     if (!newUsuario.nombre || !newUsuario.password) return;
+
+    if (!canCreate) {
+      toast.error('No tienes permiso para crear usuarios');
+      return;
+    }
 
     try {
       const nuevoUsuario = {
@@ -150,8 +170,10 @@ function UjieresContent() {
   };
 
   const toggleUsuarioStatus = async (usuario: Ujier) => {
-    if (!isAdmin && !isDirectiva) return;
-    if (isDirectiva && usuario.rol === 'admin') return;
+    if (!canActivate) {
+      toast.error('No tienes permiso para activar/desactivar usuarios');
+      return;
+    }
     if (usuario.rol === 'admin' || usuario.rol === 'directiva') return;
 
     try {
@@ -170,9 +192,14 @@ function UjieresContent() {
     }
   };
 
-  // Función para eliminar usuario (solo admin)
+  // Función para eliminar usuario
   const handleDeleteUsuario = async (usuarioId: string) => {
-    if (!usuarioId || !isAdmin) return;
+    if (!usuarioId) return;
+
+    if (!canDelete) {
+      toast.error('No tienes permiso para eliminar usuarios');
+      return;
+    }
 
     setIsDeleting(true);
     try {
@@ -192,12 +219,27 @@ function UjieresContent() {
 
   // Función para iniciar edición
   const handleEditUsuario = (usuario: Ujier) => {
+    if (!canEdit) {
+      toast.error('No tienes permiso para editar usuarios');
+      return;
+    }
     setEditingUsuario({ ...usuario });
+  };
+
+  // Función para abrir el diálogo de permisos
+  const handleOpenPermisos = (usuario: Ujier) => {
+    setSelectedUsuarioPermisos(usuario);
+    setPermisosDialogOpen(true);
   };
 
   // Función para guardar cambios
   const handleSaveUsuario = async () => {
     if (!editingUsuario) return;
+
+    if (!canEdit) {
+      toast.error('No tienes permiso para editar usuarios');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -218,7 +260,7 @@ function UjieresContent() {
     }
   };
 
-  // Función para cancelar edición
+  // Funci?n para cancelar edici?n
   const handleCancelEdit = () => {
     setEditingUsuario(null);
   };
@@ -256,7 +298,7 @@ function UjieresContent() {
     }
   };
 
-  if (loading) {
+  if (loading || permisosLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -298,14 +340,15 @@ function UjieresContent() {
           <p className="text-sm text-gray-600">
             Administre los usuarios del sistema y sus permisos
           </p>
-          {isDirectiva && !isAdmin && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 border border-orange-200 rounded-full">
-              <Shield className="w-4 h-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-700">
-                Permisos limitados
-              </span>
-            </div>
-          )}
+          {!isAdmin &&
+            (!canCreate || !canEdit || !canDelete || !canActivate) && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 border border-orange-200 rounded-full">
+                <Shield className="w-4 h-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-700">
+                  Permisos limitados
+                </span>
+              </div>
+            )}
         </CardHeader>
       </Card>
 
@@ -379,7 +422,7 @@ function UjieresContent() {
       </Card>
 
       {/* Add Button */}
-      {isAdmin && (
+      {canCreate && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg">
@@ -391,7 +434,7 @@ function UjieresContent() {
             <DialogHeader>
               <DialogTitle>Crear Nuevo Usuario</DialogTitle>
               <p className="text-sm text-gray-600">
-                Complete la información para crear una nueva cuenta de usuario
+                Complete la informaci?n para crear una nueva cuenta de usuario
               </p>
             </DialogHeader>
             <div className="space-y-4">
@@ -401,7 +444,7 @@ function UjieresContent() {
                   Nombre Completo *
                 </label>
                 <Input
-                  placeholder="Ej: Ana María González"
+                  placeholder="Ej: Ana Mar?a Gonz?lez"
                   value={newUsuario.nombre}
                   onChange={(e) =>
                     setNewUsuario({ ...newUsuario, nombre: e.target.value })
@@ -410,18 +453,18 @@ function UjieresContent() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Contraseña Inicial *
+                  Contrase?a Inicial *
                 </label>
                 <Input
                   type="password"
-                  placeholder="Contraseña segura"
+                  placeholder="Contrase?a segura"
                   value={newUsuario.password}
                   onChange={(e) =>
                     setNewUsuario({ ...newUsuario, password: e.target.value })
                   }
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  El usuario podrá cambiar su contraseña después del primer
+                  El usuario podr? cambiar su contrase?a despu?s del primer
                   acceso
                 </p>
               </div>
@@ -445,7 +488,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Ujier</div>
                           <div className="text-xs text-gray-500">
-                            Acceso básico: conteo y simpatizantes
+                            Acceso b?sico: conteo y simpatizantes
                           </div>
                         </div>
                       </div>
@@ -456,7 +499,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Directiva</div>
                           <div className="text-xs text-gray-500">
-                            Acceso a reportes y gestión limitada
+                            Acceso a reportes y gesti?n limitada
                           </div>
                         </div>
                       </div>
@@ -543,9 +586,22 @@ function UjieresContent() {
                   </div>
                 </div>
                 {/* Action buttons */}
-                <div className="ml-4 flex gap-2">
-                  {/* Botón de activar/desactivar para admin y directiva */}
-                  {(isAdmin || isDirectiva) && (
+                <div className="ml-4 flex flex-wrap gap-2">
+                  {/* Bot?n de permisos solo para admin */}
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-purple-200 text-purple-700 hover:bg-purple-50"
+                      onClick={() => handleOpenPermisos(usuario)}
+                      title="Gestionar permisos"
+                    >
+                      <Key className="w-4 h-4" />
+                    </Button>
+                  )}
+
+                  {/* Botón de activar/desactivar */}
+                  {canActivate && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -554,9 +610,7 @@ function UjieresContent() {
                         toggleUsuarioStatus(usuario);
                       }}
                       disabled={
-                        (isDirectiva && usuario.rol === 'admin') ||
-                        usuario.rol === 'admin' ||
-                        usuario.rol === 'directiva'
+                        usuario.rol === 'admin' || usuario.rol === 'directiva'
                       }
                       className={
                         usuario.activo
@@ -578,26 +632,26 @@ function UjieresContent() {
                     </Button>
                   )}
 
-                  {/* Botones de editar y eliminar solo para admin */}
-                  {isAdmin && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50"
-                        onClick={() => handleEditUsuario(usuario)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
-                        onClick={() => setShowDeleteConfirm(usuario.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </>
+                  {/* Botones de editar y eliminar */}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50"
+                      onClick={() => handleEditUsuario(usuario)}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => setShowDeleteConfirm(usuario.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
                 </div>
               </div>
@@ -615,7 +669,7 @@ function UjieresContent() {
             </h3>
             <p className="text-gray-500 mb-4">
               {searchTerm || filterRole !== 'todos'
-                ? 'Intente ajustar los filtros de búsqueda'
+                ? 'Intente ajustar los filtros de b?squeda'
                 : 'No hay usuarios registrados en el sistema'}
             </p>
           </CardContent>
@@ -623,21 +677,28 @@ function UjieresContent() {
       )}
 
       {/* Permissions Info */}
-      {isDirectiva && !isAdmin && (
+      {!isAdmin && (!canCreate || !canEdit || !canDelete || !canActivate) && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <Shield className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-medium text-orange-900 mb-1">
-                  Limitaciones de su rol
+                  Permisos del usuario
                 </h3>
                 <div className="text-sm text-orange-800 space-y-1">
-                  <p>• No puede crear nuevos usuarios (solo administradores)</p>
-                  <p>• No puede modificar administradores o directiva</p>
-                  <p>
-                    • Solo puede activar/desactivar usuarios regulares (ujieres)
-                  </p>
+                  {!canCreate && <p>• No puedes crear nuevos usuarios</p>}
+                  {!canEdit && <p>• No puedes editar usuarios</p>}
+                  {!canDelete && <p>• No puedes eliminar usuarios</p>}
+                  {!canActivate && (
+                    <p>• No puedes activar/desactivar usuarios</p>
+                  )}
+                  {(canCreate || canEdit || canDelete || canActivate) && (
+                    <p className="mt-2 text-orange-700 font-medium">
+                      Contacta al administrador para solicitar permisos
+                      adicionales.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -646,18 +707,18 @@ function UjieresContent() {
       )}
 
       {/* Modal de confirmación de eliminación */}
-      {showDeleteConfirm && (
+      {showDeleteConfirm && canDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-red-600">
                 <AlertTriangle className="w-5 h-5" />
-                Confirmar Eliminación
+                Confirmar Eliminaci?n
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                ¿Estás seguro de que deseas eliminar este usuario? Esta acción
+                ?Est?s seguro de que deseas eliminar este usuario? Esta acci?n
                 no se puede deshacer.
               </p>
               <div className="flex gap-2">
@@ -683,7 +744,7 @@ function UjieresContent() {
       )}
 
       {/* Modal de edición */}
-      {editingUsuario && (
+      {editingUsuario && canEdit && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <Card className="w-full max-w-md bg-white max-h-[90vh] overflow-y-auto">
             <CardHeader>
@@ -711,11 +772,11 @@ function UjieresContent() {
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Contraseña *
+                  Contrase?a *
                 </label>
                 <Input
                   type="password"
-                  placeholder="Nueva contraseña"
+                  placeholder="Nueva contrase?a"
                   value={editingUsuario.password}
                   onChange={(e) =>
                     setEditingUsuario({
@@ -725,7 +786,7 @@ function UjieresContent() {
                   }
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Deja en blanco para mantener la contraseña actual
+                  Deja en blanco para mantener la contrase?a actual
                 </p>
               </div>
 
@@ -749,7 +810,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Ujier</div>
                           <div className="text-xs text-gray-500">
-                            Acceso básico: conteo y simpatizantes
+                            Acceso b?sico: conteo y simpatizantes
                           </div>
                         </div>
                       </div>
@@ -760,7 +821,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Directiva</div>
                           <div className="text-xs text-gray-500">
-                            Acceso a reportes y gestión limitada
+                            Acceso a reportes y gesti?n limitada
                           </div>
                         </div>
                       </div>
@@ -840,6 +901,14 @@ function UjieresContent() {
           </Card>
         </div>
       )}
+
+      {/* Di?logo de permisos */}
+      <PermisosDialog
+        open={permisosDialogOpen}
+        onOpenChange={setPermisosDialogOpen}
+        usuario={selectedUsuarioPermisos}
+        currentUserId={user?.id || ''}
+      />
     </div>
   );
 }

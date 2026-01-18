@@ -1,7 +1,7 @@
 'use client';
 
 import { RoleGuard } from '@/shared/components/role-guard';
-import { useUser } from '@/shared/contexts/user-context';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { deleteHistorialRecord, fetchHistorial } from '@/shared/lib/utils';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -63,14 +63,13 @@ interface HistorialRecord extends HistorialRecordAPI {
 
 export default function HistorialPage() {
   return (
-    <RoleGuard route="historial" allowedRoles={['admin', 'directiva']}>
+    <RoleGuard requiredPermission="historial.view">
       <HistorialContent />
     </RoleGuard>
   );
 }
 
 function HistorialContent() {
-  const { user } = useUser();
   const router = useRouter();
   const [historial, setHistorial] = useState<HistorialRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +89,13 @@ function HistorialContent() {
   const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [isExportingText, setIsExportingText] = useState(false);
+
+  // Permisos del módulo historial
+  const {
+    canView,
+    canDelete,
+    isLoading: permisosLoading,
+  } = useModulePermissions('historial');
 
   const loadHistorialData = async (isRefresh = false) => {
     try {
@@ -136,7 +142,7 @@ function HistorialContent() {
   }, []);
 
   // Verificar permisos después de cargar los datos
-  if (user && user.rol !== 'directiva' && user.rol !== 'admin') {
+  if (!permisosLoading && !canView) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -148,8 +154,8 @@ function HistorialContent() {
               Acceso Denegado
             </h2>
             <p className="text-gray-600 mb-4">
-              No tienes permisos para ver el historial. Solo usuarios con rol de
-              Directiva o Administrador pueden acceder.
+              No tienes permisos para ver el historial. Contacta al
+              administrador para obtener acceso.
             </p>
             <Button onClick={() => window.history.back()} variant="outline">
               Volver
@@ -709,7 +715,7 @@ NOTAS FINALES:
     }
   };
 
-  if (loading) {
+  if (loading || permisosLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -1167,14 +1173,16 @@ NOTAS FINALES:
                     <Eye className="w-4 h-4 mr-2" />
                     Ver Detalles
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
-                    onClick={() => setShowDeleteConfirm(record.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => setShowDeleteConfirm(record.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1183,7 +1191,7 @@ NOTAS FINALES:
       </div>
 
       {/* Modal de confirmación de eliminación */}
-      {showDeleteConfirm && (
+      {showDeleteConfirm && canDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white">
             <CardHeader>

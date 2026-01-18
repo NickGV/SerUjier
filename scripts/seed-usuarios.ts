@@ -12,8 +12,6 @@ const usuarios = [
 
 async function seedUsuarios() {
   try {
-    console.log('Iniciando seed de usuarios...');
-
     for (const usuario of usuarios) {
       const hashedPassword = await bcrypt.hash(usuario.password, 10);
 
@@ -24,14 +22,8 @@ async function seedUsuarios() {
         activo: usuario.activo,
         createdAt: new Date().toISOString(),
       });
-
-      console.log(`Usuario ${usuario.nombre} creado`);
     }
-
-    console.log('Seed completado!');
-  } catch (error) {
-    console.error('Error en seed:', error);
-  }
+  } catch (error) {}
 }
 
 seedUsuarios();
