@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/shared/contexts/user-context';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { sortByNombre } from '@/shared/lib/sort-utils';
 import {
   addMiembro,
@@ -45,7 +45,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function MiembrosPage() {
-  const { user } = useUser();
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +72,15 @@ export default function MiembrosPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Permisos del módulo miembros
+  const {
+    canView,
+    canCreate,
+    canEdit,
+    canDelete,
+    isLoading: permisosLoading,
+  } = useModulePermissions('miembros');
+
   useEffect(() => {
     const loadMiembros = async () => {
       try {
@@ -90,8 +98,8 @@ export default function MiembrosPage() {
     loadMiembros();
   }, []);
 
-  // Verificar permisos - Solo admin y directiva pueden gestionar miembros
-  if (user && user.rol !== 'admin' && user.rol !== 'directiva') {
+  // Verificar permisos de visualización
+  if (!permisosLoading && !canView) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -103,8 +111,8 @@ export default function MiembrosPage() {
               Acceso Denegado
             </h2>
             <p className="text-gray-600 mb-4">
-              No tienes permisos para gestionar miembros. Solo usuarios con rol
-              de Administrador o Directiva pueden acceder.
+              No tienes permisos para ver miembros. Contacta al administrador
+              para obtener acceso.
             </p>
             <Button onClick={() => window.history.back()} variant="outline">
               Volver
@@ -128,6 +136,11 @@ export default function MiembrosPage() {
   const sortedMiembros = sortByNombre(filteredMiembros);
 
   const addNewMiembro = async () => {
+    if (!canCreate) {
+      toast.error('No tienes permiso para crear miembros');
+      return;
+    }
+
     if (newMiembro.nombre.trim()) {
       try {
         const nuevoMiembro = {
@@ -155,6 +168,10 @@ export default function MiembrosPage() {
   // Función para eliminar miembro
   const handleDeleteMiembro = async (miembroId: string) => {
     if (!miembroId) return;
+    if (!canDelete) {
+      toast.error('No tienes permiso para eliminar miembros');
+      return;
+    }
 
     setIsDeleting(true);
     try {
@@ -174,12 +191,20 @@ export default function MiembrosPage() {
 
   // Función para iniciar edición
   const handleEditMiembro = (miembro: Miembro) => {
+    if (!canEdit) {
+      toast.error('No tienes permiso para editar miembros');
+      return;
+    }
     setEditingMiembro({ ...miembro });
   };
 
   // Función para guardar cambios
   const handleSaveMiembro = async () => {
     if (!editingMiembro) return;
+    if (!canEdit) {
+      toast.error('No tienes permiso para editar miembros');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -254,7 +279,7 @@ export default function MiembrosPage() {
     return miembros.filter((m) => m.categoria === categoria).length;
   };
 
-  if (loading) {
+  if (loading || permisosLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -369,99 +394,101 @@ export default function MiembrosPage() {
         </CardContent>
       </Card>
 
-      {/* Add New Button */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogTrigger asChild>
-          <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg">
-            <Plus className="w-5 h-5 mr-2" />
-            Agregar Nuevo Miembro
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nuevo Miembro</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Nombre Completo *
-              </label>
-              <Input
-                placeholder="Nombre del miembro"
-                value={newMiembro.nombre}
-                onChange={(e) =>
-                  setNewMiembro({ ...newMiembro, nombre: e.target.value })
-                }
-              />
-            </div>
+      {/* Add New Button - Solo si tiene permiso */}
+      {canCreate && (
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg">
+              <Plus className="w-5 h-5 mr-2" />
+              Agregar Nuevo Miembro
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Nuevo Miembro</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Nombre Completo *
+                </label>
+                <Input
+                  placeholder="Nombre del miembro"
+                  value={newMiembro.nombre}
+                  onChange={(e) =>
+                    setNewMiembro({ ...newMiembro, nombre: e.target.value })
+                  }
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Categoría *
-              </label>
-              <Select
-                value={newMiembro.categoria}
-                onValueChange={(
-                  value: 'hermano' | 'hermana' | 'nino' | 'adolescente'
-                ) => setNewMiembro({ ...newMiembro, categoria: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hermano">Hermano</SelectItem>
-                  <SelectItem value="hermana">Hermana</SelectItem>
-                  <SelectItem value="nino">Niño</SelectItem>
-                  <SelectItem value="adolescente">Adolescente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Categoría *
+                </label>
+                <Select
+                  value={newMiembro.categoria}
+                  onValueChange={(
+                    value: 'hermano' | 'hermana' | 'nino' | 'adolescente'
+                  ) => setNewMiembro({ ...newMiembro, categoria: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hermano">Hermano</SelectItem>
+                    <SelectItem value="hermana">Hermana</SelectItem>
+                    <SelectItem value="nino">Niño</SelectItem>
+                    <SelectItem value="adolescente">Adolescente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Teléfono
-              </label>
-              <Input
-                placeholder="Número de teléfono"
-                value={newMiembro.telefono}
-                onChange={(e) =>
-                  setNewMiembro({ ...newMiembro, telefono: e.target.value })
-                }
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Teléfono
+                </label>
+                <Input
+                  placeholder="Número de teléfono"
+                  value={newMiembro.telefono}
+                  onChange={(e) =>
+                    setNewMiembro({ ...newMiembro, telefono: e.target.value })
+                  }
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Notas
-              </label>
-              <Input
-                placeholder="Notas adicionales"
-                value={newMiembro.notas}
-                onChange={(e) =>
-                  setNewMiembro({ ...newMiembro, notas: e.target.value })
-                }
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  Notas
+                </label>
+                <Input
+                  placeholder="Notas adicionales"
+                  value={newMiembro.notas}
+                  onChange={(e) =>
+                    setNewMiembro({ ...newMiembro, notas: e.target.value })
+                  }
+                />
+              </div>
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 bg-transparent"
-                onClick={() => setShowAddDialog(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1 bg-slate-600 hover:bg-slate-700"
-                onClick={addNewMiembro}
-                disabled={!newMiembro.nombre.trim()}
-              >
-                Agregar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={() => setShowAddDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="flex-1 bg-slate-600 hover:bg-slate-700"
+                  onClick={addNewMiembro}
+                  disabled={!newMiembro.nombre.trim()}
+                >
+                  Agregar
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Members List */}
       <div className="space-y-3">
@@ -515,25 +542,25 @@ export default function MiembrosPage() {
                   >
                     Ver Perfil
                   </Button>
-                  {user?.rol === 'admin' && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50"
-                        onClick={() => handleEditMiembro(miembro)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
-                        onClick={() => setShowDeleteConfirm(miembro.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </>
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-blue-200 text-blue-700 hover:bg-blue-50"
+                      onClick={() => handleEditMiembro(miembro)}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => setShowDeleteConfirm(miembro.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
                 </div>
               </div>
@@ -559,7 +586,7 @@ export default function MiembrosPage() {
       )}
 
       {/* Modal de confirmación de eliminación */}
-      {showDeleteConfirm && (
+      {showDeleteConfirm && canDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md bg-white">
             <CardHeader>
@@ -596,7 +623,7 @@ export default function MiembrosPage() {
       )}
 
       {/* Modal de edición */}
-      {editingMiembro && (
+      {editingMiembro && canEdit && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <Card className="w-full max-w-md bg-white max-h-[90vh] overflow-y-auto">
             <CardHeader>

@@ -10,8 +10,8 @@ import { useRouter } from 'next/navigation';
 
 interface SimpatizantesListProps {
   simpatizantes: Simpatizante[];
-  onEdit: (simpatizante: Simpatizante) => void;
-  onDelete: (simpatizante: Simpatizante) => void;
+  onEdit?: (simpatizante: Simpatizante) => void;
+  onDelete?: (simpatizante: Simpatizante) => void;
   searchTerm: string;
 }
 
@@ -107,31 +107,35 @@ export function SimpatizantesList({
                   Ver Perfil
                 </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  aria-label="Editar simpatizante"
-                  className="h-10 w-10 p-0 text-blue-600 border-blue-200 hover:bg-blue-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(simpatizante);
-                  }}
-                >
-                  <Edit3 className="w-5 h-5" />
-                </Button>
+                {onEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Editar simpatizante"
+                    className="h-10 w-10 p-0 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(simpatizante);
+                    }}
+                  >
+                    <Edit3 className="w-5 h-5" />
+                  </Button>
+                )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  aria-label="Eliminar simpatizante"
-                  className="h-10 w-10 p-0 text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(simpatizante);
-                  }}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
+                {onDelete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Eliminar simpatizante"
+                    className="h-10 w-10 p-0 text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(simpatizante);
+                    }}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>

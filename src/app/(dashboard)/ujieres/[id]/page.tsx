@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useUser } from '@/shared/contexts/user-context';
-import { getUjierById, updateUjier } from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
+import { getUjierById, updateUjier } from '@/shared/lib/utils';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import {
   Select,
@@ -19,14 +17,16 @@ import {
 } from '@/shared/ui/select';
 import {
   ArrowLeft,
-  Save,
   Crown,
-  UserCog,
-  User,
   Eye,
   EyeOff,
+  Save,
   Shield,
+  User,
+  UserCog,
 } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Ujier {
   id: string;
@@ -39,14 +39,13 @@ interface Ujier {
 
 export default function UjierDetailPage() {
   return (
-    <RoleGuard route="ujieres" allowedRoles={['admin', 'directiva']}>
+    <RoleGuard requiredPermission="usuarios.view">
       <UjierDetailContent />
     </RoleGuard>
   );
 }
 
 function UjierDetailContent() {
-  const { user } = useUser();
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
@@ -66,13 +65,21 @@ function UjierDetailContent() {
     activo: true,
   });
 
-  const isAdmin = user?.rol === 'admin';
-  const isDirectiva = user?.rol === 'directiva';
+  // Permisos del módulo usuarios
+  const {
+    canView,
+    canEdit,
+    canActivate,
+    isLoading: permisosLoading,
+    isAdmin,
+  } = useModulePermissions('usuarios');
 
   // Determinar qué campos puede editar cada rol
+  // Solo admin puede editar perfil completo, otros con canEdit pueden editar campos limitados
   const canEditFullProfile = isAdmin;
+  const canEditLimitedFields = canEdit && !isAdmin;
   const canToggleStatus =
-    (isAdmin || isDirectiva) &&
+    canActivate &&
     ujier &&
     !(ujier.rol === 'admin' || ujier.rol === 'directiva');
 
@@ -107,8 +114,8 @@ function UjierDetailContent() {
     }
   }, [id]);
 
-  // Verificar permisos - Solo admin y directiva pueden ver detalles de ujieres
-  if (user && user.rol === 'ujier') {
+  // Verificar permisos - Debe tener permiso de ver usuarios
+  if (!permisosLoading && !canView) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md w-full">
@@ -120,8 +127,8 @@ function UjierDetailContent() {
               Acceso Denegado
             </h2>
             <p className="text-gray-600 mb-4">
-              No tienes permisos para ver detalles de usuarios. Solo usuarios
-              con rol de Directiva o Administrador pueden acceder.
+              No tienes permisos para ver detalles de usuarios. Contacta al
+              administrador para obtener acceso.
             </p>
             <Button onClick={() => router.back()} variant="outline">
               Volver
@@ -144,8 +151,15 @@ function UjierDetailContent() {
         dataToUpdate.password = editedUsuario.password;
         dataToUpdate.rol = editedUsuario.rol;
         dataToUpdate.activo = editedUsuario.activo;
+      } else if (canEditLimitedFields) {
+        // Usuarios con permiso de editar pueden cambiar campos limitados
+        dataToUpdate.nombre = editedUsuario.nombre;
+        dataToUpdate.password = editedUsuario.password;
+        if (canToggleStatus) {
+          dataToUpdate.activo = editedUsuario.activo;
+        }
       } else if (canToggleStatus) {
-        // Directiva solo puede cambiar el estado activo
+        // Solo puede cambiar el estado activo
         dataToUpdate.activo = editedUsuario.activo;
       }
 
@@ -190,7 +204,7 @@ function UjierDetailContent() {
     }
   };
 
-  if (loading) {
+  if (loading || permisosLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -292,9 +306,11 @@ function UjierDetailContent() {
             <div className="flex items-center gap-2 text-orange-700">
               <Shield className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm font-medium">
-                {isDirectiva
-                  ? 'Permisos limitados: Solo puedes activar/desactivar usuarios regulares'
-                  : 'Sin permisos de edición'}
+                {canEditLimitedFields
+                  ? 'Permisos limitados: Puedes editar campos específicos'
+                  : canToggleStatus
+                    ? 'Permisos limitados: Solo puedes activar/desactivar usuarios'
+                    : 'Sin permisos de edición'}
               </span>
             </div>
           </CardContent>
@@ -320,8 +336,10 @@ function UjierDetailContent() {
               onChange={(e) =>
                 setEditedUsuario({ ...editedUsuario, nombre: e.target.value })
               }
-              disabled={!canEditFullProfile}
-              className={!canEditFullProfile ? 'bg-gray-50' : ''}
+              disabled={!canEditFullProfile && !canEditLimitedFields}
+              className={
+                !canEditFullProfile && !canEditLimitedFields ? 'bg-gray-50' : ''
+              }
             />
           </div>
 
@@ -337,10 +355,12 @@ function UjierDetailContent() {
               onChange={(e) =>
                 setEditedUsuario({ ...editedUsuario, password: e.target.value })
               }
-              disabled={!canEditFullProfile}
-              className={!canEditFullProfile ? 'bg-gray-50' : ''}
+              disabled={!canEditFullProfile && !canEditLimitedFields}
+              className={
+                !canEditFullProfile && !canEditLimitedFields ? 'bg-gray-50' : ''
+              }
             />
-            {canEditFullProfile && (
+            {(canEditFullProfile || canEditLimitedFields) && (
               <p className="text-xs text-gray-500 mt-1">
                 Deja en blanco para mantener la contraseña actual
               </p>
@@ -489,7 +509,9 @@ function UjierDetailContent() {
         <Button
           onClick={handleSave}
           className="flex-1 bg-slate-600 hover:bg-slate-700"
-          disabled={!canEditFullProfile && !canToggleStatus}
+          disabled={
+            !canEditFullProfile && !canEditLimitedFields && !canToggleStatus
+          }
         >
           <Save className="w-4 h-4 mr-2" />
           Guardar Cambios

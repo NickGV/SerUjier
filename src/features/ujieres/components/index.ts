@@ -1,0 +1,1 @@
+export { PermisosDialog } from './PermisosDialog';

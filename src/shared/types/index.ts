@@ -1,10 +1,15 @@
+import type { Permission } from './permisos';
+
 // User roles and types
 export type User = {
   id: string;
   nombre: string;
   rol: 'ujier' | 'admin' | 'directiva';
-  // permisos?: string[];
+  permisos?: Permission[];
 };
+
+// Re-export permission types
+export * from './permisos';
 
 export type Ujier = User & {
   additionalField: string; // Replace with actual fields

@@ -2,7 +2,7 @@
 export { BottomNavigation } from './bottom-navigation';
 export { default as ErrorBoundary, ErrorFallback } from './error-boundary';
 export { default as LogoutButton } from './logout-button';
-export { RoleGuard } from './role-guard';
+export { RoleGuard, PermissionGuard, useRolePermissions } from './role-guard';
 export {
   SelectableListDialog,
   type SelectableItem,

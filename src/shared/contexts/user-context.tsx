@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { Permission } from '@/shared/types/permisos';
 
 interface User {
   id: string;
@@ -8,6 +9,7 @@ interface User {
   rol: 'admin' | 'directiva' | 'ujier';
   email?: string;
   activo?: boolean;
+  permisos?: Permission[];
 }
 
 interface UserContextType {
@@ -15,6 +17,7 @@ interface UserContextType {
   setUser: (user: User | null) => void;
   logout: () => void;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,45 +26,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      setIsLoading(true);
+  const checkUserSession = async () => {
+    setIsLoading(true);
 
-      try {
-        // Verificar si hay una sesión activa
-        const response = await fetch('/api/auth/check-session');
+    try {
+      // Verificar si hay una sesión activa
+      const response = await fetch('/api/auth/check-session');
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user) {
-            const userInfo: User = {
-              id: data.user.id,
-              nombre: data.user.nombre,
-              rol: data.user.rol,
-              email: data.user.email,
-              activo: data.user.activo,
-            };
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user) {
+          const userInfo: User = {
+            id: data.user.id,
+            nombre: data.user.nombre,
+            rol: data.user.rol,
+            email: data.user.email,
+            activo: data.user.activo,
+            permisos: data.user.permisos || [],
+          };
 
-            setUser(userInfo);
-            localStorage.setItem('currentUser', JSON.stringify(userInfo));
-          } else {
-            setUser(null);
-            localStorage.removeItem('currentUser');
-          }
+          setUser(userInfo);
+          localStorage.setItem('currentUser', JSON.stringify(userInfo));
         } else {
-          // No hay sesión válida
           setUser(null);
           localStorage.removeItem('currentUser');
         }
-      } catch (error) {
-        console.error('Error verificando sesión:', error);
+      } else {
+        // No hay sesión válida
         setUser(null);
         localStorage.removeItem('currentUser');
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Error verificando sesión:', error);
+      setUser(null);
+      localStorage.removeItem('currentUser');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     checkUserSession();
   }, []);
 
@@ -96,6 +100,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     },
     logout,
     isLoading,
+    refreshUser: checkUserSession,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

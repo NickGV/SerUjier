@@ -2,30 +2,35 @@
 
 import React from 'react';
 import { useUser } from '@/shared/contexts/user-context';
+import { usePermisos } from '@/shared/hooks/use-permisos';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Shield, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import type { Permission } from '@/shared/types/permisos';
 
 type AllowedRole = 'admin' | 'directiva' | 'ujier';
 type ProtectedRoute =
   | 'conteo'
   | 'simpatizantes'
+  | 'miembros'
   | 'historial'
   | 'ujieres'
   | 'configuracion';
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: AllowedRole[];
+  allowedRoles?: AllowedRole[];
   route?: ProtectedRoute;
+  requiredPermission?: Permission;
   fallback?: React.ReactNode;
 }
 
-// Definir qué roles pueden acceder a qué rutas
+// Definir qué roles pueden acceder a qué rutas (fallback si no hay permisos asignados)
 const ROUTE_PERMISSIONS: Record<ProtectedRoute, AllowedRole[]> = {
   conteo: ['admin', 'directiva', 'ujier'],
   simpatizantes: ['admin', 'directiva', 'ujier'],
+  miembros: ['admin', 'directiva', 'ujier'],
   historial: ['admin', 'directiva'],
   ujieres: ['admin', 'directiva'],
   configuracion: ['admin', 'directiva'],
@@ -33,12 +38,16 @@ const ROUTE_PERMISSIONS: Record<ProtectedRoute, AllowedRole[]> = {
 
 export function RoleGuard({
   children,
-  allowedRoles,
+  allowedRoles = [],
   route,
+  requiredPermission,
   fallback,
 }: RoleGuardProps) {
-  const { user, isLoading } = useUser();
+  const { user, isLoading: userLoading } = useUser();
+  const { hasPermission, isLoading: permisosLoading, isAdmin } = usePermisos();
   const router = useRouter();
+
+  const isLoading = userLoading || permisosLoading;
 
   // Si está cargando, mostrar spinner
   if (isLoading) {
@@ -58,16 +67,27 @@ export function RoleGuard({
     return null;
   }
 
-  // Determinar roles permitidos
-  let effectiveAllowedRoles = allowedRoles;
-  if (route && ROUTE_PERMISSIONS[route]) {
-    effectiveAllowedRoles = ROUTE_PERMISSIONS[route];
+  // Admin siempre tiene acceso completo
+  if (isAdmin) {
+    return <>{children}</>;
   }
 
-  // Verificar si el usuario tiene permisos
-  const hasPermission = effectiveAllowedRoles.includes(user.rol);
+  // Determinar si tiene acceso
+  let hasAccess = false;
 
-  if (!hasPermission) {
+  // Si se especifica un permiso requerido, verificar si lo tiene
+  if (requiredPermission) {
+    hasAccess = hasPermission(requiredPermission);
+  } else {
+    // Si no hay permiso específico, usar la verificación por rol (comportamiento legacy)
+    let effectiveAllowedRoles = allowedRoles;
+    if (route && ROUTE_PERMISSIONS[route]) {
+      effectiveAllowedRoles = ROUTE_PERMISSIONS[route];
+    }
+    hasAccess = effectiveAllowedRoles.includes(user.rol);
+  }
+
+  if (!hasAccess) {
     // Mostrar fallback personalizado o mensaje por defecto
     if (fallback) {
       return <>{fallback}</>;
@@ -99,21 +119,20 @@ export function RoleGuard({
                 </span>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mb-4">
-              <p className="font-medium mb-2">Permisos por rol:</p>
-              <div className="text-left space-y-1">
+            {requiredPermission && (
+              <div className="text-xs text-gray-500 mb-4">
                 <p>
-                  <span className="font-medium">Ujier:</span> Conteo y
-                  Simpatizantes
-                </p>
-                <p>
-                  <span className="font-medium">Directiva:</span> Conteo,
-                  Simpatizantes, Historial y Configuración
-                </p>
-                <p>
-                  <span className="font-medium">Admin:</span> Acceso completo
+                  Permiso requerido:{' '}
+                  <code className="bg-gray-100 px-1 py-0.5 rounded">
+                    {requiredPermission}
+                  </code>
                 </p>
               </div>
+            )}
+            <div className="text-xs text-gray-500 mb-4">
+              <p className="font-medium mb-2">
+                Contacta al administrador para obtener acceso.
+              </p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -143,11 +162,22 @@ export function RoleGuard({
 // Hook para verificar permisos en componentes
 export function useRolePermissions() {
   const { user } = useUser();
+  const {
+    hasPermission,
+    canView,
+    canCreate,
+    canEdit,
+    canDelete,
+    canActivate,
+    isAdmin: isAdminPermiso,
+  } = usePermisos();
 
   const hasRole = (role: AllowedRole) => user?.rol === role;
 
   const canAccess = (route: ProtectedRoute) => {
     if (!user) return false;
+    // Admin siempre puede acceder
+    if (user.rol === 'admin') return true;
     return ROUTE_PERMISSIONS[route].includes(user.rol);
   };
 
@@ -162,10 +192,45 @@ export function useRolePermissions() {
     isAdmin,
     isDirectiva,
     isUjier,
-    // Permisos específicos comunes
-    canManageUsers: user?.rol === 'admin',
-    canViewHistory: user?.rol === 'admin' || user?.rol === 'directiva',
-    canModifyUjieres: user?.rol === 'admin' || user?.rol === 'directiva',
+    // Permisos específicos basados en el nuevo sistema de permisos
+    hasPermission,
+    canView,
+    canCreate,
+    canEdit,
+    canDelete,
+    canActivate,
+    // Permisos legacy (mantener compatibilidad)
+    canManageUsers: isAdminPermiso || hasPermission('usuarios.view'),
+    canViewHistory: canView('historial'),
+    canModifyUjieres: canEdit('usuarios'),
     canOnlyCount: user?.rol === 'ujier',
   };
+}
+
+/**
+ * Componente para proteger acciones específicas basadas en permisos
+ * Muestra el contenido solo si el usuario tiene el permiso requerido
+ */
+interface PermissionGuardProps {
+  children: React.ReactNode;
+  permission: Permission;
+  fallback?: React.ReactNode;
+}
+
+export function PermissionGuard({
+  children,
+  permission,
+  fallback = null,
+}: PermissionGuardProps) {
+  const { hasPermission, isLoading } = usePermisos();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!hasPermission(permission)) {
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
 }
