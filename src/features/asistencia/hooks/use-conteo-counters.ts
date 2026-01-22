@@ -17,6 +17,7 @@ interface UseConteoCountersProps {
     ninos?: number;
     adolescentes?: number;
     simpatizantes?: number;
+    visitas?: number;
     hermanosApartados?: number;
     hermanosVisitas?: number;
     miembrosAsistieron?: {
@@ -27,6 +28,7 @@ interface UseConteoCountersProps {
       hermanosApartados?: MiembroSimplificado[];
     };
     simpatizantesAsistieron?: { id: string; nombre: string }[];
+    visitasAsistieron?: { id: string; nombre: string }[];
     hermanosVisitasAsistieron?: {
       id: string;
       nombre: string;
@@ -67,6 +69,9 @@ export function useConteoCounters({
         break;
       case 'simpatizantes':
         updates.simpatizantesCount = newValue;
+        break;
+      case 'visitas':
+        updates.visitasCount = newValue;
         break;
       case 'hermanosApartados':
         updates.hermanosApartados = newValue;
@@ -171,6 +176,21 @@ export function useConteoCounters({
         ? datosServicioBase?.simpatizantesAsistieron || []
         : [],
       miembrosDelDia: conteoState.simpatizantesDelDia,
+    },
+    {
+      key: 'visitas',
+      label: 'Visitas',
+      value: conteoState.visitasCount || 0,
+      setter: (value: number) => updateConteo({ visitasCount: value }),
+      color: CATEGORIA_COLORS.visitas,
+      categoria: 'visitas',
+      baseValue: conteoState.modoConsecutivo
+        ? datosServicioBase?.visitas || 0
+        : 0,
+      baseMiembros: conteoState.modoConsecutivo
+        ? datosServicioBase?.visitasAsistieron || []
+        : [],
+      miembrosDelDia: conteoState.visitasDelDia || [],
     },
     {
       key: 'hermanosVisitas',

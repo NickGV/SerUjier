@@ -2,7 +2,7 @@
 
 import { SelectableListDialog, type SelectableItem } from '@/shared/components';
 import { Button, Input } from '@/shared/ui';
-import { Plus, User, X } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { type SimpatizanteLite } from '../types';
@@ -32,17 +32,14 @@ export function SimpatizantesDialog({
   onRemoveSimpatizante,
   onClearAllSimpatizantes,
 }: SimpatizantesDialogProps) {
-  const [showNewForm, setShowNewForm] = useState(false);
   const [newSimpatizante, setNewSimpatizante] = useState({
     nombre: '',
     telefono: '',
     notas: '',
   });
-  const [isAdding, setIsAdding] = useState(false);
 
   // Reset form when dialog closes
   const handleClose = () => {
-    setShowNewForm(false);
     setNewSimpatizante({ nombre: '', telefono: '', notas: '' });
     onClose();
   };
@@ -54,17 +51,13 @@ export function SimpatizantesDialog({
       return;
     }
 
-    setIsAdding(true);
     try {
       await onAddNewSimpatizante(newSimpatizante);
       setNewSimpatizante({ nombre: '', telefono: '', notas: '' });
-      setShowNewForm(false);
       toast.success('Simpatizante agregado exitosamente');
     } catch (error) {
       console.error('Error adding simpatizante:', error);
       toast.error('Error al agregar simpatizante');
-    } finally {
-      setIsAdding(false);
     }
   };
 
@@ -134,20 +127,12 @@ export function SimpatizantesDialog({
 
       <div className="flex gap-2 pt-3 border-t">
         <Button
-          variant="outline"
-          className="flex-1 bg-transparent h-10 text-sm"
-          onClick={() => setShowNewForm(false)}
-        >
-          <X className="w-4 h-4 mr-1" />
-          Volver
-        </Button>
-        <Button
           className="flex-1 bg-slate-600 hover:bg-slate-700 h-10 text-sm"
           onClick={handleAddNewSimpatizante}
-          disabled={!newSimpatizante.nombre.trim() || isAdding}
+          disabled={!newSimpatizante.nombre.trim()}
         >
           <Plus className="w-4 h-4 mr-1" />
-          {isAdding ? 'Agregando...' : 'Agregar'}
+          Agregar
         </Button>
       </div>
     </div>
@@ -174,7 +159,7 @@ export function SimpatizantesDialog({
       onAddItems={onAddSimpatizantes}
       onRemoveItem={onRemoveSimpatizante}
       onClearAllItems={onClearAllSimpatizantes}
-      onAddNewItem={showNewForm ? renderNewSimpatizanteForm : undefined}
+      onAddNewItem={renderNewSimpatizanteForm}
       renderAvatar={renderSimpatizanteAvatar}
       getItemColor={() => 'bg-pink-100'}
       showAddNewButton={true}

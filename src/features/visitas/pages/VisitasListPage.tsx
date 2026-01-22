@@ -1,51 +1,51 @@
 'use client';
 
 import {
-  DeleteSimpatizanteDialog,
-  SimpatizanteFormDialog,
-  SimpatizantesFilters,
-  SimpatizantesHeader,
-  SimpatizantesList,
-} from '@/features/simpatizantes/components/simpatizantes';
-import { useSimpatizantes } from '@/features/simpatizantes/hooks/use-simpatizantes';
-import { useModulePermissions } from '@/shared/hooks/use-permisos';
+  DeleteVisitaDialog,
+  VisitaFormDialog,
+  VisitasFilters,
+  VisitasHeader,
+  VisitasList,
+} from '@/features/visitas/components/visitas';
+import { useVisitas } from '@/features/visitas/hooks/use-visitas';
 import { useSearch } from '@/shared/hooks/use-search';
-import { type Simpatizante } from '@/shared/types';
+import { useModulePermissions } from '@/shared/hooks/use-permisos';
+import { type Visita } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const SimpatizantesPage = () => {
+const VisitasPage = () => {
   const {
-    simpatizantes,
+    visitas,
     loading,
     error,
     isAdding,
     isUpdating,
     isDeleting,
-    addSimpatizante,
-    updateSimpatizante,
-    deleteSimpatizante,
-    refreshSimpatizantes,
-  } = useSimpatizantes();
+    addVisita,
+    updateVisita,
+    deleteVisita,
+    refreshVisitas,
+  } = useVisitas();
 
-  // Permisos del módulo simpatizantes
+  // Permisos del módulo visitas
   const {
     canCreate,
     canEdit,
     canDelete,
     isLoading: permisosLoading,
-  } = useModulePermissions('simpatizantes');
+  } = useModulePermissions('visitas');
 
   // Search functionality
   const {
     searchTerm,
     setSearchTerm,
-    filteredItems: filteredSimpatizantes,
+    filteredItems: filteredVisitas,
     clearSearch,
-  } = useSearch<Simpatizante>({
-    items: simpatizantes,
+  } = useSearch<Visita>({
+    items: visitas,
     searchFn: (item, term) =>
       item.nombre.toLowerCase().includes(term.toLowerCase()),
   });
@@ -54,41 +54,39 @@ const SimpatizantesPage = () => {
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [editingSimpatizante, setEditingSimpatizante] =
-    useState<Simpatizante | null>(null);
-  const [deletingSimpatizante, setDeletingSimpatizante] =
-    useState<Simpatizante | null>(null);
+  const [editingVisita, setEditingVisita] = useState<Visita | null>(null);
+  const [deletingVisita, setDeletingVisita] = useState<Visita | null>(null);
 
   // Handlers
-  const handleEdit = (simpatizante: Simpatizante) => {
+  const handleEdit = (visita: Visita) => {
     if (!canEdit) {
-      toast.error('No tienes permiso para editar simpatizantes');
+      toast.error('No tienes permiso para editar visitas');
       return;
     }
-    setEditingSimpatizante(simpatizante);
+    setEditingVisita(visita);
     setShowFormDialog(true);
   };
 
-  const handleDelete = (simpatizante: Simpatizante) => {
+  const handleDelete = (visita: Visita) => {
     if (!canDelete) {
-      toast.error('No tienes permiso para eliminar simpatizantes');
+      toast.error('No tienes permiso para eliminar visitas');
       return;
     }
-    setDeletingSimpatizante(simpatizante);
+    setDeletingVisita(visita);
     setShowDeleteDialog(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (deletingSimpatizante) {
-      await deleteSimpatizante(deletingSimpatizante.id);
-      setDeletingSimpatizante(null);
+    if (deletingVisita) {
+      await deleteVisita(deletingVisita.id);
+      setDeletingVisita(null);
     }
   };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refreshSimpatizantes();
+      await refreshVisitas();
       toast.success('Datos actualizados exitosamente');
     } catch (_error) {
       toast.error('Error al actualizar los datos');
@@ -99,27 +97,27 @@ const SimpatizantesPage = () => {
 
   const handleAddClick = () => {
     if (!canCreate) {
-      toast.error('No tienes permiso para crear simpatizantes');
+      toast.error('No tienes permiso para crear visitas');
       return;
     }
-    setEditingSimpatizante(null);
+    setEditingVisita(null);
     setShowFormDialog(true);
   };
 
   const handleFormClose = () => {
     setShowFormDialog(false);
-    setEditingSimpatizante(null);
+    setEditingVisita(null);
   };
 
   const handleFormSave = async (
-    data: Omit<Simpatizante, 'id' | 'fechaRegistro'> & { nombre: string }
+    data: Omit<Visita, 'id' | 'fechaRegistro'> & { nombre: string }
   ) => {
-    if (editingSimpatizante) {
-      // Update existing simpatizante
-      await updateSimpatizante(editingSimpatizante.id, data);
+    if (editingVisita) {
+      // Update existing visita
+      await updateVisita(editingVisita.id, data);
     } else {
-      // Add new simpatizante
-      await addSimpatizante(data);
+      // Add new visita
+      await addVisita(data);
     }
   };
 
@@ -128,7 +126,7 @@ const SimpatizantesPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4" />
-          <p className="text-gray-600">Cargando simpatizantes...</p>
+          <p className="text-gray-600">Cargando visitas...</p>
         </div>
       </div>
     );
@@ -146,18 +144,18 @@ const SimpatizantesPage = () => {
 
   return (
     <div className="p-2 sm:p-4 pb-24 md:pb-28 space-y-4 sm:space-y-6 min-h-screen max-w-full overflow-x-hidden">
-      <SimpatizantesHeader
-        totalCount={simpatizantes.length}
-        filteredCount={filteredSimpatizantes.length}
-        simpatizantes={simpatizantes}
+      <VisitasHeader
+        totalCount={visitas.length}
+        filteredCount={filteredVisitas.length}
+        visitas={visitas}
       />
 
-      <SimpatizantesFilters
+      <VisitasFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onClearSearch={clearSearch}
-        totalCount={simpatizantes.length}
-        filteredCount={filteredSimpatizantes.length}
+        totalCount={visitas.length}
+        filteredCount={filteredVisitas.length}
       />
 
       {/* Action Buttons */}
@@ -179,13 +177,13 @@ const SimpatizantesPage = () => {
             className="w-full bg-linear-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white rounded-xl py-3 shadow-lg"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Agregar Nuevo Simpatizante
+            Agregar Nueva Visita
           </Button>
         )}
       </div>
 
-      <SimpatizantesList
-        simpatizantes={filteredSimpatizantes}
+      <VisitasList
+        visitas={filteredVisitas}
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canDelete ? handleDelete : undefined}
         searchTerm={searchTerm}
@@ -193,10 +191,10 @@ const SimpatizantesPage = () => {
 
       {/* Unified Form Dialog */}
       {(canCreate || canEdit) && (
-        <SimpatizanteFormDialog
+        <VisitaFormDialog
           isOpen={showFormDialog}
           onClose={handleFormClose}
-          simpatizante={editingSimpatizante}
+          visita={editingVisita}
           onSave={handleFormSave}
           isSaving={isAdding || isUpdating}
         />
@@ -204,13 +202,13 @@ const SimpatizantesPage = () => {
 
       {/* Delete Dialog */}
       {canDelete && (
-        <DeleteSimpatizanteDialog
+        <DeleteVisitaDialog
           isOpen={showDeleteDialog}
           onClose={() => {
             setShowDeleteDialog(false);
-            setDeletingSimpatizante(null);
+            setDeletingVisita(null);
           }}
-          simpatizante={deletingSimpatizante}
+          visita={deletingVisita}
           onConfirm={handleDeleteConfirm}
           isDeleting={isDeleting}
         />
@@ -219,4 +217,4 @@ const SimpatizantesPage = () => {
   );
 };
 
-export default SimpatizantesPage;
+export default VisitasPage;

@@ -10,28 +10,49 @@ import {
 } from '@/shared/ui/dialog';
 import { Input } from '@/shared/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-interface AddSimpatizanteDialogProps {
+interface SimpatizanteFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (
+  simpatizante?: Simpatizante | null;
+  onSave: (
     data: Omit<Simpatizante, 'id' | 'fechaRegistro'> & { nombre: string }
   ) => Promise<void>;
-  isAdding: boolean;
+  isSaving: boolean;
 }
 
-export function AddSimpatizanteDialog({
+export function SimpatizanteFormDialog({
   isOpen,
   onClose,
-  onAdd,
-  isAdding,
-}: AddSimpatizanteDialogProps) {
+  simpatizante,
+  onSave,
+  isSaving,
+}: SimpatizanteFormDialogProps) {
+  const isEditMode = !!simpatizante;
+
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
     notas: '',
   });
+
+  // Update form data when simpatizante changes or dialog opens
+  useEffect(() => {
+    if (simpatizante) {
+      setFormData({
+        nombre: simpatizante.nombre || '',
+        telefono: simpatizante.telefono || '',
+        notas: simpatizante.notas || '',
+      });
+    } else {
+      setFormData({
+        nombre: '',
+        telefono: '',
+        notas: '',
+      });
+    }
+  }, [simpatizante, isOpen]);
 
   const handleSubmit = async () => {
     if (!formData.nombre.trim()) {
@@ -55,16 +76,16 @@ export function AddSimpatizanteDialog({
         cleanData.notas = notasTrimmed;
       }
 
-      await onAdd(cleanData);
+      await onSave(cleanData);
       setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     } catch (error) {
-      console.error('Error al agregar simpatizante:', error);
+      console.error('Error al guardar simpatizante:', error);
     }
   };
 
   const handleClose = () => {
-    if (!isAdding) {
+    if (!isSaving) {
       setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     }
@@ -74,7 +95,9 @@ export function AddSimpatizanteDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuevo Simpatizante</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? 'Editar Simpatizante' : 'Nuevo Simpatizante'}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -87,7 +110,7 @@ export function AddSimpatizanteDialog({
               onChange={(e) =>
                 setFormData({ ...formData, nombre: e.target.value })
               }
-              disabled={isAdding}
+              disabled={isSaving}
             />
           </div>
 
@@ -101,7 +124,7 @@ export function AddSimpatizanteDialog({
               onChange={(e) =>
                 setFormData({ ...formData, telefono: e.target.value })
               }
-              disabled={isAdding}
+              disabled={isSaving}
             />
           </div>
 
@@ -115,7 +138,7 @@ export function AddSimpatizanteDialog({
               onChange={(e) =>
                 setFormData({ ...formData, notas: e.target.value })
               }
-              disabled={isAdding}
+              disabled={isSaving}
             />
           </div>
 
@@ -123,21 +146,23 @@ export function AddSimpatizanteDialog({
             <Button
               variant="outline"
               onClick={handleClose}
-              disabled={isAdding}
+              disabled={isSaving}
               className="flex-1"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!formData.nombre.trim() || isAdding}
+              disabled={!formData.nombre.trim() || isSaving}
               className="flex-1 bg-slate-600 hover:bg-slate-700"
             >
-              {isAdding ? (
+              {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Agregando...
+                  {isEditMode ? 'Guardando...' : 'Agregando...'}
                 </>
+              ) : isEditMode ? (
+                'Guardar'
               ) : (
                 'Agregar'
               )}

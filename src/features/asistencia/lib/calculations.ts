@@ -10,6 +10,7 @@ export interface CategoryTotals {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas: number;
   hermanosApartados: number;
   hermanosVisitas: number;
   total: number;
@@ -24,6 +25,7 @@ interface BaseValues {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas: number;
   hermanosApartados: number;
   hermanosVisitas: number;
 }
@@ -56,6 +58,7 @@ function getBaseValues(
       ninos: 0,
       adolescentes: 0,
       simpatizantes: 0,
+      visitas: 0,
       hermanosApartados: 0,
       hermanosVisitas: 0,
     };
@@ -67,6 +70,7 @@ function getBaseValues(
     ninos: datosServicioBase.ninos || 0,
     adolescentes: datosServicioBase.adolescentes || 0,
     simpatizantes: datosServicioBase.simpatizantes || 0,
+    visitas: datosServicioBase.visitas || 0,
     hermanosApartados: datosServicioBase.hermanosApartados || 0,
     hermanosVisitas: datosServicioBase.hermanosVisitas || 0,
   };
@@ -117,6 +121,12 @@ export function calculateAllTotals(
     baseValues.simpatizantes
   );
 
+  const visitas = calculateCategoryTotal(
+    conteoState.visitasCount || 0,
+    conteoState.visitasDelDia?.length || 0,
+    baseValues.visitas
+  );
+
   const hermanosApartados = calculateCategoryTotal(
     conteoState.hermanosApartados,
     conteoState.hermanosApartadosDelDia.length,
@@ -135,6 +145,7 @@ export function calculateAllTotals(
     ninos +
     adolescentes +
     simpatizantes +
+    visitas +
     hermanosApartados +
     hermanosVisitas;
 
@@ -144,6 +155,7 @@ export function calculateAllTotals(
     ninos,
     adolescentes,
     simpatizantes,
+    visitas,
     hermanosApartados,
     hermanosVisitas,
     total,
@@ -159,6 +171,10 @@ function buildAsistentesArrays(
 ) {
   const baseSimpatizantes = conteoState.modoConsecutivo
     ? datosServicioBase?.simpatizantesAsistieron || []
+    : [];
+
+  const baseVisitas = conteoState.modoConsecutivo
+    ? datosServicioBase?.visitasAsistieron || []
     : [];
 
   const baseMiembros = conteoState.modoConsecutivo
@@ -187,6 +203,13 @@ function buildAsistentesArrays(
       ...conteoState.simpatizantesDelDia.map((s) => ({
         id: s.id,
         nombre: s.nombre,
+      })),
+    ],
+    visitasAsistieron: [
+      ...baseVisitas,
+      ...(conteoState.visitasDelDia || []).map((v) => ({
+        id: v.id,
+        nombre: v.nombre,
       })),
     ],
     miembrosAsistieron: {
@@ -249,10 +272,12 @@ export interface ConteoDataResult {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas: number;
   hermanosApartados: number;
   hermanosVisitas: number;
   total: number;
   simpatizantesAsistieron: Array<{ id: string; nombre: string }>;
+  visitasAsistieron: Array<{ id: string; nombre: string }>;
   miembrosAsistieron: {
     hermanos: Array<{ id: string; nombre: string }>;
     hermanas: Array<{ id: string; nombre: string }>;
@@ -296,6 +321,7 @@ export function buildConteoData(
     ninos: totals.ninos,
     adolescentes: totals.adolescentes,
     simpatizantes: totals.simpatizantes,
+    visitas: totals.visitas,
     hermanosApartados: totals.hermanosApartados,
     hermanosVisitas: totals.hermanosVisitas,
     total: totals.total,

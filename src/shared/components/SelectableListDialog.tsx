@@ -384,12 +384,12 @@ export function SelectableListDialog<T extends SelectableItem>({
               )}
 
               {/* Elementos ya agregados */}
-              {selectedItems.length > 0 && (
+              {selectedItems?.length > 0 && (
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-green-700 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
-                      Agregados en esta sesión ({selectedItems.length})
+                      Agregados en esta sesión ({selectedItems?.length})
                     </h4>
                     <Button
                       variant="ghost"

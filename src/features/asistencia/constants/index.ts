@@ -14,6 +14,7 @@ export const CATEGORIA_COLORS = {
   ninos: 'bg-amber-600',
   adolescentes: 'bg-purple-600',
   simpatizantes: 'bg-emerald-600',
+  visitas: 'bg-green-600',
   hermanosApartados: 'bg-orange-600',
   hermanosVisitas: 'bg-indigo-600',
 } as const;
@@ -24,6 +25,7 @@ export const CATEGORIA_LABELS = {
   ninos: 'Niños',
   adolescentes: 'Adolescentes',
   simpatizantes: 'Simpatizantes',
+  visitas: 'Visitas',
   hermanosApartados: 'Hermanos Apartados',
   hermanosVisitas: 'Hermanos Visitas',
 } as const;
