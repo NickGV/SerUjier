@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Card, CardContent } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
-import { X, Plus, CheckCircle, Trash2, Users, User } from 'lucide-react';
+import { Input } from '@/shared/ui/input';
+import { CheckCircle, Plus, Trash2, User, Users, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { type HermanosVisitasDialogProps } from '../types';
 
@@ -40,10 +40,15 @@ export function HermanosVisitasDialog({
     if (!newHermanoVisita.nombre.trim()) return;
 
     try {
-      await onAddHermanoVisita({
+      // Construir el objeto sin el campo iglesia si está vacío
+      const data: { nombre: string; iglesia?: string } = {
         nombre: newHermanoVisita.nombre.trim(),
-        iglesia: newHermanoVisita.iglesia.trim() || undefined,
-      });
+      };
+      if (newHermanoVisita.iglesia.trim()) {
+        data.iglesia = newHermanoVisita.iglesia.trim();
+      }
+
+      onAddHermanoVisita(data);
       setNewHermanoVisita({ nombre: '', iglesia: '' });
       setShowNewForm(false);
       toast.success('Hermano visita agregado exitosamente');
@@ -56,7 +61,7 @@ export function HermanosVisitasDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col mx-2 sm:mx-0">
-        <DialogHeader className="flex-shrink-0 pb-4">
+        <DialogHeader className="shrink-0 pb-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base sm:text-lg">
               Hermanos Visitas
@@ -72,7 +77,7 @@ export function HermanosVisitasDialog({
             <>
               {/* Hermanos visitas ya agregados */}
               {hermanosVisitasDelDia.length > 0 && (
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-indigo-700 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
@@ -104,7 +109,7 @@ export function HermanosVisitasDialog({
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               {/* Avatar */}
-                              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center shrink-0">
                                 <User className="w-5 h-5 text-indigo-600" />
                               </div>
 
@@ -162,7 +167,7 @@ export function HermanosVisitasDialog({
               )}
 
               {/* Botones de acción */}
-              <div className="flex-shrink-0 pt-3 border-t space-y-2">
+              <div className="shrink-0 pt-3 border-t space-y-2">
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -245,7 +250,7 @@ export function HermanosVisitasDialog({
                 </div>
               </div>
 
-              <div className="flex-shrink-0 pt-3 border-t">
+              <div className="shrink-0 pt-3 border-t">
                 <div className="flex gap-2">
                   <Button
                     variant="outline"

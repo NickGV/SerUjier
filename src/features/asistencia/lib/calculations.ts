@@ -1,5 +1,5 @@
-import { type ConteoState } from '../types';
 import { type DatosServicioBase } from '@/shared/types';
+import { type ConteoState } from '../types';
 
 /**
  * Interface for calculated totals by category
@@ -254,7 +254,7 @@ function buildAsistentesArrays(
       ...conteoState.hermanosVisitasDelDia.map((h) => ({
         id: h.id,
         nombre: h.nombre,
-        iglesia: h.iglesia,
+        ...(h.iglesia && { iglesia: h.iglesia }),
       })),
     ],
   };

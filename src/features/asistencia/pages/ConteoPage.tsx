@@ -319,7 +319,7 @@ export default function ConteoPage() {
   const hermanosVisitasHandlers = {
     handleAdd: (nuevoHermano: { nombre: string; iglesia?: string }) => {
       const hermanoVisita = {
-        id: Date.now().toString(),
+        id: `hv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         nombre: nuevoHermano.nombre,
         iglesia: nuevoHermano.iglesia,
       };
