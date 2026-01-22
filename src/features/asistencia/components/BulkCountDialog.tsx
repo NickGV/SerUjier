@@ -38,6 +38,7 @@ export function BulkCountDialog({
     (parseInt(bulkCounts.ninos) || 0) +
     (parseInt(bulkCounts.adolescentes) || 0) +
     (parseInt(bulkCounts.simpatizantes) || 0) +
+    (parseInt(bulkCounts.visitas) || 0) +
     (parseInt(bulkCounts.hermanosApartados) || 0) +
     (parseInt(bulkCounts.hermanosVisitas) || 0);
 
@@ -127,6 +128,20 @@ export function BulkCountDialog({
               onChange={(e) =>
                 handleInputChange('simpatizantes', e.target.value)
               }
+              className="h-10 text-center text-sm"
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-green-700 mb-2 block">
+              Visitas
+            </label>
+            <Input
+              type="number"
+              placeholder="0"
+              value={bulkCounts.visitas}
+              onChange={(e) => handleInputChange('visitas', e.target.value)}
               className="h-10 text-center text-sm"
               min="0"
             />

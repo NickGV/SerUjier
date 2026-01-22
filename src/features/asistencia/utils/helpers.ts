@@ -6,6 +6,7 @@ import type {
   AsistenteInfo,
   MiembroExtended,
   SimpatizanteLite,
+  VisitaLite,
 } from '../types';
 
 export const getMiembrosPorCategoria = (
@@ -36,6 +37,8 @@ export const getCategoriaColor = (categoria: string) => {
       return 'bg-purple-50 border-purple-200 text-purple-700';
     case 'simpatizantes':
       return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    case 'visitas':
+      return 'bg-green-50 border-green-200 text-green-700';
     case 'hermanosApartados':
       return 'bg-orange-50 border-orange-200 text-orange-700';
     case 'hermanosVisitas':
@@ -57,6 +60,8 @@ export const getCategoriaLabel = (categoria: string) => {
       return 'Adolescentes';
     case 'simpatizantes':
       return 'Simpatizantes';
+    case 'visitas':
+      return 'Visitas';
     case 'hermanosApartados':
       return 'Hermanos Apartados';
     case 'hermanosVisitas':
@@ -70,6 +75,7 @@ export const getAllAsistentes = (
   conteoState: {
     modoConsecutivo: boolean;
     simpatizantesDelDia: SimpatizanteLite[];
+    visitasDelDia?: VisitaLite[];
     hermanos: number;
     hermanas: number;
     ninos: number;
@@ -110,6 +116,21 @@ export const getAllAsistentes = (
             id: `base-simpatizante-${simpatizante.id}`,
             nombre: simpatizante.nombre,
             categoria: 'simpatizantes',
+            tipo: 'simpatizante',
+            esBase: true,
+          });
+        }
+      );
+    }
+
+    // Agregar visitas base
+    if (datosServicioBase.visitasAsistieron) {
+      datosServicioBase.visitasAsistieron.forEach(
+        (visita: MiembroSimplificado) => {
+          asistentes.push({
+            id: `base-visita-${visita.id}`,
+            nombre: visita.nombre,
+            categoria: 'visitas',
             tipo: 'simpatizante',
             esBase: true,
           });
@@ -161,6 +182,19 @@ export const getAllAsistentes = (
       esBase: false,
     });
   });
+
+  // Agregar visitas de esta sesión
+  if (conteoState.visitasDelDia) {
+    conteoState.visitasDelDia.forEach((visita: VisitaLite) => {
+      asistentes.push({
+        id: visita.id,
+        nombre: visita.nombre,
+        categoria: 'visitas',
+        tipo: 'simpatizante',
+        esBase: false,
+      });
+    });
+  }
 
   return asistentes;
 };

@@ -9,9 +9,11 @@ export interface HistorialDataForCalculation {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas?: number;
   hermanosApartados?: number;
   hermanosVisitas?: number;
   simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+  visitasAsistieron?: Array<{ id: string; nombre: string }>;
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -32,6 +34,7 @@ export interface ManualCounters {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas: number;
   hermanosApartados: number;
   hermanosVisitas: number;
 }
@@ -56,6 +59,7 @@ export function calculateManualCounters(
     historialData.miembrosAsistieron?.adolescentes?.length || 0;
   const simpatizantesConNombre =
     historialData.simpatizantesAsistieron?.length || 0;
+  const visitasConNombre = historialData.visitasAsistieron?.length || 0;
   const hermanosApartadosConNombre =
     historialData.miembrosAsistieron?.hermanosApartados?.length || 0;
   const hermanosVisitasConNombre =
@@ -74,6 +78,7 @@ export function calculateManualCounters(
       0,
       historialData.simpatizantes - simpatizantesConNombre
     ),
+    visitas: Math.max(0, (historialData.visitas || 0) - visitasConNombre),
     hermanosApartados: Math.max(
       0,
       (historialData.hermanosApartados || 0) - hermanosApartadosConNombre
@@ -96,6 +101,7 @@ export function calculateTotalAttendance(
   counters: ManualCounters,
   namedAttendees: {
     simpatizantes: number;
+    visitas: number;
     hermanos: number;
     hermanas: number;
     ninos: number;
@@ -110,9 +116,11 @@ export function calculateTotalAttendance(
     counters.ninos +
     counters.adolescentes +
     counters.simpatizantes +
+    counters.visitas +
     counters.hermanosApartados +
     counters.hermanosVisitas +
     namedAttendees.simpatizantes +
+    namedAttendees.visitas +
     namedAttendees.hermanos +
     namedAttendees.hermanas +
     namedAttendees.ninos +

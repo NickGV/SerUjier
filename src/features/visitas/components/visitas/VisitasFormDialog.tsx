@@ -1,6 +1,6 @@
 'use client';
 
-import { type Simpatizante } from '@/shared/types';
+import { type Visita } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -12,53 +12,58 @@ import { Input } from '@/shared/ui/input';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface EditSimpatizanteDialogProps {
+interface VisitaFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  simpatizante: Simpatizante | null;
-  onUpdate: (
-    id: string,
-    data: Partial<Omit<Simpatizante, 'id' | 'fechaRegistro'>>
+  visita?: Visita | null;
+  onSave: (
+    data: Omit<Visita, 'id' | 'fechaRegistro'> & { nombre: string }
   ) => Promise<void>;
-  isUpdating: boolean;
+  isSaving: boolean;
 }
 
-export function EditSimpatizanteDialog({
+export function VisitaFormDialog({
   isOpen,
   onClose,
-  simpatizante,
-  onUpdate,
-  isUpdating,
-}: EditSimpatizanteDialogProps) {
+  visita,
+  onSave,
+  isSaving,
+}: VisitaFormDialogProps) {
+  const isEditMode = !!visita;
+
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
     notas: '',
   });
 
-  // Update form data when simpatizante changes
+  // Update form data when visita changes or dialog opens
   useEffect(() => {
-    if (simpatizante) {
+    if (visita) {
       setFormData({
-        nombre: simpatizante.nombre || '',
-        telefono: simpatizante.telefono || '',
-        notas: simpatizante.notas || '',
+        nombre: visita.nombre || '',
+        telefono: visita.telefono || '',
+        notas: visita.notas || '',
+      });
+    } else {
+      setFormData({
+        nombre: '',
+        telefono: '',
+        notas: '',
       });
     }
-  }, [simpatizante]);
+  }, [visita, isOpen]);
 
   const handleSubmit = async () => {
-    if (!simpatizante || !formData.nombre.trim()) {
+    if (!formData.nombre.trim()) {
       return;
     }
 
     try {
       // Create clean data object - only include fields with actual values
-      const cleanData: { nombre?: string; telefono?: string; notas?: string } =
-        {};
-
-      // Always include nombre since it's required
-      cleanData.nombre = formData.nombre.trim();
+      const cleanData: { nombre: string; telefono?: string; notas?: string } = {
+        nombre: formData.nombre.trim(),
+      };
 
       // Only add optional fields if they have actual content
       const telefonoTrimmed = formData.telefono.trim();
@@ -71,28 +76,28 @@ export function EditSimpatizanteDialog({
         cleanData.notas = notasTrimmed;
       }
 
-      await onUpdate(simpatizante.id, cleanData);
+      await onSave(cleanData);
+      setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     } catch (error) {
-      console.error('Error al actualizar simpatizante:', error);
+      console.error('Error al guardar visita:', error);
     }
   };
 
   const handleClose = () => {
-    if (!isUpdating) {
+    if (!isSaving) {
+      setFormData({ nombre: '', telefono: '', notas: '' });
       onClose();
     }
   };
-
-  if (!simpatizante) {
-    return null;
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Simpatizante</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? 'Editar Visita' : 'Nueva Visita'}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -100,12 +105,12 @@ export function EditSimpatizanteDialog({
               Nombre *
             </label>
             <Input
-              placeholder="Nombre del simpatizante"
+              placeholder="Nombre de la visita"
               value={formData.nombre}
               onChange={(e) =>
                 setFormData({ ...formData, nombre: e.target.value })
               }
-              disabled={isUpdating}
+              disabled={isSaving}
             />
           </div>
 
@@ -119,7 +124,7 @@ export function EditSimpatizanteDialog({
               onChange={(e) =>
                 setFormData({ ...formData, telefono: e.target.value })
               }
-              disabled={isUpdating}
+              disabled={isSaving}
             />
           </div>
 
@@ -133,7 +138,7 @@ export function EditSimpatizanteDialog({
               onChange={(e) =>
                 setFormData({ ...formData, notas: e.target.value })
               }
-              disabled={isUpdating}
+              disabled={isSaving}
             />
           </div>
 
@@ -141,23 +146,25 @@ export function EditSimpatizanteDialog({
             <Button
               variant="outline"
               onClick={handleClose}
-              disabled={isUpdating}
+              disabled={isSaving}
               className="flex-1"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!formData.nombre.trim() || isUpdating}
+              disabled={!formData.nombre.trim() || isSaving}
               className="flex-1 bg-slate-600 hover:bg-slate-700"
             >
-              {isUpdating ? (
+              {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Actualizando...
+                  {isEditMode ? 'Guardando...' : 'Agregando...'}
                 </>
-              ) : (
+              ) : isEditMode ? (
                 'Guardar'
+              ) : (
+                'Agregar'
               )}
             </Button>
           </div>

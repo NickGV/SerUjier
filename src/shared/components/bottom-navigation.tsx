@@ -9,6 +9,7 @@ import {
   LogOut,
   Settings,
   UserCheck,
+  UserPlus,
   Users,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -60,8 +61,15 @@ export function BottomNavigation({
           id: 'simpatizantes',
           label: 'Simpatizantes',
           icon: Users,
-          description: 'Gestionar visitantes',
+          description: 'Gestionar simpatizantes',
           path: '/simpatizantes',
+        },
+        {
+          id: 'visitas',
+          label: 'Visitas',
+          icon: UserPlus,
+          description: 'Gestionar visitas',
+          path: '/visitas',
         },
         {
           id: 'miembros',
@@ -96,8 +104,19 @@ export function BottomNavigation({
         id: 'simpatizantes',
         label: 'Simpatizantes',
         icon: Users,
-        description: 'Gestionar visitantes',
+        description: 'Gestionar simpatizantes',
         path: '/simpatizantes',
+      });
+    }
+
+    // Visitas - si puede ver
+    if (canView('visitas')) {
+      items.push({
+        id: 'visitas',
+        label: 'Visitas',
+        icon: UserPlus,
+        description: 'Gestionar visitas',
+        path: '/visitas',
       });
     }
 

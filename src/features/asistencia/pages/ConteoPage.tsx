@@ -8,14 +8,17 @@ import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-
 import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
 import {
   addSimpatizante,
+  addVisita,
   fetchMiembros,
   fetchSimpatizantes,
   fetchUjieres,
+  fetchVisitas,
 } from '@/shared/firebase';
 import {
   type Miembro,
   type MiembroSimplificado,
   type Simpatizante,
+  type Visita,
 } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -36,11 +39,13 @@ import {
   MiembrosDialog,
   SimpatizantesDialog,
   SimpatizantesList,
+  VisitasDialog,
 } from '@/features/asistencia/components';
 import type {
   CategoriaPlural,
   ConteoStateWithIndex,
   SimpatizanteLite,
+  VisitaLite,
 } from '@/features/asistencia/types';
 import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
 import { calculateAllTotals } from '../lib/calculations';
@@ -65,6 +70,7 @@ export default function ConteoPage() {
   // Estados para datos de Firebase
   const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
+  const [visitas, setVisitas] = useState<Visita[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [ujieres, setUjieres] = useState<string[]>([]);
@@ -121,6 +127,7 @@ export default function ConteoPage() {
 
   // Estados para los diálogos
   const [showSimpatizantesDialog, setShowSimpatizantesDialog] = useState(false);
+  const [showVisitasDialog, setShowVisitasDialog] = useState(false);
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
   const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] =
@@ -138,13 +145,16 @@ export default function ConteoPage() {
         setLoading(true);
       }
 
-      const [simpatizantesData, miembrosData, ujieresData] = await Promise.all([
-        fetchSimpatizantes(),
-        fetchMiembros(),
-        fetchUjieres(),
-      ]);
+      const [simpatizantesData, miembrosData, ujieresData, visitasData] =
+        await Promise.all([
+          fetchSimpatizantes(),
+          fetchMiembros(),
+          fetchUjieres(),
+          fetchVisitas(),
+        ]);
       setSimpatizantes(simpatizantesData);
       setMiembros(miembrosData);
+      setVisitas(visitasData);
       // Extraer solo los nombres de los ujieres activos usando la utilidad
       const nombresUjieres = getActiveUjieres(ujieresData);
       setUjieres(nombresUjieres);
@@ -223,6 +233,48 @@ export default function ConteoPage() {
     },
   };
 
+  // Handlers para visitas
+  const visitasHandlers = {
+    handleAdd: (newVisitas: Visita[]) => {
+      updateConteo({
+        visitasDelDia: [...conteoState.visitasDelDia, ...newVisitas],
+      });
+    },
+
+    handleAddNew: async (
+      visitaData: Omit<VisitaLite, 'id'> & { nombre: string }
+    ) => {
+      const withFecha = {
+        fechaRegistro: new Date().toISOString().split('T')[0],
+        ...visitaData,
+      };
+      const result = await addVisita(withFecha);
+      const creada: VisitaLite = {
+        id: (result as { id: string }).id,
+        ...withFecha,
+      };
+
+      updateConteo({
+        visitasDelDia: [...conteoState.visitasDelDia, creada],
+      });
+      setVisitas((prev) => [...prev, creada]);
+    },
+
+    handleRemove: (visitaId: string) => {
+      updateConteo({
+        visitasDelDia: conteoState.visitasDelDia.filter(
+          (v) => v.id !== visitaId
+        ),
+      });
+    },
+
+    handleClearAll: () => {
+      updateConteo({
+        visitasDelDia: [],
+      });
+    },
+  };
+
   // Handlers para miembros
   const categoriaKey = (c: CategoriaPlural) => `${c}DelDia` as const;
 
@@ -292,6 +344,7 @@ export default function ConteoPage() {
   // Handlers para los diálogos
   const dialogHandlers = {
     openSimpatizantes: () => setShowSimpatizantesDialog(true),
+    openVisitas: () => setShowVisitasDialog(true),
     openMiembros: (categoria: CategoriaPlural) => {
       setCategoriaSeleccionada(categoria);
       setShowMiembrosDialog(true);
@@ -303,6 +356,8 @@ export default function ConteoPage() {
   const handleOpenDialog = (categoria: string) => {
     if (categoria === 'simpatizantes') {
       dialogHandlers.openSimpatizantes();
+    } else if (categoria === 'visitas') {
+      dialogHandlers.openVisitas();
     } else if (categoria === 'hermanosVisitas') {
       dialogHandlers.openHermanosVisitas();
     } else {
@@ -424,7 +479,7 @@ export default function ConteoPage() {
       )}
 
       {/* Total Counter */}
-      <Card className="bg-gradient-to-r from-slate-700 to-slate-800 text-white border-0 shadow-lg">
+      <Card className="bg-linear-to-r from-slate-700 to-slate-800 text-white border-0 shadow-lg">
         <CardContent className="p-4 sm:p-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold">{totals.total}</h2>
           <p className="text-slate-200 text-sm sm:text-base">
@@ -488,6 +543,22 @@ export default function ConteoPage() {
         onClearAllSimpatizantes={simpatizantesHandlers.handleClearAll}
       />
 
+      <VisitasDialog
+        isOpen={showVisitasDialog}
+        onClose={() => setShowVisitasDialog(false)}
+        visitas={visitas}
+        visitasDelDia={conteoState.visitasDelDia}
+        baseVisitas={
+          conteoState.modoConsecutivo
+            ? (datosServicioBase?.visitasAsistieron as VisitaLite[]) || []
+            : []
+        }
+        onAddVisitas={visitasHandlers.handleAdd}
+        onAddNewVisita={visitasHandlers.handleAddNew}
+        onRemoveVisita={visitasHandlers.handleRemove}
+        onClearAllVisitas={visitasHandlers.handleClearAll}
+      />
+
       {categoriaSeleccionada && (
         <MiembrosDialog
           isOpen={showMiembrosDialog}
@@ -540,6 +611,8 @@ export default function ConteoPage() {
             ].includes(categoria)
           ) {
             miembrosHandlers.handleRemove(categoria as CategoriaPlural, id);
+          } else if (categoria === 'visitas') {
+            visitasHandlers.handleRemove(id);
           } else if (categoria === 'hermanosVisitas') {
             hermanosVisitasHandlers.handleRemove(id);
           } else {
@@ -571,8 +644,8 @@ export default function ConteoPage() {
         disabled={isSaving}
         className={`w-full h-12 md:h-14 ${
           isEditMode
-            ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
-            : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800'
+            ? 'bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
+            : 'bg-linear-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800'
         } active:from-slate-800 active:to-slate-900 text-white rounded-xl py-4 md:py-5 shadow-lg text-base md:text-lg font-semibold mb-4`}
         aria-label={
           isEditMode ? 'Actualizar registro' : 'Guardar conteo de asistencia'
@@ -623,7 +696,7 @@ export default function ConteoPage() {
             <div className="space-y-3">
               <Button
                 onClick={continuarConDominical}
-                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl py-3"
+                className="w-full bg-linear-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl py-3"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Sí, Continuar con Dominical

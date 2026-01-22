@@ -16,6 +16,7 @@ interface ConteoState {
   ninos: number;
   adolescentes: number;
   simpatizantesCount: number;
+  visitasCount: number;
   hermanosApartados: number;
   hermanosVisitasCount: number;
   fecha: string;
@@ -26,6 +27,13 @@ interface ConteoState {
   isEditMode: boolean;
   editingRecordId: string | null;
   simpatizantesDelDia: Array<{
+    id: string;
+    nombre: string;
+    telefono?: string;
+    notas?: string;
+    fechaRegistro?: string;
+  }>;
+  visitasDelDia: Array<{
     id: string;
     nombre: string;
     telefono?: string;
@@ -65,6 +73,7 @@ const initialState: ConteoState = {
   ninos: 0,
   adolescentes: 0,
   simpatizantesCount: 0,
+  visitasCount: 0,
   hermanosApartados: 0,
   hermanosVisitasCount: 0,
   fecha: getLocalDateString(), // Usar función local en lugar de toISOString()
@@ -75,6 +84,7 @@ const initialState: ConteoState = {
   isEditMode: false,
   editingRecordId: null,
   simpatizantesDelDia: [],
+  visitasDelDia: [],
   hermanosDelDia: [],
   hermanasDelDia: [],
   ninosDelDia: [],
@@ -165,9 +175,11 @@ export function usePersistentConteo() {
       ninos: 0,
       adolescentes: 0,
       simpatizantesCount: 0,
+      visitasCount: 0,
       hermanosApartados: 0,
       hermanosVisitasCount: 0,
       simpatizantesDelDia: [],
+      visitasDelDia: [],
       hermanosDelDia: [],
       hermanasDelDia: [],
       ninosDelDia: [],
@@ -196,9 +208,11 @@ export function usePersistentConteo() {
         ninos: number;
         adolescentes: number;
         simpatizantes: number;
+        visitas?: number;
         hermanosApartados?: number;
         hermanosVisitas?: number;
         simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+        visitasAsistieron?: Array<{ id: string; nombre: string }>;
         miembrosAsistieron?: {
           hermanos?: Array<{ id: string; nombre: string }>;
           hermanas?: Array<{ id: string; nombre: string }>;
@@ -230,6 +244,7 @@ export function usePersistentConteo() {
         ninos: manualCounters.ninos,
         adolescentes: manualCounters.adolescentes,
         simpatizantesCount: manualCounters.simpatizantes,
+        visitasCount: manualCounters.visitas || 0,
         hermanosApartados: manualCounters.hermanosApartados,
         hermanosVisitasCount: manualCounters.hermanosVisitas,
         fecha: historialData.fecha,
@@ -239,6 +254,7 @@ export function usePersistentConteo() {
         selectedUjieres: ujieresArray,
         modoConsecutivo: false,
         simpatizantesDelDia: historialData.simpatizantesAsistieron || [],
+        visitasDelDia: historialData.visitasAsistieron || [],
         hermanosDelDia: historialData.miembrosAsistieron?.hermanos || [],
         hermanasDelDia: historialData.miembrosAsistieron?.hermanas || [],
         ninosDelDia: historialData.miembrosAsistieron?.ninos || [],

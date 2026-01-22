@@ -24,6 +24,15 @@ export interface Simpatizante {
   [key: string]: unknown; // Permitir propiedades adicionales
 }
 
+export interface Visita {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
+}
+
 // Categories of members
 export type miembroCategoria = 'hermano' | 'hermana' | 'nino' | 'adolescente';
 
@@ -57,11 +66,13 @@ export interface DatosServicioBase {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas: number;
   hermanosApartados: number;
   hermanosVisitas: number;
   total: number;
   servicio: string;
   simpatizantesAsistieron: Array<MiembroSimplificado>;
+  visitasAsistieron: Array<MiembroSimplificado>;
   miembrosAsistieron: MiembrosAsistieron;
   hermanosVisitasAsistieron: Array<MiembroSimplificado>;
 }

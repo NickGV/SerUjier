@@ -1,56 +1,56 @@
 'use client';
 
 import { sortByNombre } from '@/shared/lib/sort-utils';
-import { type Simpatizante } from '@/shared/types';
+import { type Visita } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-import { Edit3, Trash2, User, Users } from 'lucide-react';
+import { Edit3, Trash2, User, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-interface SimpatizantesListProps {
-  simpatizantes: Simpatizante[];
-  onEdit?: (simpatizante: Simpatizante) => void;
-  onDelete?: (simpatizante: Simpatizante) => void;
+interface VisitasListProps {
+  visitas: Visita[];
+  onEdit?: (visita: Visita) => void;
+  onDelete?: (visita: Visita) => void;
   searchTerm: string;
 }
 
-export function SimpatizantesList({
-  simpatizantes,
+export function VisitasList({
+  visitas,
   onEdit,
   onDelete,
   searchTerm,
-}: SimpatizantesListProps) {
+}: VisitasListProps) {
   const router = useRouter();
 
-  if (simpatizantes.length === 0) {
+  if (visitas.length === 0) {
     return (
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
         <CardContent className="p-8 text-center">
-          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-600 mb-2">
-            No se encontraron simpatizantes
+            No se encontraron visitas
           </h3>
           <p className="text-gray-500">
             {searchTerm
               ? 'Intenta con un término de búsqueda diferente o más específico'
-              : 'Comienza agregando el primer simpatizante usando el botón de arriba'}
+              : 'Comienza agregando la primera visita usando el botón de arriba'}
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  // Ordenar simpatizantes alfabéticamente
-  const sortedSimpatizantes = sortByNombre(simpatizantes);
+  // Ordenar visitas alfabéticamente
+  const sortedVisitas = sortByNombre(visitas);
 
   return (
     <div className="space-y-3">
-      {sortedSimpatizantes.map((simpatizante) => (
+      {sortedVisitas.map((visita) => (
         <Card
-          key={simpatizante.id}
+          key={visita.id}
           className="bg-white/80 backdrop-blur-sm border-0 shadow-md cursor-pointer"
-          onClick={() => router.push(`/simpatizantes/${simpatizante.id}`)}
+          onClick={() => router.push(`/visitas/${visita.id}`)}
         >
           <CardContent className="p-4">
             <div className="flex justify-between">
@@ -59,34 +59,35 @@ export function SimpatizantesList({
                 <div className="flex items-center gap-2 mb-1">
                   <User className="w-4 h-4 text-black" />
                   <h3 className="font-semibold text-gray-900 text-base mb-1">
-                    {simpatizante.nombre}
+                    {visita.nombre}
                   </h3>
                 </div>
 
-                {/* Información del simpatizante */}
+                {/* Información de la visita */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-600">
-                    {simpatizante.notas || 'Sin notas'}
+                    {visita.notas || 'Sin notas'}
                   </p>
 
                   {/* Badge y fecha en la misma línea */}
                   <div className="flex items-center gap-3 mt-2">
                     <Badge
                       variant="secondary"
-                      className="bg-pink-50 text-pink-700 border-pink-200 text-xs px-2 py-1"
+                      className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1"
                     >
-                      Simpatizante
+                      Visita
                     </Badge>
                     <span className="text-xs text-gray-500">
                       Desde:{' '}
-                      {simpatizante.fechaRegistro
-                        ? new Date(
-                            simpatizante.fechaRegistro
-                          ).toLocaleDateString('es-ES', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                          })
+                      {visita.fechaRegistro
+                        ? new Date(visita.fechaRegistro).toLocaleDateString(
+                            'es-ES',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            }
+                          )
                         : 'N/A'}
                     </span>
                   </div>
@@ -101,7 +102,7 @@ export function SimpatizantesList({
                   className="h-10 px-4 hover:bg-blue-50"
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/simpatizantes/${simpatizante.id}`);
+                    router.push(`/visitas/${visita.id}`);
                   }}
                 >
                   Ver Perfil
@@ -111,11 +112,11 @@ export function SimpatizantesList({
                   <Button
                     variant="outline"
                     size="sm"
-                    aria-label="Editar simpatizante"
+                    aria-label="Editar visita"
                     className="h-10 w-10 p-0 text-blue-600 border-blue-200 hover:bg-blue-50"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEdit(simpatizante);
+                      onEdit(visita);
                     }}
                   >
                     <Edit3 className="w-5 h-5" />
@@ -126,11 +127,11 @@ export function SimpatizantesList({
                   <Button
                     variant="outline"
                     size="sm"
-                    aria-label="Eliminar simpatizante"
+                    aria-label="Eliminar visita"
                     className="h-10 w-10 p-0 text-red-600 border-red-200 hover:bg-red-50"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete(simpatizante);
+                      onDelete(visita);
                     }}
                   >
                     <Trash2 className="w-5 h-5" />

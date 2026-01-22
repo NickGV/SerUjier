@@ -1,7 +1,12 @@
-import { type MiembroSimplificado, type Simpatizante } from '@/shared/types';
+import {
+  type MiembroSimplificado,
+  type Simpatizante,
+  type Visita,
+} from '@/shared/types';
 
 // Usamos el tipo Simpatizante de shared/types para mantener consistencia
 export type SimpatizanteLite = Simpatizante & { [key: string]: unknown };
+export type VisitaLite = Visita & { [key: string]: unknown };
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
 export interface HermanoVisita {
@@ -17,6 +22,7 @@ export interface ConteoStateBase {
   ninos: number;
   adolescentes: number;
   simpatizantesCount: number;
+  visitasCount: number;
   hermanosApartados: number;
   hermanosVisitasCount: number;
   fecha: string;
@@ -27,6 +33,7 @@ export interface ConteoStateBase {
   isEditMode: boolean;
   editingRecordId: string | null;
   simpatizantesDelDia: SimpatizanteLite[];
+  visitasDelDia: VisitaLite[];
   hermanosDelDia: MiembroSimplificado[];
   hermanasDelDia: MiembroSimplificado[];
   ninosDelDia: MiembroSimplificado[];
@@ -50,6 +57,7 @@ export interface BulkCounts {
   ninos: string;
   adolescentes: string;
   simpatizantes: string;
+  visitas: string;
   hermanosApartados: string;
   hermanosVisitas: string;
 }

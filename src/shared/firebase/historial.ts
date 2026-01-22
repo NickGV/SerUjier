@@ -22,10 +22,12 @@ export interface HistorialRecord {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas?: number;
   hermanosApartados?: number;
   hermanosVisitas?: number;
   total: number;
   simpatizantesAsistieron?: MiembroSimplificado[];
+  visitasAsistieron?: MiembroSimplificado[];
   miembrosAsistieron?: MiembrosAsistieron;
   hermanosVisitasAsistieron?: Array<{
     id: string;
