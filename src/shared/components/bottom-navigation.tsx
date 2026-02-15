@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button';
 import {
   Calculator,
   Clock,
+  HeartHandshake,
   LogOut,
   Settings,
   UserCheck,
@@ -72,6 +73,13 @@ export function BottomNavigation({
           path: '/visitas',
         },
         {
+          id: 'heRestauracion',
+          label: 'He Rest.',
+          icon: HeartHandshake,
+          description: 'Hermanos en Restauración',
+          path: '/he-restauracion',
+        },
+        {
           id: 'miembros',
           label: 'Miembros',
           icon: UserCheck,
@@ -117,6 +125,17 @@ export function BottomNavigation({
         icon: UserPlus,
         description: 'Gestionar visitas',
         path: '/visitas',
+      });
+    }
+
+    // HeRestauracion - si puede ver
+    if (canView('heRestauracion')) {
+      items.push({
+        id: 'heRestauracion',
+        label: 'He Rest.',
+        icon: HeartHandshake,
+        description: 'Hermanos en Restauración',
+        path: '/he-restauracion',
       });
     }
 

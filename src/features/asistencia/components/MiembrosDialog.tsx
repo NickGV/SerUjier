@@ -60,7 +60,7 @@ export function MiembrosDialog({
     hermanas: 'Hermanas',
     ninos: 'Niños',
     adolescentes: 'Adolescentes',
-    hermanosApartados: 'Hermanos Apartados',
+    heRestauracion: 'Hermanos en Restauración',
   };
 
   return (

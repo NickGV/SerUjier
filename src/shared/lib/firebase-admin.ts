@@ -21,10 +21,15 @@ if (serviceAccountBase64) {
     const decoded = Buffer.from(serviceAccountBase64, 'base64').toString(
       'utf8'
     );
+
     const svc = JSON.parse(decoded);
+
     adminAppOptions = { credential: cert(svc) };
-  } catch {
-    // fallback to individual envs below
+  } catch (error) {
+    console.error(
+      '❌ [FIREBASE ADMIN] Failed to parse FIREBASE_SERVICE_ACCOUNT_BASE64:',
+      error
+    );
   }
 }
 
@@ -32,6 +37,17 @@ if (!adminAppOptions && projectId && clientEmail && privateKeyRaw) {
   adminAppOptions = {
     credential: cert({ projectId, clientEmail, privateKey: privateKeyRaw }),
   };
+}
+
+if (!adminAppOptions) {
+  console.error(
+    '❌ [FIREBASE ADMIN] No valid credentials found! Firebase Admin will fail.'
+  );
+  console.error('❌ [FIREBASE ADMIN] Please set either:');
+  console.error('   1. FIREBASE_SERVICE_ACCOUNT_BASE64, OR');
+  console.error(
+    '   2. FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY'
+  );
 }
 
 const adminApp = getApps().length

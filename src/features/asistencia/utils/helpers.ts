@@ -13,10 +13,9 @@ export const getMiembrosPorCategoria = (
   miembros: MiembroExtended[],
   categoria: string
 ): MiembroExtended[] => {
-  // Para hermanos apartados, incluir todos los miembros
-  if (categoria === 'hermanosApartados') {
-    return miembros;
-  }
+  // HeRestauracion is NOT filtered from miembros anymore
+  // It now uses its own master collection
+  // This function is only used for regular member categories
 
   return miembros.filter((m) => {
     if (categoria === 'ninos') return m.categoria === 'nino';
@@ -39,7 +38,7 @@ export const getCategoriaColor = (categoria: string) => {
       return 'bg-emerald-50 border-emerald-200 text-emerald-700';
     case 'visitas':
       return 'bg-green-50 border-green-200 text-green-700';
-    case 'hermanosApartados':
+    case 'heRestauracion':
       return 'bg-orange-50 border-orange-200 text-orange-700';
     case 'hermanosVisitas':
       return 'bg-indigo-50 border-indigo-200 text-indigo-700';
@@ -62,8 +61,8 @@ export const getCategoriaLabel = (categoria: string) => {
       return 'Simpatizantes';
     case 'visitas':
       return 'Visitas';
-    case 'hermanosApartados':
-      return 'Hermanos Apartados';
+    case 'heRestauracion':
+      return 'Hermanos en Restauración';
     case 'hermanosVisitas':
       return 'Hermanos Visitas';
     default:
@@ -84,7 +83,7 @@ export const getAllAsistentes = (
     hermanasDelDia: MiembroSimplificado[];
     ninosDelDia: MiembroSimplificado[];
     adolescentesDelDia: MiembroSimplificado[];
-    hermanosApartadosDelDia: MiembroSimplificado[];
+    heRestauracionDelDia: MiembroSimplificado[];
     hermanosVisitasDelDia: { id: string; nombre: string }[];
     // Acceso dinámico via index (usamos assertion al leer):
     [key: string]: unknown;
@@ -145,7 +144,7 @@ export const getAllAsistentes = (
     'hermanas',
     'ninos',
     'adolescentes',
-    'hermanosApartados',
+    'heRestauracion',
   ] as const;
 
   categorias.forEach((categoria) => {

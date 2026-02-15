@@ -8,7 +8,7 @@ export interface CategoryStats {
   totalNinos: number;
   totalAdolescentes: number;
   totalSimpatizantes: number;
-  totalHermanosApartados: number;
+  totalheRestauracion: number;
   totalHermanosVisitas: number;
   granTotal: number;
 }
@@ -64,8 +64,8 @@ export const CATEGORIES: CategoryConfig[] = [
     textColor: 'text-emerald-600',
   },
   {
-    key: 'hermanosApartados',
-    label: 'Hermanos Apartados',
+    key: 'heRestauracion',
+    label: 'Hermanos en Restauración',
     shortLabel: 'HA',
     color: 'orange',
     bgColor: 'bg-orange-50',
@@ -104,8 +104,8 @@ export const calculateCategoryStats = (
     (sum, record) => sum + record.simpatizantes,
     0
   );
-  const totalHermanosApartados = filteredData.reduce(
-    (sum, record) => sum + (record.hermanosApartados || 0),
+  const totalheRestauracion = filteredData.reduce(
+    (sum, record) => sum + (record.heRestauracion || 0),
     0
   );
   const totalHermanosVisitas = filteredData.reduce(
@@ -119,7 +119,7 @@ export const calculateCategoryStats = (
     totalNinos +
     totalAdolescentes +
     totalSimpatizantes +
-    totalHermanosApartados +
+    totalheRestauracion +
     totalHermanosVisitas;
 
   return {
@@ -128,7 +128,7 @@ export const calculateCategoryStats = (
     totalNinos,
     totalAdolescentes,
     totalSimpatizantes,
-    totalHermanosApartados,
+    totalheRestauracion,
     totalHermanosVisitas,
     granTotal,
   };
@@ -149,8 +149,8 @@ export const getCategoryValue = (
       return record.adolescentes;
     case 'simpatizantes':
       return record.simpatizantes;
-    case 'hermanosApartados':
-      return record.hermanosApartados || 0;
+    case 'heRestauracion':
+      return record.heRestauracion || 0;
     case 'hermanosVisitas':
       return record.hermanosVisitas || 0;
     default:
@@ -193,7 +193,7 @@ export const generateCSVHeaders = (): string[] => {
     'Hermanas Asistieron',
     'Niños Asistieron',
     'Adolescentes Asistieron',
-    'Hermanos Apartados Asistieron',
+    'Hermanos en Restauración Asistieron',
     'Hermanos Visitas Asistieron',
   ];
 };
@@ -210,7 +210,7 @@ export const generateCSVRow = (record: HistorialRecord): string[] => {
     `"${getAttendeeNames(record.miembrosAsistieron?.hermanas)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.ninos)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.adolescentes)}"`,
-    `"${getAttendeeNames(record.miembrosAsistieron?.hermanosApartados)}"`,
+    `"${getAttendeeNames(record.miembrosAsistieron?.heRestauracion)}"`,
     `"${getAttendeeNames(record.hermanosVisitasAsistieron)}"`,
   ];
 };
@@ -250,8 +250,8 @@ export const generateExcelData = (record: HistorialRecord) => {
   baseData['Adolescentes que Asistieron'] = getAttendeeNames(
     record.miembrosAsistieron?.adolescentes
   );
-  baseData['Hermanos Apartados que Asistieron'] = getAttendeeNames(
-    record.miembrosAsistieron?.hermanosApartados
+  baseData['Hermanos en Restauración que Asistieron'] = getAttendeeNames(
+    record.miembrosAsistieron?.heRestauracion
   );
   baseData['Hermanos Visitas que Asistieron'] = getAttendeeNames(
     record.hermanosVisitasAsistieron
@@ -280,8 +280,8 @@ export const generateStatisticsData = (
     { Concepto: 'Total Adolescentes', Valor: stats.totalAdolescentes },
     { Concepto: 'Total Simpatizantes', Valor: stats.totalSimpatizantes },
     {
-      Concepto: 'Total Hermanos Apartados',
-      Valor: stats.totalHermanosApartados,
+      Concepto: 'Total Hermanos en Restauración',
+      Valor: stats.totalheRestauracion,
     },
     { Concepto: 'Total Hermanos Visitas', Valor: stats.totalHermanosVisitas },
     { Concepto: 'GRAN TOTAL', Valor: stats.granTotal },

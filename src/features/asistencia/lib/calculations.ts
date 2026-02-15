@@ -11,7 +11,7 @@ export interface CategoryTotals {
   adolescentes: number;
   simpatizantes: number;
   visitas: number;
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
   total: number;
 }
@@ -26,7 +26,7 @@ interface BaseValues {
   adolescentes: number;
   simpatizantes: number;
   visitas: number;
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
 }
 
@@ -59,7 +59,7 @@ function getBaseValues(
       adolescentes: 0,
       simpatizantes: 0,
       visitas: 0,
-      hermanosApartados: 0,
+      heRestauracion: 0,
       hermanosVisitas: 0,
     };
   }
@@ -71,7 +71,7 @@ function getBaseValues(
     adolescentes: datosServicioBase.adolescentes || 0,
     simpatizantes: datosServicioBase.simpatizantes || 0,
     visitas: datosServicioBase.visitas || 0,
-    hermanosApartados: datosServicioBase.hermanosApartados || 0,
+    heRestauracion: datosServicioBase.heRestauracion || 0,
     hermanosVisitas: datosServicioBase.hermanosVisitas || 0,
   };
 }
@@ -127,10 +127,10 @@ export function calculateAllTotals(
     baseValues.visitas
   );
 
-  const hermanosApartados = calculateCategoryTotal(
-    conteoState.hermanosApartados,
-    conteoState.hermanosApartadosDelDia.length,
-    baseValues.hermanosApartados
+  const heRestauracion = calculateCategoryTotal(
+    conteoState.heRestauracionCount,
+    conteoState.heRestauracionDelDia.length,
+    baseValues.heRestauracion
   );
 
   const hermanosVisitas = calculateCategoryTotal(
@@ -146,7 +146,7 @@ export function calculateAllTotals(
     adolescentes +
     simpatizantes +
     visitas +
-    hermanosApartados +
+    heRestauracion +
     hermanosVisitas;
 
   return {
@@ -156,7 +156,7 @@ export function calculateAllTotals(
     adolescentes,
     simpatizantes,
     visitas,
-    hermanosApartados,
+    heRestauracion,
     hermanosVisitas,
     total,
   };
@@ -183,14 +183,14 @@ function buildAsistentesArrays(
         hermanas: [],
         ninos: [],
         adolescentes: [],
-        hermanosApartados: [],
+        heRestauracion: [],
       }
     : {
         hermanos: [],
         hermanas: [],
         ninos: [],
         adolescentes: [],
-        hermanosApartados: [],
+        heRestauracion: [],
       };
 
   const baseHermanosVisitas = conteoState.modoConsecutivo
@@ -241,9 +241,9 @@ function buildAsistentesArrays(
           nombre: m.nombre,
         })),
       ],
-      hermanosApartados: [
-        ...baseMiembros.hermanosApartados,
-        ...conteoState.hermanosApartadosDelDia.map((m) => ({
+      heRestauracion: [
+        ...baseMiembros.heRestauracion,
+        ...conteoState.heRestauracionDelDia.map((m) => ({
           id: m.id,
           nombre: m.nombre,
         })),
@@ -273,7 +273,7 @@ export interface ConteoDataResult {
   adolescentes: number;
   simpatizantes: number;
   visitas: number;
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
   total: number;
   simpatizantesAsistieron: Array<{ id: string; nombre: string }>;
@@ -283,7 +283,7 @@ export interface ConteoDataResult {
     hermanas: Array<{ id: string; nombre: string }>;
     ninos: Array<{ id: string; nombre: string }>;
     adolescentes: Array<{ id: string; nombre: string }>;
-    hermanosApartados: Array<{ id: string; nombre: string }>;
+    heRestauracion: Array<{ id: string; nombre: string }>;
   };
   hermanosVisitasAsistieron: Array<{
     id: string;
@@ -322,7 +322,7 @@ export function buildConteoData(
     adolescentes: totals.adolescentes,
     simpatizantes: totals.simpatizantes,
     visitas: totals.visitas,
-    hermanosApartados: totals.hermanosApartados,
+    heRestauracion: totals.heRestauracion,
     hermanosVisitas: totals.hermanosVisitas,
     total: totals.total,
     ...asistentes,

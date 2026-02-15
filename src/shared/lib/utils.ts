@@ -355,7 +355,7 @@ export async function fetchHistorial() {
       ninos: number;
       adolescentes: number;
       simpatizantes: number;
-      hermanosApartados?: number;
+      heRestauracion?: number;
       hermanosVisitas?: number;
       total: number;
       simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
@@ -364,7 +364,7 @@ export async function fetchHistorial() {
         hermanas?: Array<{ id: string; nombre: string }>;
         ninos?: Array<{ id: string; nombre: string }>;
         adolescentes?: Array<{ id: string; nombre: string }>;
-        hermanosApartados?: Array<{ id: string; nombre: string }>;
+        heRestauracion?: Array<{ id: string; nombre: string }>;
       };
       hermanosVisitasAsistieron?: Array<{
         id: string;
@@ -387,7 +387,7 @@ export async function saveConteo(conteoData: {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
-  hermanosApartados?: number;
+  heRestauracion?: number;
   hermanosVisitas?: number;
   total: number;
   simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
@@ -396,7 +396,7 @@ export async function saveConteo(conteoData: {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
-    hermanosApartados?: Array<{ id: string; nombre: string }>;
+    heRestauracion?: Array<{ id: string; nombre: string }>;
   };
   hermanosVisitasAsistieron?: Array<{
     id: string;
@@ -424,7 +424,7 @@ export async function updateHistorialRecord(
     ninos: number;
     adolescentes: number;
     simpatizantes: number;
-    hermanosApartados?: number;
+    heRestauracion?: number;
     hermanosVisitas?: number;
     total: number;
     simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
@@ -433,7 +433,7 @@ export async function updateHistorialRecord(
       hermanas?: Array<{ id: string; nombre: string }>;
       ninos?: Array<{ id: string; nombre: string }>;
       adolescentes?: Array<{ id: string; nombre: string }>;
-      hermanosApartados?: Array<{ id: string; nombre: string }>;
+      heRestauracion?: Array<{ id: string; nombre: string }>;
     };
     hermanosVisitasAsistieron?: Array<{
       id: string;
@@ -480,7 +480,7 @@ export async function getHistorialRecordById(id: string) {
         ninos: number;
         adolescentes: number;
         simpatizantes: number;
-        hermanosApartados?: number;
+        heRestauracion?: number;
         hermanosVisitas?: number;
         total: number;
         simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
@@ -489,7 +489,7 @@ export async function getHistorialRecordById(id: string) {
           hermanas?: Array<{ id: string; nombre: string }>;
           ninos?: Array<{ id: string; nombre: string }>;
           adolescentes?: Array<{ id: string; nombre: string }>;
-          hermanosApartados?: Array<{ id: string; nombre: string }>;
+          heRestauracion?: Array<{ id: string; nombre: string }>;
         };
         hermanosVisitasAsistieron?: Array<{
           id: string;

@@ -4,6 +4,7 @@
 export const MODULES = [
   'simpatizantes',
   'visitas',
+  'heRestauracion',
   'miembros',
   'historial',
   'usuarios',
@@ -31,6 +32,11 @@ export const ALL_PERMISSIONS = [
   'visitas.create',
   'visitas.edit',
   'visitas.delete',
+  // HeRestauracion
+  'heRestauracion.view',
+  'heRestauracion.create',
+  'heRestauracion.edit',
+  'heRestauracion.delete',
   // Miembros
   'miembros.view',
   'miembros.create',
@@ -66,6 +72,24 @@ export const PERMISSIONS_BY_MODULE: Record<
     { permission: 'visitas.edit', label: 'Editar visitas' },
     { permission: 'visitas.delete', label: 'Eliminar visitas' },
   ],
+  heRestauracion: [
+    {
+      permission: 'heRestauracion.view',
+      label: 'Ver hermanos en restauración',
+    },
+    {
+      permission: 'heRestauracion.create',
+      label: 'Crear hermanos en restauración',
+    },
+    {
+      permission: 'heRestauracion.edit',
+      label: 'Editar hermanos en restauración',
+    },
+    {
+      permission: 'heRestauracion.delete',
+      label: 'Eliminar hermanos en restauración',
+    },
+  ],
   miembros: [
     { permission: 'miembros.view', label: 'Ver miembros' },
     { permission: 'miembros.create', label: 'Crear miembros' },
@@ -92,6 +116,7 @@ export const PERMISSIONS_BY_MODULE: Record<
 export const MODULE_LABELS: Record<Module, string> = {
   simpatizantes: 'Simpatizantes',
   visitas: 'Visitas',
+  heRestauracion: 'Hermanos en Restauración',
   miembros: 'Miembros',
   historial: 'Historial',
   usuarios: 'Usuarios',

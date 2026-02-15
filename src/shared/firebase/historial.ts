@@ -23,7 +23,7 @@ export interface HistorialRecord {
   adolescentes: number;
   simpatizantes: number;
   visitas?: number;
-  hermanosApartados?: number;
+  heRestauracion?: number;
   hermanosVisitas?: number;
   total: number;
   simpatizantesAsistieron?: MiembroSimplificado[];

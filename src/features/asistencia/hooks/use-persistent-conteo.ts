@@ -17,7 +17,7 @@ interface ConteoState {
   adolescentes: number;
   simpatizantesCount: number;
   visitasCount: number;
-  hermanosApartados: number;
+  heRestauracionCount: number;
   hermanosVisitasCount: number;
   fecha: string;
   tipoServicio: string;
@@ -44,7 +44,7 @@ interface ConteoState {
   hermanasDelDia: Array<{ id: string; nombre: string }>;
   ninosDelDia: Array<{ id: string; nombre: string }>;
   adolescentesDelDia: Array<{ id: string; nombre: string }>;
-  hermanosApartadosDelDia: Array<{ id: string; nombre: string }>;
+  heRestauracionDelDia: Array<{ id: string; nombre: string }>;
   hermanosVisitasDelDia: Array<{
     id: string;
     nombre: string;
@@ -74,7 +74,7 @@ const initialState: ConteoState = {
   adolescentes: 0,
   simpatizantesCount: 0,
   visitasCount: 0,
-  hermanosApartados: 0,
+  heRestauracionCount: 0,
   hermanosVisitasCount: 0,
   fecha: getLocalDateString(), // Usar función local en lugar de toISOString()
   tipoServicio: 'dominical',
@@ -89,7 +89,7 @@ const initialState: ConteoState = {
   hermanasDelDia: [],
   ninosDelDia: [],
   adolescentesDelDia: [],
-  hermanosApartadosDelDia: [],
+  heRestauracionDelDia: [],
   hermanosVisitasDelDia: [],
   selectedUjieres: [],
   searchMiembros: '',
@@ -176,7 +176,7 @@ export function usePersistentConteo() {
       adolescentes: 0,
       simpatizantesCount: 0,
       visitasCount: 0,
-      hermanosApartados: 0,
+      heRestauracionCount: 0,
       hermanosVisitasCount: 0,
       simpatizantesDelDia: [],
       visitasDelDia: [],
@@ -184,7 +184,7 @@ export function usePersistentConteo() {
       hermanasDelDia: [],
       ninosDelDia: [],
       adolescentesDelDia: [],
-      hermanosApartadosDelDia: [],
+      heRestauracionDelDia: [],
       hermanosVisitasDelDia: [],
       selectedUjieres: [],
       ujierSeleccionado: '',
@@ -209,7 +209,7 @@ export function usePersistentConteo() {
         adolescentes: number;
         simpatizantes: number;
         visitas?: number;
-        hermanosApartados?: number;
+        heRestauracion?: number;
         hermanosVisitas?: number;
         simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
         visitasAsistieron?: Array<{ id: string; nombre: string }>;
@@ -218,7 +218,7 @@ export function usePersistentConteo() {
           hermanas?: Array<{ id: string; nombre: string }>;
           ninos?: Array<{ id: string; nombre: string }>;
           adolescentes?: Array<{ id: string; nombre: string }>;
-          hermanosApartados?: Array<{ id: string; nombre: string }>;
+          heRestauracion?: Array<{ id: string; nombre: string }>;
         };
         hermanosVisitasAsistieron?: Array<{
           id: string;
@@ -245,7 +245,7 @@ export function usePersistentConteo() {
         adolescentes: manualCounters.adolescentes,
         simpatizantesCount: manualCounters.simpatizantes,
         visitasCount: manualCounters.visitas || 0,
-        hermanosApartados: manualCounters.hermanosApartados,
+        heRestauracionCount: manualCounters.heRestauracion,
         hermanosVisitasCount: manualCounters.hermanosVisitas,
         fecha: historialData.fecha,
         tipoServicio: servicioValue,
@@ -260,8 +260,8 @@ export function usePersistentConteo() {
         ninosDelDia: historialData.miembrosAsistieron?.ninos || [],
         adolescentesDelDia:
           historialData.miembrosAsistieron?.adolescentes || [],
-        hermanosApartadosDelDia:
-          historialData.miembrosAsistieron?.hermanosApartados || [],
+        heRestauracionDelDia:
+          historialData.miembrosAsistieron?.heRestauracion || [],
         hermanosVisitasDelDia: historialData.hermanosVisitasAsistieron || [],
         searchMiembros: '',
         datosServicioBase: null,

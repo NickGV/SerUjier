@@ -15,7 +15,7 @@ const initialBulkCounts: BulkCounts = {
   adolescentes: '',
   simpatizantes: '',
   visitas: '',
-  hermanosApartados: '',
+  heRestauracion: '',
   hermanosVisitas: '',
 };
 
@@ -31,7 +31,7 @@ export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
       adolescentes: parseInt(bulkCounts.adolescentes) || 0,
       simpatizantes: parseInt(bulkCounts.simpatizantes) || 0,
       visitas: parseInt(bulkCounts.visitas) || 0,
-      hermanosApartados: parseInt(bulkCounts.hermanosApartados) || 0,
+      heRestauracion: parseInt(bulkCounts.heRestauracion) || 0,
       hermanosVisitas: parseInt(bulkCounts.hermanosVisitas) || 0,
     };
 
@@ -42,8 +42,8 @@ export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
       adolescentes: conteoState.adolescentes + counts.adolescentes,
       simpatizantesCount: conteoState.simpatizantesCount + counts.simpatizantes,
       visitasCount: (conteoState.visitasCount || 0) + counts.visitas,
-      hermanosApartados:
-        conteoState.hermanosApartados + counts.hermanosApartados,
+      heRestauracionCount:
+        conteoState.heRestauracionCount + counts.heRestauracion,
       hermanosVisitasCount:
         conteoState.hermanosVisitasCount + counts.hermanosVisitas,
     });

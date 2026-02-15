@@ -2,11 +2,13 @@ import {
   type MiembroSimplificado,
   type Simpatizante,
   type Visita,
+  type HeRestauracion,
 } from '@/shared/types';
 
 // Usamos el tipo Simpatizante de shared/types para mantener consistencia
 export type SimpatizanteLite = Simpatizante & { [key: string]: unknown };
 export type VisitaLite = Visita & { [key: string]: unknown };
+export type HeRestauracionLite = HeRestauracion & { [key: string]: unknown };
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
 export interface HermanoVisita {
@@ -23,7 +25,7 @@ export interface ConteoStateBase {
   adolescentes: number;
   simpatizantesCount: number;
   visitasCount: number;
-  hermanosApartados: number;
+  heRestauracionCount: number;
   hermanosVisitasCount: number;
   fecha: string;
   tipoServicio: string;
@@ -38,7 +40,7 @@ export interface ConteoStateBase {
   hermanasDelDia: MiembroSimplificado[];
   ninosDelDia: MiembroSimplificado[];
   adolescentesDelDia: MiembroSimplificado[];
-  hermanosApartadosDelDia: MiembroSimplificado[];
+  heRestauracionDelDia: MiembroSimplificado[];
   hermanosVisitasDelDia: HermanoVisita[];
   selectedUjieres: string[];
   searchMiembros: string;
@@ -58,7 +60,7 @@ export interface BulkCounts {
   adolescentes: string;
   simpatizantes: string;
   visitas: string;
-  hermanosApartados: string;
+  heRestauracion: string;
   hermanosVisitas: string;
 }
 
@@ -104,7 +106,7 @@ export type CategoriaPlural =
   | 'hermanas'
   | 'ninos'
   | 'adolescentes'
-  | 'hermanosApartados';
+  | 'heRestauracion';
 
 export interface MiembrosDialogProps extends ConteoDialogProps {
   categoria: CategoriaPlural; // hermanos | hermanas | ninos | adolescentes

@@ -18,14 +18,14 @@ interface UseConteoCountersProps {
     adolescentes?: number;
     simpatizantes?: number;
     visitas?: number;
-    hermanosApartados?: number;
+    heRestauracion?: number;
     hermanosVisitas?: number;
     miembrosAsistieron?: {
       hermanos?: MiembroSimplificado[];
       hermanas?: MiembroSimplificado[];
       ninos?: MiembroSimplificado[];
       adolescentes?: MiembroSimplificado[];
-      hermanosApartados?: MiembroSimplificado[];
+      heRestauracion?: MiembroSimplificado[];
     };
     simpatizantesAsistieron?: { id: string; nombre: string }[];
     visitasAsistieron?: { id: string; nombre: string }[];
@@ -73,8 +73,8 @@ export function useConteoCounters({
       case 'visitas':
         updates.visitasCount = newValue;
         break;
-      case 'hermanosApartados':
-        updates.hermanosApartados = newValue;
+      case 'heRestauracion':
+        updates.heRestauracionCount = newValue;
         break;
       case 'hermanosVisitas':
         updates.hermanosVisitasCount = newValue;
@@ -148,18 +148,18 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: 'hermanosApartados',
-      label: 'Hermanos Apartados',
-      value: conteoState.hermanosApartados,
-      setter: (value: number) => updateConteo({ hermanosApartados: value }),
-      color: CATEGORIA_COLORS.hermanosApartados,
-      miembrosDelDia: conteoState.hermanosApartadosDelDia,
-      categoria: 'hermanosApartados',
+      key: 'heRestauracion',
+      label: 'Hermanos en Restauración',
+      value: conteoState.heRestauracionCount,
+      setter: (value: number) => updateConteo({ heRestauracionCount: value }),
+      color: CATEGORIA_COLORS.heRestauracion,
+      miembrosDelDia: conteoState.heRestauracionDelDia,
+      categoria: 'heRestauracion',
       baseValue: conteoState.modoConsecutivo
-        ? datosServicioBase?.hermanosApartados || 0
+        ? datosServicioBase?.heRestauracion || 0
         : 0,
       baseMiembros: conteoState.modoConsecutivo
-        ? datosServicioBase?.miembrosAsistieron?.hermanosApartados || []
+        ? datosServicioBase?.miembrosAsistieron?.heRestauracion || []
         : [],
     },
     {

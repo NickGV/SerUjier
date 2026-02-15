@@ -49,15 +49,15 @@ interface HistorialRecordAPI {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
-    hermanosApartados?: Array<{ id: string; nombre: string }>;
+    heRestauracion?: Array<{ id: string; nombre: string }>;
   };
   hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
-  hermanosApartados?: number;
+  heRestauracion?: number;
   hermanosVisitas?: number;
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
 }
 
@@ -112,7 +112,7 @@ function HistorialContent() {
       const normalizedData: HistorialRecord[] = data.map(
         (record: HistorialRecordAPI) => ({
           ...record,
-          hermanosApartados: record.hermanosApartados || 0,
+          heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
       );
@@ -242,8 +242,8 @@ function HistorialContent() {
     (sum, record) => sum + record.simpatizantes,
     0
   );
-  const totalHermanosApartados = filteredData.reduce(
-    (sum, record) => sum + (record.hermanosApartados || 0),
+  const totalheRestauracion = filteredData.reduce(
+    (sum, record) => sum + (record.heRestauracion || 0),
     0
   );
   const totalHermanosVisitas = filteredData.reduce(
@@ -256,7 +256,7 @@ function HistorialContent() {
     totalNinos +
     totalAdolescentes +
     totalSimpatizantes +
-    totalHermanosApartados +
+    totalheRestauracion +
     totalHermanosVisitas;
 
   const clearDateFilters = () => {
@@ -292,7 +292,7 @@ function HistorialContent() {
         'Niños',
         'Adolescentes',
         'Simpatizantes',
-        'Hermanos Apartados',
+        'Hermanos en Restauración',
         'Hermanos Visitas',
         'Total',
         'Simpatizantes Asistieron',
@@ -300,7 +300,7 @@ function HistorialContent() {
         'Hermanas Asistieron',
         'Niños Asistieron',
         'Adolescentes Asistieron',
-        'Hermanos Apartados Asistieron',
+        'Hermanos en Restauración Asistieron',
         'Hermanos Visitas Asistieron',
       ];
 
@@ -320,7 +320,7 @@ function HistorialContent() {
             record.ninos,
             record.adolescentes,
             record.simpatizantes,
-            record.hermanosApartados || 0,
+            record.heRestauracion || 0,
             record.hermanosVisitas || 0,
             record.total,
             `"${
@@ -348,7 +348,7 @@ function HistorialContent() {
                 .join('; ') || ''
             }"`,
             `"${
-              record.miembrosAsistieron?.hermanosApartados
+              record.miembrosAsistieron?.heRestauracion
                 ?.map((m) => m.nombre)
                 .join('; ') || ''
             }"`,
@@ -404,7 +404,7 @@ function HistorialContent() {
         Niños: record.ninos,
         Adolescentes: record.adolescentes,
         Simpatizantes: record.simpatizantes,
-        'Hermanos Apartados': record.hermanosApartados || 0,
+        'Hermanos en Restauración': record.heRestauracion || 0,
         'Hermanos Visitas': record.hermanosVisitas || 0,
         'Total Asistentes': record.total,
         'Simpatizantes que Asistieron':
@@ -424,8 +424,8 @@ function HistorialContent() {
           record.miembrosAsistieron?.adolescentes
             ?.map((m) => m.nombre)
             .join(', ') || '',
-        'Hermanos Apartados que Asistieron':
-          record.miembrosAsistieron?.hermanosApartados
+        'Hermanos en Restauración que Asistieron':
+          record.miembrosAsistieron?.heRestauracion
             ?.map((m) => m.nombre)
             .join(', ') || '',
         'Hermanos Visitas que Asistieron':
@@ -446,7 +446,10 @@ function HistorialContent() {
         { Concepto: 'Total Niños', Valor: totalNinos },
         { Concepto: 'Total Adolescentes', Valor: totalAdolescentes },
         { Concepto: 'Total Simpatizantes', Valor: totalSimpatizantes },
-        { Concepto: 'Total Hermanos Apartados', Valor: totalHermanosApartados },
+        {
+          Concepto: 'Total Hermanos en Restauración',
+          Valor: totalheRestauracion,
+        },
         { Concepto: 'Total Hermanos Visitas', Valor: totalHermanosVisitas },
         { Concepto: 'GRAN TOTAL', Valor: granTotal },
       ];
@@ -700,7 +703,7 @@ NOTAS FINALES:
       const normalizedData: HistorialRecord[] = updatedData.map(
         (record: HistorialRecordAPI) => ({
           ...record,
-          hermanosApartados: record.hermanosApartados || 0,
+          heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
       );
@@ -1129,7 +1132,7 @@ NOTAS FINALES:
                   </div>
                   <div className="text-center p-2 bg-orange-50 rounded-lg">
                     <div className="text-sm font-semibold text-orange-600">
-                      {record.hermanosApartados || 0}
+                      {record.heRestauracion || 0}
                     </div>
                     <div className="text-xs text-gray-500">H. Apart.</div>
                   </div>

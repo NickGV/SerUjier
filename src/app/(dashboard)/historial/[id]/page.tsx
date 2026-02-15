@@ -49,15 +49,15 @@ interface HistorialRecordAPI {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
-    hermanosApartados?: Array<{ id: string; nombre: string }>;
+    heRestauracion?: Array<{ id: string; nombre: string }>;
   };
   hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
-  hermanosApartados?: number;
+  heRestauracion?: number;
   hermanosVisitas?: number;
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
 }
 
@@ -122,8 +122,8 @@ function ServicioHistorialContent() {
         // Ensure new fields exist with default values
         const normalizedRecord: HistorialRecord = {
           ...recordData,
-          hermanosApartados:
-            (recordData as HistorialRecordAPI).hermanosApartados || 0,
+          heRestauracion:
+            (recordData as HistorialRecordAPI).heRestauracion || 0,
           hermanosVisitas:
             (recordData as HistorialRecordAPI).hermanosVisitas || 0,
         };
@@ -242,7 +242,7 @@ function ServicioHistorialContent() {
                 ? 'Niños'
                 : miembro.categoria === 'adolescente'
                   ? 'Adolescentes'
-                  : 'Hermanos Apartados',
+                  : 'Hermanos en Restauración',
       }));
   };
 
@@ -538,7 +538,7 @@ function ServicioHistorialContent() {
             </div>
             <div className="text-center p-3 bg-orange-50 rounded-lg">
               <div className="text-lg font-bold text-orange-600">
-                {record.hermanosApartados || 0}
+                {record.heRestauracion || 0}
               </div>
               <div className="text-xs text-gray-500">H. Apart.</div>
             </div>
@@ -647,7 +647,7 @@ function ServicioHistorialContent() {
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
                 <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
                 <SelectItem value="hermanos apartados">
-                  Hermanos Apartados
+                  Hermanos en Restauración
                 </SelectItem>
                 <SelectItem value="hermanos visitas">
                   Hermanos Visitas

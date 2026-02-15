@@ -235,7 +235,7 @@ export function useConteoSave({
       ninos: 0,
       adolescentes: 0,
       simpatizantesCount: 0,
-      hermanosApartados: 0,
+      heRestauracionCount: 0,
       hermanosVisitasCount: 0,
       // Clear the lists - base members are in datosServicioBase and shown via baseMiembros
       simpatizantesDelDia: [],
@@ -243,7 +243,7 @@ export function useConteoSave({
       hermanasDelDia: [],
       ninosDelDia: [],
       adolescentesDelDia: [],
-      hermanosApartadosDelDia: [],
+      heRestauracionDelDia: [],
       hermanosVisitasDelDia: [],
     });
     setShowContinuarDialog(false);

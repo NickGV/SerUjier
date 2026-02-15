@@ -4,6 +4,7 @@ export { SimpatizantesList } from './SimpatizantesList';
 export { BulkCountDialog } from './BulkCountDialog';
 export { SimpatizantesDialog } from './SimpatizantesDialog';
 export { VisitasDialog } from './VisitasDialog';
+export { HeRestauracionDialog } from './HeRestauracionDialog';
 export { MiembrosDialog } from './MiembrosDialog';
 export { AsistentesDialog } from './AsistentesDialog';
 export { HermanosVisitasDialog } from './HermanosVisitasDialog';

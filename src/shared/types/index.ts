@@ -33,6 +33,15 @@ export interface Visita {
   [key: string]: unknown; // Permitir propiedades adicionales
 }
 
+export interface HeRestauracion {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+  [key: string]: unknown; // Permitir propiedades adicionales
+}
+
 // Categories of members
 export type miembroCategoria = 'hermano' | 'hermana' | 'nino' | 'adolescente';
 
@@ -57,7 +66,7 @@ export interface MiembrosAsistieron {
   hermanas: Array<MiembroSimplificado>;
   ninos: Array<MiembroSimplificado>;
   adolescentes: Array<MiembroSimplificado>;
-  hermanosApartados: Array<MiembroSimplificado>;
+  heRestauracion: Array<MiembroSimplificado>;
 }
 
 export interface DatosServicioBase {
@@ -67,7 +76,7 @@ export interface DatosServicioBase {
   adolescentes: number;
   simpatizantes: number;
   visitas: number;
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
   total: number;
   servicio: string;

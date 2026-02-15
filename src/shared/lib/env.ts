@@ -61,14 +61,6 @@ export function assertEnv(): void {
   if (!result.isValid) {
     const message = `Missing required environment variables:\n${result.missing.map((k) => `  - ${k}`).join('\n')}`;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.error('\x1b[31m%s\x1b[0m', message);
-      console.error(
-        '\x1b[33m%s\x1b[0m',
-        'Please check your .env.local file and ensure all required variables are set.'
-      );
-    }
-
     throw new Error(message);
   }
 

@@ -39,7 +39,7 @@ export function BulkCountDialog({
     (parseInt(bulkCounts.adolescentes) || 0) +
     (parseInt(bulkCounts.simpatizantes) || 0) +
     (parseInt(bulkCounts.visitas) || 0) +
-    (parseInt(bulkCounts.hermanosApartados) || 0) +
+    (parseInt(bulkCounts.heRestauracion) || 0) +
     (parseInt(bulkCounts.hermanosVisitas) || 0);
 
   const hasValues = Object.values(bulkCounts).some((value) => value.length > 0);
@@ -150,14 +150,14 @@ export function BulkCountDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-orange-700 mb-2 block">
-                Hermanos Apartados
+                Hermanos en Restauración
               </label>
               <Input
                 type="number"
                 placeholder="0"
-                value={bulkCounts.hermanosApartados}
+                value={bulkCounts.heRestauracion}
                 onChange={(e) =>
-                  handleInputChange('hermanosApartados', e.target.value)
+                  handleInputChange('heRestauracion', e.target.value)
                 }
                 className="h-10 text-center text-sm"
                 min="0"

@@ -10,7 +10,7 @@ export interface HistorialDataForCalculation {
   adolescentes: number;
   simpatizantes: number;
   visitas?: number;
-  hermanosApartados?: number;
+  heRestauracion?: number;
   hermanosVisitas?: number;
   simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
   visitasAsistieron?: Array<{ id: string; nombre: string }>;
@@ -19,7 +19,7 @@ export interface HistorialDataForCalculation {
     hermanas?: Array<{ id: string; nombre: string }>;
     ninos?: Array<{ id: string; nombre: string }>;
     adolescentes?: Array<{ id: string; nombre: string }>;
-    hermanosApartados?: Array<{ id: string; nombre: string }>;
+    heRestauracion?: Array<{ id: string; nombre: string }>;
   };
   hermanosVisitasAsistieron?: Array<{
     id: string;
@@ -35,7 +35,7 @@ export interface ManualCounters {
   adolescentes: number;
   simpatizantes: number;
   visitas: number;
-  hermanosApartados: number;
+  heRestauracion: number;
   hermanosVisitas: number;
 }
 
@@ -60,8 +60,8 @@ export function calculateManualCounters(
   const simpatizantesConNombre =
     historialData.simpatizantesAsistieron?.length || 0;
   const visitasConNombre = historialData.visitasAsistieron?.length || 0;
-  const hermanosApartadosConNombre =
-    historialData.miembrosAsistieron?.hermanosApartados?.length || 0;
+  const heRestauracionConNombre =
+    historialData.miembrosAsistieron?.heRestauracion?.length || 0;
   const hermanosVisitasConNombre =
     historialData.hermanosVisitasAsistieron?.length || 0;
 
@@ -79,9 +79,9 @@ export function calculateManualCounters(
       historialData.simpatizantes - simpatizantesConNombre
     ),
     visitas: Math.max(0, (historialData.visitas || 0) - visitasConNombre),
-    hermanosApartados: Math.max(
+    heRestauracion: Math.max(
       0,
-      (historialData.hermanosApartados || 0) - hermanosApartadosConNombre
+      (historialData.heRestauracion || 0) - heRestauracionConNombre
     ),
     hermanosVisitas: Math.max(
       0,
@@ -106,7 +106,7 @@ export function calculateTotalAttendance(
     hermanas: number;
     ninos: number;
     adolescentes: number;
-    hermanosApartados: number;
+    heRestauracion: number;
     hermanosVisitas: number;
   }
 ): number {
@@ -117,7 +117,7 @@ export function calculateTotalAttendance(
     counters.adolescentes +
     counters.simpatizantes +
     counters.visitas +
-    counters.hermanosApartados +
+    counters.heRestauracion +
     counters.hermanosVisitas +
     namedAttendees.simpatizantes +
     namedAttendees.visitas +
@@ -125,7 +125,7 @@ export function calculateTotalAttendance(
     namedAttendees.hermanas +
     namedAttendees.ninos +
     namedAttendees.adolescentes +
-    namedAttendees.hermanosApartados +
+    namedAttendees.heRestauracion +
     namedAttendees.hermanosVisitas
   );
 }

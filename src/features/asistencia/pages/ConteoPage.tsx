@@ -9,16 +9,19 @@ import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
 import {
   addSimpatizante,
   addVisita,
+  addHeRestauracion,
   fetchMiembros,
   fetchSimpatizantes,
   fetchUjieres,
   fetchVisitas,
+  fetchHeRestauracion,
 } from '@/shared/firebase';
 import {
   type Miembro,
   type MiembroSimplificado,
   type Simpatizante,
   type Visita,
+  type HeRestauracion,
 } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -35,6 +38,7 @@ import {
   ConteoHeader,
   CounterCard,
   EditModeBanner,
+  HeRestauracionDialog,
   HermanosVisitasDialog,
   MiembrosDialog,
   SimpatizantesDialog,
@@ -71,6 +75,7 @@ export default function ConteoPage() {
   const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [visitas, setVisitas] = useState<Visita[]>([]);
+  const [heRestauracion, setHeRestauracion] = useState<HeRestauracion[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [ujieres, setUjieres] = useState<string[]>([]);
@@ -128,6 +133,8 @@ export default function ConteoPage() {
   // Estados para los diálogos
   const [showSimpatizantesDialog, setShowSimpatizantesDialog] = useState(false);
   const [showVisitasDialog, setShowVisitasDialog] = useState(false);
+  const [showHeRestauracionDialog, setShowHeRestauracionDialog] =
+    useState(false);
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
   const [showMiembrosDialog, setShowMiembrosDialog] = useState(false);
   const [showHermanosVisitasDialog, setShowHermanosVisitasDialog] =
@@ -145,16 +152,23 @@ export default function ConteoPage() {
         setLoading(true);
       }
 
-      const [simpatizantesData, miembrosData, ujieresData, visitasData] =
-        await Promise.all([
-          fetchSimpatizantes(),
-          fetchMiembros(),
-          fetchUjieres(),
-          fetchVisitas(),
-        ]);
+      const [
+        simpatizantesData,
+        miembrosData,
+        ujieresData,
+        visitasData,
+        heRestauracionData,
+      ] = await Promise.all([
+        fetchSimpatizantes(),
+        fetchMiembros(),
+        fetchUjieres(),
+        fetchVisitas(),
+        fetchHeRestauracion(),
+      ]);
       setSimpatizantes(simpatizantesData);
       setMiembros(miembrosData);
       setVisitas(visitasData);
+      setHeRestauracion(heRestauracionData);
       // Extraer solo los nombres de los ujieres activos usando la utilidad
       const nombresUjieres = getActiveUjieres(ujieresData);
       setUjieres(nombresUjieres);
@@ -275,6 +289,60 @@ export default function ConteoPage() {
     },
   };
 
+  // Handlers para heRestauracion
+  const heRestauracionHandlers = {
+    handleAdd: (newHeRestauracion: HeRestauracion[]) => {
+      const simplified = newHeRestauracion.map((h) => ({
+        id: h.id,
+        nombre: h.nombre,
+      }));
+      updateConteo({
+        heRestauracionDelDia: [
+          ...conteoState.heRestauracionDelDia,
+          ...simplified,
+        ],
+      });
+    },
+
+    handleAddNew: async (
+      heRestauracionData: Omit<HeRestauracion, 'id'> & { nombre: string }
+    ) => {
+      const withFecha = {
+        fechaRegistro: new Date().toISOString().split('T')[0],
+        ...heRestauracionData,
+      };
+      const result = await addHeRestauracion(withFecha);
+      const creado: HeRestauracion = {
+        id: (result as { id: string }).id,
+        ...withFecha,
+      };
+
+      const simplified = {
+        id: creado.id,
+        nombre: creado.nombre,
+      };
+
+      updateConteo({
+        heRestauracionDelDia: [...conteoState.heRestauracionDelDia, simplified],
+      });
+      setHeRestauracion((prev) => [...prev, creado]);
+    },
+
+    handleRemove: (heRestauracionId: string) => {
+      updateConteo({
+        heRestauracionDelDia: conteoState.heRestauracionDelDia.filter(
+          (h) => h.id !== heRestauracionId
+        ),
+      });
+    },
+
+    handleClearAll: () => {
+      updateConteo({
+        heRestauracionDelDia: [],
+      });
+    },
+  };
+
   // Handlers para miembros
   const categoriaKey = (c: CategoriaPlural) => `${c}DelDia` as const;
 
@@ -345,6 +413,7 @@ export default function ConteoPage() {
   const dialogHandlers = {
     openSimpatizantes: () => setShowSimpatizantesDialog(true),
     openVisitas: () => setShowVisitasDialog(true),
+    openHeRestauracion: () => setShowHeRestauracionDialog(true),
     openMiembros: (categoria: CategoriaPlural) => {
       setCategoriaSeleccionada(categoria);
       setShowMiembrosDialog(true);
@@ -358,6 +427,8 @@ export default function ConteoPage() {
       dialogHandlers.openSimpatizantes();
     } else if (categoria === 'visitas') {
       dialogHandlers.openVisitas();
+    } else if (categoria === 'heRestauracion') {
+      dialogHandlers.openHeRestauracion();
     } else if (categoria === 'hermanosVisitas') {
       dialogHandlers.openHermanosVisitas();
     } else {
@@ -559,6 +630,22 @@ export default function ConteoPage() {
         onClearAllVisitas={visitasHandlers.handleClearAll}
       />
 
+      <HeRestauracionDialog
+        isOpen={showHeRestauracionDialog}
+        onClose={() => setShowHeRestauracionDialog(false)}
+        heRestauracion={heRestauracion}
+        heRestauracionDelDia={conteoState.heRestauracionDelDia}
+        baseHeRestauracion={
+          conteoState.modoConsecutivo
+            ? datosServicioBase?.miembrosAsistieron?.heRestauracion || []
+            : []
+        }
+        onAddHeRestauracion={heRestauracionHandlers.handleAdd}
+        onAddNewHeRestauracion={heRestauracionHandlers.handleAddNew}
+        onRemoveHeRestauracion={heRestauracionHandlers.handleRemove}
+        onClearAllHeRestauracion={heRestauracionHandlers.handleClearAll}
+      />
+
       {categoriaSeleccionada && (
         <MiembrosDialog
           isOpen={showMiembrosDialog}
@@ -602,15 +689,13 @@ export default function ConteoPage() {
         onRemoveAsistente={(id, categoria, tipo) => {
           if (
             tipo === 'miembro' &&
-            [
-              'hermanos',
-              'hermanas',
-              'ninos',
-              'adolescentes',
-              'hermanosApartados',
-            ].includes(categoria)
+            ['hermanos', 'hermanas', 'ninos', 'adolescentes'].includes(
+              categoria
+            )
           ) {
             miembrosHandlers.handleRemove(categoria as CategoriaPlural, id);
+          } else if (categoria === 'heRestauracion') {
+            heRestauracionHandlers.handleRemove(id);
           } else if (categoria === 'visitas') {
             visitasHandlers.handleRemove(id);
           } else if (categoria === 'hermanosVisitas') {
