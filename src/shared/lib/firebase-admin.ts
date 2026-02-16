@@ -39,15 +39,16 @@ if (!adminAppOptions && projectId && clientEmail && privateKeyRaw) {
   };
 }
 
+// Throw error if no valid credentials are found
 if (!adminAppOptions) {
-  console.error(
-    '❌ [FIREBASE ADMIN] No valid credentials found! Firebase Admin will fail.'
-  );
-  console.error('❌ [FIREBASE ADMIN] Please set either:');
-  console.error('   1. FIREBASE_SERVICE_ACCOUNT_BASE64, OR');
-  console.error(
-    '   2. FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY'
-  );
+  const errorMessage = `Firebase Admin initialization failed: No valid credentials found!
+Please set either:
+  1. FIREBASE_SERVICE_ACCOUNT_BASE64, OR
+  2. FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY`;
+
+  console.error('❌ [FIREBASE ADMIN]', errorMessage);
+
+  throw new Error(errorMessage);
 }
 
 const adminApp = getApps().length
