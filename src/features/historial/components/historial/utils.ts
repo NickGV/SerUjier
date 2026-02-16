@@ -8,6 +8,7 @@ export interface CategoryStats {
   totalNinos: number;
   totalAdolescentes: number;
   totalSimpatizantes: number;
+  totalVisitas: number;
   totalheRestauracion: number;
   totalHermanosVisitas: number;
   granTotal: number;
@@ -64,8 +65,16 @@ export const CATEGORIES: CategoryConfig[] = [
     textColor: 'text-emerald-600',
   },
   {
+    key: 'visitas',
+    label: 'Visitas',
+    shortLabel: 'V',
+    color: 'blue',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-600',
+  },
+  {
     key: 'heRestauracion',
-    label: 'Hermanos en Restauración',
+    label: 'HeRestauracion',
     shortLabel: 'HA',
     color: 'orange',
     bgColor: 'bg-orange-50',
@@ -104,6 +113,10 @@ export const calculateCategoryStats = (
     (sum, record) => sum + record.simpatizantes,
     0
   );
+  const totalVisitas = filteredData.reduce(
+    (sum, record) => sum + (record.visitas || 0),
+    0
+  );
   const totalheRestauracion = filteredData.reduce(
     (sum, record) => sum + (record.heRestauracion || 0),
     0
@@ -119,6 +132,7 @@ export const calculateCategoryStats = (
     totalNinos +
     totalAdolescentes +
     totalSimpatizantes +
+    totalVisitas +
     totalheRestauracion +
     totalHermanosVisitas;
 
@@ -128,6 +142,7 @@ export const calculateCategoryStats = (
     totalNinos,
     totalAdolescentes,
     totalSimpatizantes,
+    totalVisitas,
     totalheRestauracion,
     totalHermanosVisitas,
     granTotal,
@@ -149,6 +164,8 @@ export const getCategoryValue = (
       return record.adolescentes;
     case 'simpatizantes':
       return record.simpatizantes;
+    case 'visitas':
+      return record.visitas || 0;
     case 'heRestauracion':
       return record.heRestauracion || 0;
     case 'hermanosVisitas':
@@ -189,6 +206,7 @@ export const generateCSVHeaders = (): string[] => {
     ...CATEGORIES.map((cat) => cat.label),
     'Total',
     'Simpatizantes Asistieron',
+    'Visitas Asistieron',
     'Hermanos Asistieron',
     'Hermanas Asistieron',
     'Niños Asistieron',
@@ -206,6 +224,7 @@ export const generateCSVRow = (record: HistorialRecord): string[] => {
     ...CATEGORIES.map((cat) => getCategoryValue(record, cat.key).toString()),
     record.total.toString(),
     `"${getAttendeeNames(record.simpatizantesAsistieron)}"`,
+    `"${getAttendeeNames(record.visitasAsistieron)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.hermanos)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.hermanas)}"`,
     `"${getAttendeeNames(record.miembrosAsistieron?.ninos)}"`,
@@ -237,6 +256,9 @@ export const generateExcelData = (record: HistorialRecord) => {
   // Add attendee data
   baseData['Simpatizantes que Asistieron'] = getAttendeeNames(
     record.simpatizantesAsistieron
+  );
+  baseData['Visitas que Asistieron'] = getAttendeeNames(
+    record.visitasAsistieron
   );
   baseData['Hermanos que Asistieron'] = getAttendeeNames(
     record.miembrosAsistieron?.hermanos
@@ -279,6 +301,7 @@ export const generateStatisticsData = (
     { Concepto: 'Total Niños', Valor: stats.totalNinos },
     { Concepto: 'Total Adolescentes', Valor: stats.totalAdolescentes },
     { Concepto: 'Total Simpatizantes', Valor: stats.totalSimpatizantes },
+    { Concepto: 'Total Visitas', Valor: stats.totalVisitas },
     {
       Concepto: 'Total Hermanos en Restauración',
       Valor: stats.totalheRestauracion,

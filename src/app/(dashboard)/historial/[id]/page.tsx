@@ -23,6 +23,7 @@ import {
   User,
   UserCheck,
   UserX,
+  UserPlus,
   Edit3,
   Search,
   Filter,
@@ -42,8 +43,10 @@ interface HistorialRecordAPI {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas?: number;
   total: number;
   simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+  visitasAsistieron?: Array<{ id: string; nombre: string }>;
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -57,6 +60,7 @@ interface HistorialRecordAPI {
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
+  visitas: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -122,6 +126,7 @@ function ServicioHistorialContent() {
         // Ensure new fields exist with default values
         const normalizedRecord: HistorialRecord = {
           ...recordData,
+          visitas: (recordData as HistorialRecordAPI).visitas || 0,
           heRestauracion:
             (recordData as HistorialRecordAPI).heRestauracion || 0,
           hermanosVisitas:
@@ -179,6 +184,18 @@ function ServicioHistorialContent() {
           id: simpatizante.id,
           nombre: simpatizante.nombre,
           categoria: 'Simpatizantes',
+          tipo: 'simpatizante',
+        });
+      });
+    }
+
+    // Agregar visitas
+    if (record.visitasAsistieron) {
+      record.visitasAsistieron.forEach((visita) => {
+        asistentes.push({
+          id: visita.id,
+          nombre: visita.nombre,
+          categoria: 'Visitas',
           tipo: 'simpatizante',
         });
       });
@@ -242,7 +259,7 @@ function ServicioHistorialContent() {
                 ? 'Niños'
                 : miembro.categoria === 'adolescente'
                   ? 'Adolescentes'
-                  : 'Hermanos en Restauración',
+                  : 'HeRestauracion',
       }));
   };
 
@@ -311,7 +328,8 @@ function ServicioHistorialContent() {
         niños: 'amber',
         adolescentes: 'purple',
         simpatizantes: 'emerald',
-        'hermanos apartados': 'orange',
+        visitas: 'blue',
+        herestauracion: 'orange',
         'hermanos visitas': 'indigo',
       }[categoria.toLowerCase()] || 'gray';
 
@@ -338,7 +356,9 @@ function ServicioHistorialContent() {
           return <Zap className={`${iconSize} text-red-600`} />;
         case 'simpatizantes':
           return <Users className={`${iconSize} text-red-600`} />;
-        case 'hermanos apartados':
+        case 'visitas':
+          return <UserPlus className={`${iconSize} text-red-600`} />;
+        case 'herestauracion':
           return <User className={`${iconSize} text-red-600`} />;
         case 'hermanos visitas':
           return <Users className={`${iconSize} text-red-600`} />;
@@ -359,7 +379,9 @@ function ServicioHistorialContent() {
         return <Zap className={`${iconSize} text-purple-600`} />;
       case 'simpatizantes':
         return <Users className={`${iconSize} text-emerald-600`} />;
-      case 'hermanos apartados':
+      case 'visitas':
+        return <UserPlus className={`${iconSize} text-blue-600`} />;
+      case 'herestauracion':
         return <User className={`${iconSize} text-orange-600`} />;
       case 'hermanos visitas':
         return <Users className={`${iconSize} text-indigo-600`} />;
@@ -388,7 +410,9 @@ function ServicioHistorialContent() {
         return 'bg-purple-100';
       case 'simpatizantes':
         return 'bg-emerald-100';
-      case 'hermanos apartados':
+      case 'visitas':
+        return 'bg-blue-100';
+      case 'herestauracion':
         return 'bg-orange-100';
       case 'hermanos visitas':
         return 'bg-indigo-100';
@@ -505,7 +529,7 @@ function ServicioHistorialContent() {
           </div>
 
           {/* Categorías detalladas */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-3 border-t">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 pt-3 border-t">
             <div className="text-center p-3 bg-slate-50 rounded-lg">
               <div className="text-lg font-bold text-slate-600">
                 {record.hermanos}
@@ -536,11 +560,17 @@ function ServicioHistorialContent() {
               </div>
               <div className="text-xs text-gray-500">Simpat.</div>
             </div>
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-lg font-bold text-blue-600">
+                {record.visitas || 0}
+              </div>
+              <div className="text-xs text-gray-500">Visitas</div>
+            </div>
             <div className="text-center p-3 bg-orange-50 rounded-lg">
               <div className="text-lg font-bold text-orange-600">
                 {record.heRestauracion || 0}
               </div>
-              <div className="text-xs text-gray-500">H. Apart.</div>
+              <div className="text-xs text-gray-500">HeRest.</div>
             </div>
             <div className="text-center p-3 bg-indigo-50 rounded-lg">
               <div className="text-lg font-bold text-indigo-600">
@@ -646,9 +676,8 @@ function ServicioHistorialContent() {
                 <SelectItem value="ninos">Niños</SelectItem>
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
                 <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
-                <SelectItem value="hermanos apartados">
-                  Hermanos en Restauración
-                </SelectItem>
+                <SelectItem value="visitas">Visitas</SelectItem>
+                <SelectItem value="herestauracion">HeRestauracion</SelectItem>
                 <SelectItem value="hermanos visitas">
                   Hermanos Visitas
                 </SelectItem>

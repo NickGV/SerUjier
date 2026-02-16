@@ -42,8 +42,10 @@ interface HistorialRecordAPI {
   ninos: number;
   adolescentes: number;
   simpatizantes: number;
+  visitas?: number;
   total: number;
   simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
+  visitasAsistieron?: Array<{ id: string; nombre: string }>;
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -57,6 +59,7 @@ interface HistorialRecordAPI {
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
+  visitas: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -112,6 +115,7 @@ function HistorialContent() {
       const normalizedData: HistorialRecord[] = data.map(
         (record: HistorialRecordAPI) => ({
           ...record,
+          visitas: record.visitas || 0,
           heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
@@ -242,6 +246,10 @@ function HistorialContent() {
     (sum, record) => sum + record.simpatizantes,
     0
   );
+  const totalVisitas = filteredData.reduce(
+    (sum, record) => sum + (record.visitas || 0),
+    0
+  );
   const totalheRestauracion = filteredData.reduce(
     (sum, record) => sum + (record.heRestauracion || 0),
     0
@@ -256,6 +264,7 @@ function HistorialContent() {
     totalNinos +
     totalAdolescentes +
     totalSimpatizantes +
+    totalVisitas +
     totalheRestauracion +
     totalHermanosVisitas;
 
@@ -292,15 +301,17 @@ function HistorialContent() {
         'Niños',
         'Adolescentes',
         'Simpatizantes',
+        'Visitas',
         'Hermanos en Restauración',
         'Hermanos Visitas',
         'Total',
         'Simpatizantes Asistieron',
+        'Visitas Asistieron',
         'Hermanos Asistieron',
         'Hermanas Asistieron',
         'Niños Asistieron',
         'Adolescentes Asistieron',
-        'Hermanos en Restauración Asistieron',
+        'He Restauración Asistieron',
         'Hermanos Visitas Asistieron',
       ];
 
@@ -320,12 +331,16 @@ function HistorialContent() {
             record.ninos,
             record.adolescentes,
             record.simpatizantes,
+            record.visitas || 0,
             record.heRestauracion || 0,
             record.hermanosVisitas || 0,
             record.total,
             `"${
               record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
               ''
+            }"`,
+            `"${
+              record.visitasAsistieron?.map((v) => v.nombre).join('; ') || ''
             }"`,
             `"${
               record.miembrosAsistieron?.hermanos
@@ -404,11 +419,14 @@ function HistorialContent() {
         Niños: record.ninos,
         Adolescentes: record.adolescentes,
         Simpatizantes: record.simpatizantes,
-        'Hermanos en Restauración': record.heRestauracion || 0,
+        Visitas: record.visitas || 0,
+        HeRestauracion: record.heRestauracion || 0,
         'Hermanos Visitas': record.hermanosVisitas || 0,
         'Total Asistentes': record.total,
         'Simpatizantes que Asistieron':
           record.simpatizantesAsistieron?.map((s) => s.nombre).join(', ') || '',
+        'Visitas que Asistieron':
+          record.visitasAsistieron?.map((v) => v.nombre).join(', ') || '',
         'Hermanos que Asistieron':
           record.miembrosAsistieron?.hermanos
             ?.map((m) => m.nombre)
@@ -446,8 +464,9 @@ function HistorialContent() {
         { Concepto: 'Total Niños', Valor: totalNinos },
         { Concepto: 'Total Adolescentes', Valor: totalAdolescentes },
         { Concepto: 'Total Simpatizantes', Valor: totalSimpatizantes },
+        { Concepto: 'Total Visitas', Valor: totalVisitas },
         {
-          Concepto: 'Total Hermanos en Restauración',
+          Concepto: 'Total HeRestauracion',
           Valor: totalheRestauracion,
         },
         { Concepto: 'Total Hermanos Visitas', Valor: totalHermanosVisitas },
@@ -477,6 +496,7 @@ function HistorialContent() {
         { wch: 40 }, // Hermanas que Asistieron
         { wch: 40 }, // Niños que Asistieron
         { wch: 40 }, // Adolescentes que Asistieron
+        { wch: 40 }, // HeRestauracion que Asistieron
       ];
       worksheet1['!cols'] = colWidths;
 
@@ -576,6 +596,7 @@ ESTADÍSTICAS POR CATEGORÍA:
         (totalSimpatizantes / granTotal) *
         100
       ).toFixed(1)}%)
+- Visitas: ${totalVisitas} (${((totalVisitas / granTotal) * 100).toFixed(1)}%)
 
 DETALLE DE REGISTROS:
 =====================
@@ -606,6 +627,7 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + 'T12:00:00')
    - Niños: ${record.ninos}
    - Adolescentes: ${record.adolescentes}
    - Simpatizantes: ${record.simpatizantes}
+   - Visitas: ${record.visitas || 0}
    - TOTAL: ${record.total}
 
    ASISTENTES CON NOMBRE:
@@ -615,6 +637,13 @@ ${index + 1}. REGISTRO DEL ${new Date(record.fecha + 'T12:00:00')
            record.simpatizantesAsistieron.length
          }): ${record.simpatizantesAsistieron.map((s) => s.nombre).join(', ')}`
        : 'Simpatizantes: Ninguno registrado'
+   }
+   ${
+     record.visitasAsistieron && record.visitasAsistieron.length > 0
+       ? `Visitas (${
+           record.visitasAsistieron.length
+         }): ${record.visitasAsistieron.map((v) => v.nombre).join(', ')}`
+       : 'Visitas: Ninguno registrado'
    }
        ${
          record.miembrosAsistieron?.hermanos &&
@@ -703,6 +732,7 @@ NOTAS FINALES:
       const normalizedData: HistorialRecord[] = updatedData.map(
         (record: HistorialRecordAPI) => ({
           ...record,
+          visitas: record.visitas || 0,
           heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
@@ -1099,7 +1129,7 @@ NOTAS FINALES:
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-3">
                   <div className="text-center p-2 bg-slate-50 rounded-lg">
                     <div className="text-sm font-semibold text-slate-600">
                       {record.hermanos}
@@ -1130,11 +1160,17 @@ NOTAS FINALES:
                     </div>
                     <div className="text-xs text-gray-500">Simpat.</div>
                   </div>
+                  <div className="text-center p-2 bg-blue-50 rounded-lg">
+                    <div className="text-sm font-semibold text-blue-600">
+                      {record.visitas || 0}
+                    </div>
+                    <div className="text-xs text-gray-500">Visitas</div>
+                  </div>
                   <div className="text-center p-2 bg-orange-50 rounded-lg">
                     <div className="text-sm font-semibold text-orange-600">
                       {record.heRestauracion || 0}
                     </div>
-                    <div className="text-xs text-gray-500">H. Apart.</div>
+                    <div className="text-xs text-gray-500">HeRest.</div>
                   </div>
                   <div className="text-center p-2 bg-indigo-50 rounded-lg">
                     <div className="text-sm font-semibold text-indigo-600">
@@ -1160,6 +1196,28 @@ NOTAS FINALES:
                             className="inline-block bg-emerald-100 px-2 py-1 rounded mr-1 mb-1"
                           >
                             {s.nombre}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Lista de visitas que asistieron */}
+                {record.visitasAsistieron &&
+                  record.visitasAsistieron.length > 0 && (
+                    <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="text-xs text-blue-700 mb-1 flex items-center gap-1 font-medium">
+                        <Users className="w-3 h-3" />
+                        Visitas que asistieron (
+                        {record.visitasAsistieron.length}):
+                      </div>
+                      <div className="text-xs text-blue-800">
+                        {record.visitasAsistieron.map((v) => (
+                          <span
+                            key={v.id}
+                            className="inline-block bg-blue-100 px-2 py-1 rounded mr-1 mb-1"
+                          >
+                            {v.nombre}
                           </span>
                         ))}
                       </div>

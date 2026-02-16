@@ -19,9 +19,9 @@ export function CategoryGrid({
   };
 
   const containerClasses = {
-    sm: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 p-2',
-    md: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 p-3',
-    lg: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 p-4',
+    sm: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 p-2',
+    md: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 p-3',
+    lg: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 p-4',
   };
 
   return (
