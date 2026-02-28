@@ -1,13 +1,13 @@
-import type { Metadata, Viewport } from 'next';
-import React, { type ReactNode } from 'react';
 import { ThemeProvider } from '@/shared/components/providers/theme-provider';
-import './globals.css';
-import { Toaster } from 'sonner';
 import {
   InstallPrompt,
-  PWAUpdatePrompt,
   PWARegister,
+  PWAUpdatePrompt,
 } from '@/shared/components/pwa';
+import type { Metadata, Viewport } from 'next';
+import { type ReactNode } from 'react';
+import { Toaster } from 'sonner';
+import './globals.css';
 
 // TODO: Agregar logo
 export const metadata: Metadata = {
@@ -26,15 +26,36 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   icons: {
-    icon: './favicon.ico',
+    icon: [
+      { url: '/icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/favicon.ico', sizes: 'any' },
+    ],
     apple: [
-      { url: '/placeholder-logo.png', sizes: '192x192', type: 'image/png' },
+      {
+        url: '/icons/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/icons/android-chrome-512x512.png',
+      },
     ],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'SerUjier',
+    startupImage: [
+      {
+        url: '/icons/apple-touch-icon.png',
+        media:
+          '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
+      },
+    ],
   },
   openGraph: {
     type: 'website',
@@ -69,8 +90,35 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           content="black-translucent"
         />
         <meta name="apple-mobile-web-app-title" content="SerUjier" />
-        <link rel="apple-touch-icon" href="/placeholder-logo.png" />
-        <link rel="apple-touch-startup-image" href="/placeholder-logo.png" />
+        <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/icons/favicon-16x16.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/icons/favicon-32x32.png"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/icons/apple-touch-icon.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/icons/apple-touch-icon.png"
+        />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="msapplication-TileColor" content="#4a90e2" />
+        <meta
+          name="msapplication-TileImage"
+          content="/icons/android-chrome-192x192.png"
+        />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body>
         <ThemeProvider>
