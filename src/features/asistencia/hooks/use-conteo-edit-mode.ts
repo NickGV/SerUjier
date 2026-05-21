@@ -18,8 +18,7 @@ interface UseConteoEditModeProps {
     historialData: HistorialRecord,
     editRecordId?: string
   ) => void;
-  clearDayData: () => void;
-  updateConteo: (updates: Partial<ConteoState>) => void;
+  resetConteo: () => void;
   setDatosServicioBase: (data: DatosServicioBase | null) => void;
   conteoState: ConteoState;
 }
@@ -43,8 +42,7 @@ export function useConteoEditMode({
   isLoaded,
   loading,
   loadHistorialData,
-  clearDayData,
-  updateConteo,
+  resetConteo,
   setDatosServicioBase,
   conteoState,
 }: UseConteoEditModeProps): UseConteoEditModeReturn {
@@ -100,15 +98,9 @@ export function useConteoEditMode({
         '¿Desea cancelar la edición? Los cambios no guardados se perderán.'
       )
     ) {
-      // Clear everything and reset states
+      // Volver a un "nuevo del día" completamente vacío (limpia localStorage)
       setDatosServicioBase(null);
-      clearDayData();
-
-      // Reset consecutive mode if it was active
-      updateConteo({
-        modoConsecutivo: false,
-        tipoServicio: 'dominical',
-      });
+      resetConteo();
 
       router.push('/historial');
     }

@@ -6,6 +6,8 @@ export const servicios = [
   { value: 'misionero', label: 'Misionero' },
   { value: 'jovenes', label: 'Jóvenes' },
   { value: 'intercesion', label: 'Intercesión' },
+  { value: 'obra-social', label: 'Obra Social' },
+  { value: 'alabanza', label: 'Alabanza' },
 ];
 
 export const CATEGORIA_COLORS = {

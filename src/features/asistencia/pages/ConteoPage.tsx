@@ -5,6 +5,7 @@ import { useConteoCounters } from '@/features/asistencia/hooks/use-conteo-counte
 import { useConteoEditMode } from '@/features/asistencia/hooks/use-conteo-edit-mode';
 import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
 import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
+import { getServicioPorFecha } from '@/features/asistencia/lib/servicio-por-fecha';
 import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
 import {
   addSimpatizante,
@@ -66,6 +67,7 @@ export default function ConteoPage() {
     loadHistorialData,
     isLoaded,
     setDatosServicioBase,
+    resetConteo,
   } = usePersistentConteo();
 
   // Get datosServicioBase from persistent state
@@ -87,9 +89,8 @@ export default function ConteoPage() {
       isLoaded,
       loading,
       loadHistorialData,
-      clearDayData,
-      updateConteo,
       setDatosServicioBase,
+      resetConteo,
       conteoState,
     });
 
@@ -533,8 +534,21 @@ export default function ConteoPage() {
         ujierSeleccionado={conteoState.ujierSeleccionado}
         ujierPersonalizado={conteoState.ujierPersonalizado}
         ujieres={ujieres}
-        onFechaChange={(fecha) => updateConteo({ fecha })}
-        onTipoServicioChange={(tipoServicio) => updateConteo({ tipoServicio })}
+        onFechaChange={(fecha) => {
+          if (conteoState.servicioElegidoManualmente) {
+            updateConteo({ fecha });
+            return;
+          }
+
+          updateConteo({
+            fecha,
+            tipoServicio: getServicioPorFecha(fecha),
+            servicioElegidoManualmente: false,
+          });
+        }}
+        onTipoServicioChange={(tipoServicio) =>
+          updateConteo({ tipoServicio, servicioElegidoManualmente: true })
+        }
         onUjieresChange={(updates) => updateConteo(updates)}
         onShowBulkCount={() => setShowBulkCountDialog(true)}
         onRefreshData={() => loadFirebaseData(true)}

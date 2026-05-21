@@ -64,6 +64,13 @@ interface HistorialRecord extends HistorialRecordAPI {
   hermanosVisitas: number;
 }
 
+const DIAS_SEMANA_CHIPS: Array<{ value: number; label: string }> = [
+  { value: 2, label: 'Martes' },
+  { value: 4, label: 'Jueves' },
+  { value: 6, label: 'Sábado' },
+  { value: 0, label: 'Domingo' },
+];
+
 export default function HistorialPage() {
   return (
     <RoleGuard requiredPermission="historial.view">
@@ -83,6 +90,9 @@ function HistorialContent() {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  // Filtro por día de la semana: array de getDay() (0=Domingo..6=Sábado).
+  // Vacío significa "todos los días".
+  const [filtroDiasSemana, setFiltroDiasSemana] = useState<number[]>([]);
 
   // Estados para eliminación
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
@@ -205,7 +215,12 @@ function HistorialContent() {
       }
     }
 
-    return servicioMatch && fechaMatch && searchTermMatch;
+    // Filtro por día de la semana (chips)
+    const recordDay = new Date(record.fecha + 'T12:00:00').getDay();
+    const diaSemanaMatch =
+      filtroDiasSemana.length === 0 || filtroDiasSemana.includes(recordDay);
+
+    return servicioMatch && fechaMatch && searchTermMatch && diaSemanaMatch;
   });
 
   // Estadísticas para el informe
@@ -287,6 +302,13 @@ function HistorialContent() {
     setFechaInicio('');
     setFechaFin('');
     setSearchTerm('');
+    setFiltroDiasSemana([]);
+  };
+
+  const toggleDiaSemana = (dia: number) => {
+    setFiltroDiasSemana((curr) =>
+      curr.includes(dia) ? curr.filter((d) => d !== dia) : [...curr, dia]
+    );
   };
 
   const downloadCSV = async () => {
@@ -556,6 +578,13 @@ FILTROS APLICADOS:
 - Servicio: ${filtroServicio === 'todos' ? 'Todos' : filtroServicio}
 - Fecha inicio: ${fechaInicio || 'Sin filtro'}
 - Fecha fin: ${fechaFin || 'Sin filtro'}
+- Días de la semana: ${
+        filtroDiasSemana.length === 0
+          ? 'Todos'
+          : DIAS_SEMANA_CHIPS.filter((d) => filtroDiasSemana.includes(d.value))
+              .map((d) => d.label)
+              .join(', ')
+      }
 - Búsqueda: ${searchTerm || 'Sin filtro'}
 - Fecha de generación: ${new Date().toLocaleDateString('es-ES', {
         weekday: 'long',
@@ -811,7 +840,8 @@ NOTAS FINALES:
             {(filtroServicio !== 'todos' ||
               fechaInicio ||
               fechaFin ||
-              searchTerm) && (
+              searchTerm ||
+              filtroDiasSemana.length > 0) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -860,6 +890,39 @@ NOTAS FINALES:
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Filtro por día de la semana */}
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">
+              Día de la semana
+            </label>
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filtrar por día de la semana"
+            >
+              {DIAS_SEMANA_CHIPS.map((dia) => {
+                const active = filtroDiasSemana.includes(dia.value);
+                return (
+                  <Button
+                    key={dia.value}
+                    type="button"
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    aria-pressed={active}
+                    onClick={() => toggleDiaSemana(dia.value)}
+                    className={
+                      active
+                        ? 'text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                        : 'text-xs bg-transparent'
+                    }
+                  >
+                    {dia.label}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Filtros de fecha */}

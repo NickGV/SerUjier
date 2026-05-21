@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/shared/contexts/user-context';
 import { type DatosServicioBase } from '@/shared/types';
 import { calculateManualCounters } from '@/features/asistencia/utils/conteo-calculations';
+import { getServicioPorFecha } from '@/features/asistencia/lib/servicio-por-fecha';
 import {
   normalizeUjieres,
   getUjierSelectorValue,
@@ -21,6 +22,7 @@ interface ConteoState {
   hermanosVisitasCount: number;
   fecha: string;
   tipoServicio: string;
+  servicioElegidoManualmente: boolean;
   ujierSeleccionado: string;
   ujierPersonalizado: string;
   modoConsecutivo: boolean;
@@ -67,38 +69,44 @@ const getLocalDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
-const initialState: ConteoState = {
-  hermanos: 0,
-  hermanas: 0,
-  ninos: 0,
-  adolescentes: 0,
-  simpatizantesCount: 0,
-  visitasCount: 0,
-  heRestauracionCount: 0,
-  hermanosVisitasCount: 0,
-  fecha: getLocalDateString(), // Usar función local en lugar de toISOString()
-  tipoServicio: 'dominical',
-  ujierSeleccionado: '',
-  ujierPersonalizado: '',
-  modoConsecutivo: false,
-  isEditMode: false,
-  editingRecordId: null,
-  simpatizantesDelDia: [],
-  visitasDelDia: [],
-  hermanosDelDia: [],
-  hermanasDelDia: [],
-  ninosDelDia: [],
-  adolescentesDelDia: [],
-  heRestauracionDelDia: [],
-  hermanosVisitasDelDia: [],
-  selectedUjieres: [],
-  searchMiembros: '',
-  datosServicioBase: null,
-};
+function createInitialState(): ConteoState {
+  const today = getLocalDateString();
+  return {
+    hermanos: 0,
+    hermanas: 0,
+    ninos: 0,
+    adolescentes: 0,
+    simpatizantesCount: 0,
+    visitasCount: 0,
+    heRestauracionCount: 0,
+    hermanosVisitasCount: 0,
+    fecha: today, // Usar función local en lugar de toISOString()
+    tipoServicio: getServicioPorFecha(today),
+    servicioElegidoManualmente: false,
+    ujierSeleccionado: '',
+    ujierPersonalizado: '',
+    modoConsecutivo: false,
+    isEditMode: false,
+    editingRecordId: null,
+    simpatizantesDelDia: [],
+    visitasDelDia: [],
+    hermanosDelDia: [],
+    hermanasDelDia: [],
+    ninosDelDia: [],
+    adolescentesDelDia: [],
+    heRestauracionDelDia: [],
+    hermanosVisitasDelDia: [],
+    selectedUjieres: [],
+    searchMiembros: '',
+    datosServicioBase: null,
+  };
+}
 
 export function usePersistentConteo() {
   const { user } = useUser();
-  const [conteoState, setConteoState] = useState<ConteoState>(initialState);
+  const [conteoState, setConteoState] = useState<ConteoState>(() =>
+    createInitialState()
+  );
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Cargar estado desde localStorage al montar el componente
@@ -112,11 +120,8 @@ export function usePersistentConteo() {
         if (parsedState.fecha === today) {
           setConteoState(parsedState);
         } else {
-          // Si es un día diferente, resetear pero mantener la fecha actual
-          setConteoState({
-            ...initialState,
-            fecha: today, // Usar función local
-          });
+          // Si es un día diferente, resetear a un nuevo conteo del día
+          setConteoState(createInitialState());
         }
       }
     } catch (error) {
@@ -162,7 +167,7 @@ export function usePersistentConteo() {
 
   // Función para resetear el conteo
   const resetConteo = useCallback(() => {
-    setConteoState(initialState);
+    setConteoState(createInitialState());
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
@@ -249,6 +254,7 @@ export function usePersistentConteo() {
         hermanosVisitasCount: manualCounters.hermanosVisitas,
         fecha: historialData.fecha,
         tipoServicio: servicioValue,
+        servicioElegidoManualmente: true,
         ujierSeleccionado: getUjierSelectorValue(historialData.ujier),
         ujierPersonalizado: getCustomUjierString(historialData.ujier),
         selectedUjieres: ujieresArray,
