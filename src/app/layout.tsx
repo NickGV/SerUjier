@@ -4,6 +4,7 @@ import {
   PWARegister,
   PWAUpdatePrompt,
 } from '@/shared/components/pwa';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { type ReactNode } from 'react';
 import { Toaster } from 'sonner';
@@ -134,6 +135,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           richColors={true}
           closeButton={true}
         />
+        <Analytics />
       </body>
     </html>
   );

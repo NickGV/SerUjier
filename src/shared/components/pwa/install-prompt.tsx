@@ -17,6 +17,48 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const DISMISS_STORAGE_KEY = 'pwa-prompt-dismissed';
+const DISMISS_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
+
+function isDismissActive(): boolean {
+  try {
+    const raw = localStorage.getItem(DISMISS_STORAGE_KEY);
+    if (!raw) return false;
+
+    // Migración del flag booleano legado: tratar como dismiss reciente.
+    if (raw === 'true') {
+      localStorage.setItem(
+        DISMISS_STORAGE_KEY,
+        JSON.stringify({ dismissedAt: Date.now() })
+      );
+      return true;
+    }
+
+    const parsed = JSON.parse(raw) as { dismissedAt?: number };
+    if (!parsed?.dismissedAt) return false;
+
+    if (Date.now() - parsed.dismissedAt < DISMISS_SNOOZE_MS) {
+      return true;
+    }
+
+    localStorage.removeItem(DISMISS_STORAGE_KEY);
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function persistDismiss(): void {
+  try {
+    localStorage.setItem(
+      DISMISS_STORAGE_KEY,
+      JSON.stringify({ dismissedAt: Date.now() })
+    );
+  } catch {
+    // Storage puede fallar en modo incógnito o quota; ignoramos.
+  }
+}
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -31,18 +73,32 @@ export function InstallPrompt() {
       return;
     }
 
-    // Verificar si ya se mostró antes
-    const promptDismissed = localStorage.getItem('pwa-prompt-dismissed');
-    if (promptDismissed === 'true') {
+    // Verificar si el usuario lo cerró recientemente (snooze 7 días)
+    if (isDismissActive()) {
       return;
     }
 
+    let showTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
     const handler = (e: Event) => {
+      // Si el usuario lo cerró recientemente, no volver a mostrarlo aunque
+      // el evento se dispare nuevamente (puede pasar al volver a enfocar la pestaña).
+      if (isDismissActive()) {
+        return;
+      }
+
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
 
       // Mostrar el prompt después de 3 segundos
-      setTimeout(() => {
+      if (showTimeoutId !== null) {
+        clearTimeout(showTimeoutId);
+      }
+      showTimeoutId = setTimeout(() => {
+        // Revalidar snooze al momento de mostrar.
+        if (isDismissActive()) {
+          return;
+        }
         setShowPrompt(true);
       }, 3000);
     };
@@ -51,6 +107,9 @@ export function InstallPrompt() {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      if (showTimeoutId !== null) {
+        clearTimeout(showTimeoutId);
+      }
     };
   }, []);
 
@@ -72,7 +131,9 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    persistDismiss();
+    // Evitar re-mostrarlo en la misma sesión si el evento se dispara otra vez.
+    setDeferredPrompt(null);
   };
 
   if (!showPrompt || !deferredPrompt) {
