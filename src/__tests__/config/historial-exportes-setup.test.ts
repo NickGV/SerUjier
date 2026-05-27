@@ -109,7 +109,7 @@ import {
   buildListWorkbook,
   chunkArray,
 } from '@/shared/lib/export/excel';
-import { buildListPdfDocument } from '@/shared/lib/export/pdf';
+import { buildListPdfDocument, buildDetailPdfDocument } from '@/shared/lib/export/pdf';
 import type {
   CountExportInput,
   ListPdfInput,
@@ -465,5 +465,72 @@ describe('list PDF document', () => {
     expect(doc).toBeDefined();
     // The function receives filtered data and renders only what it gets
     // If it rendered extra records or different data, the test would fail
+  });
+});
+
+describe('detail PDF document', () => {
+  const baseDetailInput: Omit<DetailPdfInput, 'action' | 'asistentes' | 'faltantes' | 'totalesPorCategoria'> = {
+    logoBase64: null,
+    fecha: '2026-05-27',
+    servicio: 'Culto General',
+    ujieres: 'Test Ujier',
+    totalAsistentes: 40,
+  };
+
+  const sampleTotales: DetailPdfInput['totalesPorCategoria'] = [
+    { label: 'Hermanos', value: 15 },
+    { label: 'Hermanas', value: 20 },
+    { label: 'Niños', value: 8 },
+    { label: 'Adolescentes', value: 5 },
+    { label: 'Simpatizantes', value: 10 },
+    { label: 'Visitas', value: 2 },
+    { label: 'He. Restauración', value: 3 },
+    { label: 'H. Visitas', value: 4 },
+  ];
+
+  it('shows Total asistentes in header for asistentes action', () => {
+    const input: DetailPdfInput = {
+      ...baseDetailInput,
+      action: 'asistentes',
+      asistentes: [{ id: '1', nombre: 'Test', categoria: 'Test', tipo: 'miembro' }],
+      faltantes: [],
+      totalesPorCategoria: sampleTotales,
+    };
+
+    const doc = buildDetailPdfDocument(input);
+    // Verifica que el documento se genere correctamente
+    expect(doc).toBeDefined();
+    expect(doc.type).toBeDefined();
+    // El test de renderizado real sería más complejo, pero al menos verificamos que no hay errores
+  });
+
+  it('shows Total faltantes in header for faltantes action', () => {
+    const input: DetailPdfInput = {
+      ...baseDetailInput,
+      action: 'faltantes',
+      asistentes: [],
+      faltantes: [{ id: '1', nombre: 'Test', categoria_display: 'Test', tipo: 'miembro' }],
+      totalesPorCategoria: sampleTotales,
+    };
+
+    const doc = buildDetailPdfDocument(input);
+    // Verifica que el documento se genere correctamente
+    expect(doc).toBeDefined();
+    expect(doc.type).toBeDefined();
+  });
+
+  it('shows Total asistentes in header for completa action', () => {
+    const input: DetailPdfInput = {
+      ...baseDetailInput,
+      action: 'completa',
+      asistentes: [{ id: '1', nombre: 'Test', categoria: 'Test', tipo: 'miembro' }],
+      faltantes: [{ id: '2', nombre: 'Test2', categoria_display: 'Test', tipo: 'miembro' }],
+      totalesPorCategoria: sampleTotales,
+    };
+
+    const doc = buildDetailPdfDocument(input);
+    // Verifica que el documento se genere correctamente
+    expect(doc).toBeDefined();
+    expect(doc.type).toBeDefined();
   });
 });

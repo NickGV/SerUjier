@@ -169,26 +169,30 @@ export function buildDetailPdfDocument(
           <Text>{formatDateLong(input.fecha)}</Text>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.metadataGrid}>
-            <View style={styles.metadataItem}>
-              <Text style={styles.label}>Servicio</Text>
-              <Text style={styles.value}>{input.servicio}</Text>
-            </View>
-            <View style={styles.metadataItem}>
-              <Text style={styles.label}>Fecha</Text>
-              <Text style={styles.value}>{formatDate(input.fecha)}</Text>
-            </View>
-            <View style={styles.metadataItem}>
-              <Text style={styles.label}>Ujier(es)</Text>
-              <Text style={styles.value}>{input.ujieres}</Text>
-            </View>
-            <View style={styles.metadataItem}>
-              <Text style={styles.label}>Total asistentes</Text>
-              <Text style={styles.value}>{input.totalAsistentes}</Text>
-            </View>
-          </View>
-        </View>
+         <View style={styles.section}>
+           <View style={styles.metadataGrid}>
+             <View style={styles.metadataItem}>
+               <Text style={styles.label}>Servicio</Text>
+               <Text style={styles.value}>{input.servicio}</Text>
+             </View>
+             <View style={styles.metadataItem}>
+               <Text style={styles.label}>Fecha</Text>
+               <Text style={styles.value}>{formatDate(input.fecha)}</Text>
+             </View>
+             <View style={styles.metadataItem}>
+               <Text style={styles.label}>Ujier(es)</Text>
+               <Text style={styles.value}>{input.ujieres}</Text>
+             </View>
+             <View style={styles.metadataItem}>
+               <Text style={styles.label}>
+                 {input.action === 'faltantes' ? 'Total faltantes' : 'Total asistentes'}
+               </Text>
+               <Text style={styles.value}>
+                 {input.action === 'faltantes' ? input.faltantesCount : input.totalAsistentes}
+               </Text>
+             </View>
+           </View>
+         </View>
 
         <View style={styles.section}>
           <Text style={styles.summaryHeader}>Totales por categoria</Text>
