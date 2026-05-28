@@ -19,6 +19,7 @@ import {
 import {
   Calendar,
   ArrowLeft,
+  Download,
   Users,
   User,
   UserCheck,
@@ -32,6 +33,35 @@ import {
   Zap,
   Heart,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
+import {
+  buildDetailWorkbook,
+  buildConteoWorkbook,
+} from '@/shared/lib/export/excel';
+import {
+  buildDetailPdfDocument,
+  buildConteoPdfDocument,
+} from '@/shared/lib/export/pdf';
+import type {
+  DetailAction,
+  DetailExportRow,
+  CountExportInput,
+} from '@/shared/lib/export/types';
+import {
+  downloadBlob,
+  generateDetailFilename,
+  generateConteoFilename,
+  buildConteoCsv,
+  loadLogoBase64,
+} from '@/shared/lib/export/utils';
+import { toast } from 'sonner';
 
 interface HistorialRecordAPI {
   id: string;
@@ -112,6 +142,7 @@ function ServicioHistorialContent() {
     'all' | 'asistentes' | 'faltantes'
   >('all');
   const [filterCategoria, setFilterCategoria] = useState<string>('all');
+  const [isExportingDetail, setIsExportingDetail] = useState(false);
 
   const recordId = params.id as string;
 
@@ -421,6 +452,133 @@ function ServicioHistorialContent() {
     }
   };
 
+  const handleConteoExport = async (format: 'csv' | 'excel' | 'pdf') => {
+    if (!record) return;
+    setIsExportingDetail(true);
+    try {
+      const totalesPorCategoria = [
+        { label: 'Hermanos', value: record.hermanos },
+        { label: 'Hermanas', value: record.hermanas },
+        { label: 'Niños', value: record.ninos },
+        { label: 'Adolescentes', value: record.adolescentes },
+        { label: 'Simpatizantes', value: record.simpatizantes },
+        { label: 'Visitas', value: record.visitas || 0 },
+        { label: 'He. Restauración', value: record.heRestauracion || 0 },
+        { label: 'H. Visitas', value: record.hermanosVisitas || 0 },
+      ];
+
+      const conteoInput: CountExportInput = {
+        fecha: record.fecha,
+        servicio: record.servicio,
+        ujieres: Array.isArray(record.ujier)
+          ? record.ujier.join(', ')
+          : record.ujier,
+        totalesPorCategoria,
+        totalAsistentes: record.total,
+        totalFaltantes: faltantes.length,
+        asistentesCount: asistentes.length,
+        faltantesCount: faltantes.length,
+      };
+
+      if (format === 'csv') {
+        const csv = buildConteoCsv(conteoInput);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        downloadBlob(blob, generateConteoFilename(record.fecha, 'csv'));
+      } else if (format === 'excel') {
+        const buffer = await buildConteoWorkbook(conteoInput);
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        downloadBlob(blob, generateConteoFilename(record.fecha, 'xlsx'));
+      } else {
+        const { pdf } = await import('@react-pdf/renderer');
+        const document = buildConteoPdfDocument(conteoInput);
+        const blob = await pdf(document).toBlob();
+        downloadBlob(blob, generateConteoFilename(record.fecha, 'pdf'));
+      }
+    } catch (error) {
+      console.error('Error al exportar conteo:', error);
+      toast.error('Error al generar el archivo de conteo');
+    } finally {
+      setIsExportingDetail(false);
+    }
+  };
+
+  const handleDetailExport = async (
+    action: DetailAction,
+    format: 'excel' | 'pdf'
+  ) => {
+    if (!record) return;
+    setIsExportingDetail(true);
+    try {
+      const asistentesRows: DetailExportRow[] = asistentes.map((a) => ({
+        nombre: a.nombre,
+        categoria: a.categoria,
+        tipo: a.tipo,
+        estado: 'Asistió',
+      }));
+
+      const faltantesRows: DetailExportRow[] = faltantes.map((f) => ({
+        nombre: f.nombre,
+        categoria: f.categoria_display || f.categoria,
+        tipo: 'miembro',
+        estado: 'Faltó',
+      }));
+
+      if (format === 'excel') {
+        const buffer = await buildDetailWorkbook({
+          asistentes: asistentesRows,
+          faltantes: faltantesRows,
+          action,
+        });
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        downloadBlob(
+          blob,
+          generateDetailFilename(record.fecha, action, 'excel')
+        );
+      } else {
+        const logoBase64 = await loadLogoBase64();
+        const { pdf } = await import('@react-pdf/renderer');
+
+        const totalesPorCategoria = [
+          { label: 'Hermanos', value: record.hermanos },
+          { label: 'Hermanas', value: record.hermanas },
+          { label: 'Niños', value: record.ninos },
+          { label: 'Adolescentes', value: record.adolescentes },
+          { label: 'Simpatizantes', value: record.simpatizantes },
+          { label: 'Visitas', value: record.visitas || 0 },
+          { label: 'He. Restauración', value: record.heRestauracion || 0 },
+          { label: 'H. Visitas', value: record.hermanosVisitas || 0 },
+        ];
+
+        const document = buildDetailPdfDocument({
+          logoBase64,
+          fecha: record.fecha,
+          servicio: record.servicio,
+          ujieres: Array.isArray(record.ujier)
+            ? record.ujier.join(', ')
+            : record.ujier,
+          totalAsistentes: record.total,
+          faltantesCount: faltantes.length,
+          totalesPorCategoria,
+          asistentes: asistentesRows,
+          faltantes: faltantesRows,
+          action,
+        });
+
+        const blob = await pdf(document).toBlob();
+        downloadBlob(blob, generateDetailFilename(record.fecha, action, 'pdf'));
+      }
+    } catch (error) {
+      console.error('Error al exportar:', error);
+      toast.error('Error al generar el archivo');
+    } finally {
+      setIsExportingDetail(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -626,6 +784,104 @@ function ServicioHistorialContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Export */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Download className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Exportar</span>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isExportingDetail}
+                className="bg-transparent border-green-200 text-green-700 hover:bg-green-50 text-xs"
+              >
+                {isExportingDetail ? (
+                  <span className="animate-pulse">Exportando...</span>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Completa</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('completa', 'excel')}
+                disabled={isExportingDetail}
+              >
+                Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('completa', 'pdf')}
+                disabled={isExportingDetail}
+              >
+                PDF
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuLabel>Asistentes</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('asistentes', 'excel')}
+                disabled={isExportingDetail}
+              >
+                Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('asistentes', 'pdf')}
+                disabled={isExportingDetail}
+              >
+                PDF
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuLabel>Faltantes</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('faltantes', 'excel')}
+                disabled={isExportingDetail}
+              >
+                Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDetailExport('faltantes', 'pdf')}
+                disabled={isExportingDetail}
+              >
+                PDF
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuLabel>Exportar Conteo</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => handleConteoExport('csv')}
+                disabled={isExportingDetail}
+              >
+                CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConteoExport('excel')}
+                disabled={isExportingDetail}
+              >
+                Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConteoExport('pdf')}
+                disabled={isExportingDetail}
+              >
+                PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardContent>
+      </Card>
 
       {/* Filtros */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
