@@ -16,7 +16,6 @@ import {
 } from '@/shared/ui/select';
 import {
   AlertTriangle,
-  BarChart3,
   Calendar,
   CalendarDays,
   Download,
@@ -39,7 +38,11 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { buildListWorkbook } from '@/shared/lib/export/excel';
 import { buildListPdfDocument } from '@/shared/lib/export/pdf';
-import { downloadBlob, generateListFilename, loadLogoBase64 } from '@/shared/lib/export/utils';
+import {
+  downloadBlob,
+  generateListFilename,
+  loadLogoBase64,
+} from '@/shared/lib/export/utils';
 
 interface HistorialRecordAPI {
   id: string;
@@ -432,9 +435,14 @@ function HistorialContent() {
     try {
       const registros = filteredData.map((record) => ({
         fecha: record.fecha,
-        diaSemana: new Date(record.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long' }),
+        diaSemana: new Date(record.fecha + 'T12:00:00').toLocaleDateString(
+          'es-ES',
+          { weekday: 'long' }
+        ),
         servicio: record.servicio,
-        ujieres: Array.isArray(record.ujier) ? record.ujier.join(', ') : record.ujier,
+        ujieres: Array.isArray(record.ujier)
+          ? record.ujier.join(', ')
+          : record.ujier,
         hermanos: record.hermanos,
         hermanas: record.hermanas,
         ninos: record.ninos,
@@ -444,14 +452,32 @@ function HistorialContent() {
         heRestauracion: record.heRestauracion || 0,
         hermanosVisitas: record.hermanosVisitas || 0,
         totalAsistentes: record.total,
-        simpatizantesAsistieron: record.simpatizantesAsistieron?.map((s) => s.nombre).join(', ') || '',
-        visitasAsistieron: record.visitasAsistieron?.map((v) => v.nombre).join(', ') || '',
-        hermanosAsistieron: record.miembrosAsistieron?.hermanos?.map((m) => m.nombre).join(', ') || '',
-        hermanasAsistieron: record.miembrosAsistieron?.hermanas?.map((m) => m.nombre).join(', ') || '',
-        ninosAsistieron: record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join(', ') || '',
-        adolescentesAsistieron: record.miembrosAsistieron?.adolescentes?.map((m) => m.nombre).join(', ') || '',
-        heRestauracionAsistieron: record.miembrosAsistieron?.heRestauracion?.map((m) => m.nombre).join(', ') || '',
-        hermanosVisitasAsistieron: record.hermanosVisitasAsistieron?.map((h) => h.nombre).join(', ') || '',
+        simpatizantesAsistieron:
+          record.simpatizantesAsistieron?.map((s) => s.nombre).join(', ') || '',
+        visitasAsistieron:
+          record.visitasAsistieron?.map((v) => v.nombre).join(', ') || '',
+        hermanosAsistieron:
+          record.miembrosAsistieron?.hermanos
+            ?.map((m) => m.nombre)
+            .join(', ') || '',
+        hermanasAsistieron:
+          record.miembrosAsistieron?.hermanas
+            ?.map((m) => m.nombre)
+            .join(', ') || '',
+        ninosAsistieron:
+          record.miembrosAsistieron?.ninos?.map((m) => m.nombre).join(', ') ||
+          '',
+        adolescentesAsistieron:
+          record.miembrosAsistieron?.adolescentes
+            ?.map((m) => m.nombre)
+            .join(', ') || '',
+        heRestauracionAsistieron:
+          record.miembrosAsistieron?.heRestauracion
+            ?.map((m) => m.nombre)
+            .join(', ') || '',
+        hermanosVisitasAsistieron:
+          record.hermanosVisitasAsistieron?.map((h) => h.nombre).join(', ') ||
+          '',
       }));
 
       const estadisticas = [
@@ -476,11 +502,27 @@ function HistorialContent() {
         { categoria: 'Hermanos', cantidad: totalHermanos, porcentaje: '0%' },
         { categoria: 'Hermanas', cantidad: totalHermanas, porcentaje: '0%' },
         { categoria: 'Niños', cantidad: totalNinos, porcentaje: '0%' },
-        { categoria: 'Adolescentes', cantidad: totalAdolescentes, porcentaje: '0%' },
-        { categoria: 'Simpatizantes', cantidad: totalSimpatizantes, porcentaje: '0%' },
+        {
+          categoria: 'Adolescentes',
+          cantidad: totalAdolescentes,
+          porcentaje: '0%',
+        },
+        {
+          categoria: 'Simpatizantes',
+          cantidad: totalSimpatizantes,
+          porcentaje: '0%',
+        },
         { categoria: 'Visitas', cantidad: totalVisitas, porcentaje: '0%' },
-        { categoria: 'He. Restauración', cantidad: totalheRestauracion, porcentaje: '0%' },
-        { categoria: 'H. Visitas', cantidad: totalHermanosVisitas, porcentaje: '0%' },
+        {
+          categoria: 'He. Restauración',
+          cantidad: totalheRestauracion,
+          porcentaje: '0%',
+        },
+        {
+          categoria: 'H. Visitas',
+          cantidad: totalHermanosVisitas,
+          porcentaje: '0%',
+        },
       ];
 
       const statsInput = {
@@ -499,9 +541,17 @@ function HistorialContent() {
         granTotal,
       };
 
-      const buffer = await buildListWorkbook({ registros, estadisticas, categorias }, statsInput);
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      downloadBlob(blob, generateListFilename(new Date().toISOString().split('T')[0], 'excel'));
+      const buffer = await buildListWorkbook(
+        { registros, estadisticas, categorias },
+        statsInput
+      );
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      downloadBlob(
+        blob,
+        generateListFilename(new Date().toISOString().split('T')[0], 'excel')
+      );
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
       toast.error('Error al generar el archivo Excel');
@@ -532,19 +582,25 @@ function HistorialContent() {
         granTotal,
       };
 
-      const filtroFecha = [fechaInicio, fechaFin].filter(Boolean).join(' a ') || 'Todos los registros';
+      const filtroFecha =
+        [fechaInicio, fechaFin].filter(Boolean).join(' a ') ||
+        'Todos los registros';
 
       const document = buildListPdfDocument({
         logoBase64,
         records: filteredData,
         stats: statsInput,
         titulo: 'Informe de Historial de Asistencia',
-        filtroServicio: filtroServicio === 'todos' ? 'Todos los servicios' : filtroServicio,
+        filtroServicio:
+          filtroServicio === 'todos' ? 'Todos los servicios' : filtroServicio,
         filtroFecha,
       });
 
       const blob = await pdf(document).toBlob();
-      downloadBlob(blob, generateListFilename(new Date().toISOString().split('T')[0], 'pdf'));
+      downloadBlob(
+        blob,
+        generateListFilename(new Date().toISOString().split('T')[0], 'pdf')
+      );
     } catch (error) {
       console.error('Error al exportar a PDF:', error);
       toast.error('Error al generar el archivo PDF');
@@ -874,7 +930,9 @@ function HistorialContent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={isExportingCSV || isExportingExcel || isExportingPDF}
+                  disabled={
+                    isExportingCSV || isExportingExcel || isExportingPDF
+                  }
                   className="bg-transparent border-green-200 text-green-700 hover:bg-green-50 text-xs"
                 >
                   {isExportingCSV || isExportingExcel || isExportingPDF ? (

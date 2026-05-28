@@ -77,9 +77,25 @@ export interface TotalsSummaryRow {
   value: number;
 }
 
+export interface ListPdfRecord {
+  id: string;
+  fecha: string;
+  servicio: string;
+  ujier: string | string[];
+  hermanos: number;
+  hermanas: number;
+  ninos: number;
+  adolescentes: number;
+  simpatizantes: number;
+  visitas?: number;
+  heRestauracion?: number;
+  hermanosVisitas?: number;
+  total: number;
+}
+
 export interface ListPdfInput {
   logoBase64?: string | null;
-  records: ListExportRow[];
+  records: ListPdfRecord[];
   stats: ListStatsInput;
   titulo: string;
   filtroServicio: string;
@@ -105,6 +121,7 @@ export interface DetailPdfInput {
   servicio: string;
   ujieres: string;
   totalAsistentes: number;
+  faltantesCount: number;
   totalesPorCategoria: TotalsSummaryRow[];
   asistentes: DetailExportRow[];
   faltantes: DetailExportRow[];

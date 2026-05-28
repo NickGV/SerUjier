@@ -45,20 +45,24 @@ export function generateDetailFilename(
   return `informe_${date}_${actionLabel}.${extension}`;
 }
 
-export function generateListFilename(date: string, format: ExportFormat): string {
+export function generateListFilename(
+  date: string,
+  format: ExportFormat
+): string {
   const extension = format === 'excel' ? 'xlsx' : 'pdf';
   return `informe_historial_${date}.${extension}`;
 }
 
-export function generateConteoFilename(date: string, extension: string): string {
+export function generateConteoFilename(
+  date: string,
+  extension: string
+): string {
   return `informe_conteo_${date}.${extension}`;
 }
 
 export function buildConteoCsv(input: CountExportInput): string {
   const header = 'Concepto,Valor';
-  const totals = input.totalesPorCategoria.map(
-    (r) => `${r.label},${r.value}`
-  );
+  const totals = input.totalesPorCategoria.map((r) => `${r.label},${r.value}`);
   const body = [
     ...totals,
     `Asistentes,${input.asistentesCount}`,

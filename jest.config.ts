@@ -13,9 +13,7 @@ const config: Config = {
     '^@/features/(.*)$': '<rootDir>/src/features/$1',
     '^@/shared/(.*)$': '<rootDir>/src/shared/$1',
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!(exceljs)/)',
-  ],
+  transformIgnorePatterns: ['/node_modules/(?!(exceljs)/)'],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

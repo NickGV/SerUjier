@@ -1,5 +1,13 @@
 import React from 'react';
-import { Document, Page, View, Text, Image } from '@react-pdf/renderer';
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  type DocumentProps,
+} from '@react-pdf/renderer';
 
 import type {
   CountExportInput,
@@ -12,7 +20,7 @@ import { formatDate, formatDateLong, formatDateTime } from './utils';
 
 const RECORDS_PER_PAGE = 25;
 
-const styles = {
+const styles = StyleSheet.create({
   page: {
     padding: 24,
     fontFamily: 'Helvetica',
@@ -98,6 +106,9 @@ const styles = {
   cellTiny: {
     width: '4%',
   },
+  cellSm: {
+    width: '5%',
+  },
   cellNarrow: {
     width: '6%',
   },
@@ -129,7 +140,7 @@ const styles = {
     fontSize: 8,
     color: '#64748b',
   },
-};
+});
 
 function resolveDetailRows(input: DetailPdfInput): DetailExportRow[] {
   if (input.action === 'asistentes') {
@@ -152,7 +163,7 @@ function buildTotalsSection(totals: TotalsSummaryRow[]) {
 
 export function buildDetailPdfDocument(
   input: DetailPdfInput
-): React.ReactElement {
+): React.ReactElement<DocumentProps> {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -169,30 +180,34 @@ export function buildDetailPdfDocument(
           <Text>{formatDateLong(input.fecha)}</Text>
         </View>
 
-         <View style={styles.section}>
-           <View style={styles.metadataGrid}>
-             <View style={styles.metadataItem}>
-               <Text style={styles.label}>Servicio</Text>
-               <Text style={styles.value}>{input.servicio}</Text>
-             </View>
-             <View style={styles.metadataItem}>
-               <Text style={styles.label}>Fecha</Text>
-               <Text style={styles.value}>{formatDate(input.fecha)}</Text>
-             </View>
-             <View style={styles.metadataItem}>
-               <Text style={styles.label}>Ujier(es)</Text>
-               <Text style={styles.value}>{input.ujieres}</Text>
-             </View>
-             <View style={styles.metadataItem}>
-               <Text style={styles.label}>
-                 {input.action === 'faltantes' ? 'Total faltantes' : 'Total asistentes'}
-               </Text>
-               <Text style={styles.value}>
-                 {input.action === 'faltantes' ? input.faltantesCount : input.totalAsistentes}
-               </Text>
-             </View>
-           </View>
-         </View>
+        <View style={styles.section}>
+          <View style={styles.metadataGrid}>
+            <View style={styles.metadataItem}>
+              <Text style={styles.label}>Servicio</Text>
+              <Text style={styles.value}>{input.servicio}</Text>
+            </View>
+            <View style={styles.metadataItem}>
+              <Text style={styles.label}>Fecha</Text>
+              <Text style={styles.value}>{formatDate(input.fecha)}</Text>
+            </View>
+            <View style={styles.metadataItem}>
+              <Text style={styles.label}>Ujier(es)</Text>
+              <Text style={styles.value}>{input.ujieres}</Text>
+            </View>
+            <View style={styles.metadataItem}>
+              <Text style={styles.label}>
+                {input.action === 'faltantes'
+                  ? 'Total faltantes'
+                  : 'Total asistentes'}
+              </Text>
+              <Text style={styles.value}>
+                {input.action === 'faltantes'
+                  ? input.faltantesCount
+                  : input.totalAsistentes}
+              </Text>
+            </View>
+          </View>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.summaryHeader}>Totales por categoria</Text>
@@ -207,11 +222,21 @@ export function buildDetailPdfDocument(
             <Text style={[styles.cellFlex, styles.cellMed]}>Estado</Text>
           </View>
           {resolveDetailRows(input).map((row, index) => (
-            <View key={`${row.nombre}-${index}`} style={styles.tableRow} wrap={false}>
+            <View
+              key={`${row.nombre}-${index}`}
+              style={styles.tableRow}
+              wrap={false}
+            >
               <Text style={[styles.cellFlex, styles.cellSm]}>{index + 1}</Text>
-              <Text style={[styles.cellFlex, styles.cellXWide]}>{row.nombre}</Text>
-              <Text style={[styles.cellFlex, styles.cellMed]}>{row.categoria}</Text>
-              <Text style={[styles.cellFlex, styles.cellMed]}>{row.estado}</Text>
+              <Text style={[styles.cellFlex, styles.cellXWide]}>
+                {row.nombre}
+              </Text>
+              <Text style={[styles.cellFlex, styles.cellMed]}>
+                {row.categoria}
+              </Text>
+              <Text style={[styles.cellFlex, styles.cellMed]}>
+                {row.estado}
+              </Text>
             </View>
           ))}
         </View>
@@ -232,7 +257,7 @@ export function buildDetailPdfDocument(
 
 export function buildConteoPdfDocument(
   input: CountExportInput
-): React.ReactElement {
+): React.ReactElement<DocumentProps> {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -293,13 +318,6 @@ export function buildConteoPdfDocument(
   );
 }
 
-function formatNames(
-  names?: Array<{ id: string; nombre: string }>
-): string {
-  if (!names || names.length === 0) return '';
-  return names.map((n) => n.nombre).join(', ');
-}
-
 function buildListTableRows(
   records: ListPdfInput['records'],
   startIndex: number
@@ -309,23 +327,13 @@ function buildListTableRows(
     const ujieres = Array.isArray(record.ujier)
       ? record.ujier.join(', ')
       : record.ujier;
-    const simps = formatNames(
-      (record as Record<string, unknown>).simpatizantesAsistieron as
-        | Array<{ id: string; nombre: string }>
-        | undefined
-    );
-    const visits = formatNames(
-      (record as Record<string, unknown>).visitasAsistieron as
-        | Array<{ id: string; nombre: string }>
-        | undefined
-    );
 
     return (
       <View key={`${record.id}-${idx}`} style={styles.tableRow} wrap={false}>
         <Text style={styles.cellTiny}>{absIndex}</Text>
         <Text style={styles.cellSmall}>{formatDate(record.fecha)}</Text>
-        <Text style={styles.cellMedWide} numberOfLines={1}>{record.servicio}</Text>
-        <Text style={styles.cellMedWide} numberOfLines={1}>{ujieres}</Text>
+        <Text style={styles.cellMedWide}>{record.servicio}</Text>
+        <Text style={styles.cellMedWide}>{ujieres}</Text>
         <Text style={styles.cellNarrow}>{record.hermanos}</Text>
         <Text style={styles.cellNarrow}>{record.hermanas}</Text>
         <Text style={styles.cellNarrow}>{record.ninos}</Text>
@@ -353,7 +361,12 @@ function buildRecordsPages(
     const totalPages = Math.ceil(recordCount / RECORDS_PER_PAGE);
 
     pages.push(
-      <Page key={`page-${pageIndex}`} size="A4" orientation="landscape" style={styles.pageLandscape}>
+      <Page
+        key={`page-${pageIndex}`}
+        size="A4"
+        orientation="landscape"
+        style={styles.pageLandscape}
+      >
         {pageIndex === 0 && (
           <>
             <View style={styles.header}>
@@ -381,11 +394,15 @@ function buildRecordsPages(
                 </View>
                 <View style={styles.metadataItem}>
                   <Text style={styles.label}>Promedio</Text>
-                  <Text style={styles.value}>{input.stats.promedioAsistencia}</Text>
+                  <Text style={styles.value}>
+                    {input.stats.promedioAsistencia}
+                  </Text>
                 </View>
                 <View style={styles.metadataItem}>
                   <Text style={styles.label}>Mayor</Text>
-                  <Text style={styles.value}>{input.stats.mayorAsistencia}</Text>
+                  <Text style={styles.value}>
+                    {input.stats.mayorAsistencia}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -417,9 +434,7 @@ function buildRecordsPages(
         </View>
 
         <View style={styles.footer}>
-          <Text fixed>
-            {`Página ${pageIndex + 1} de ${totalPages}`}
-          </Text>
+          <Text fixed>{`Página ${pageIndex + 1} de ${totalPages}`}</Text>
           <Text fixed>{`Generado: ${formatDateTime(new Date())}`}</Text>
         </View>
       </Page>
@@ -431,7 +446,7 @@ function buildRecordsPages(
 
 export function buildListPdfDocument(
   input: ListPdfInput
-): React.ReactElement {
+): React.ReactElement<DocumentProps> {
   const totals: TotalsSummaryRow[] = [
     { label: 'Hermanos', value: input.stats.totalHermanos },
     { label: 'Hermanas', value: input.stats.totalHermanas },
@@ -444,27 +459,30 @@ export function buildListPdfDocument(
     { label: 'Total', value: input.stats.granTotal },
   ];
 
-  const pages = input.records.length === 0
-    ? [
-        <Page key="empty" size="A4" style={styles.page}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              {input.logoBase64 ? (
-                <Image style={styles.logo} src={input.logoBase64} />
-              ) : null}
-              <View>
-                <Text style={styles.title}>SerUjier</Text>
-                <Text style={styles.subtitle}>{input.titulo}</Text>
+  const pages =
+    input.records.length === 0
+      ? [
+          <Page key="empty" size="A4" style={styles.page}>
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                {input.logoBase64 ? (
+                  <Image style={styles.logo} src={input.logoBase64} />
+                ) : null}
+                <View>
+                  <Text style={styles.title}>SerUjier</Text>
+                  <Text style={styles.subtitle}>{input.titulo}</Text>
+                </View>
               </View>
+              <Text>{input.filtroFecha}</Text>
             </View>
-            <Text>{input.filtroFecha}</Text>
-          </View>
-          <Text style={{ marginTop: 40, textAlign: 'center', color: '#94a3b8' }}>
-            No hay registros para exportar
-          </Text>
-        </Page>
-      ]
-    : buildRecordsPages(input, totals);
+            <Text
+              style={{ marginTop: 40, textAlign: 'center', color: '#94a3b8' }}
+            >
+              No hay registros para exportar
+            </Text>
+          </Page>,
+        ]
+      : buildRecordsPages(input, totals);
 
   return <Document>{pages}</Document>;
 }

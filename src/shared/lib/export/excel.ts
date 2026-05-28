@@ -1,13 +1,12 @@
 import type { Alignment, Fill, Font, Worksheet } from 'exceljs';
-
-import type {
-  CountExportInput,
-  DetailExportRow,
-  DetailWorkbookInput,
-  ListWorkbookInput,
-  ListStatsInput,
+import {
+  MAX_ROWS_PER_SHEET,
+  type CountExportInput,
+  type DetailExportRow,
+  type DetailWorkbookInput,
+  type ListWorkbookInput,
+  type ListStatsInput,
 } from './types';
-import { MAX_ROWS_PER_SHEET } from './types';
 
 export function chunkArray<T>(arr: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -31,14 +30,30 @@ const COLUMN_DEFS = [
   { header: 'He. Restauración', key: 'heRestauracion', width: 16 },
   { header: 'H. Visitas', key: 'hermanosVisitas', width: 14 },
   { header: 'Total Asistentes', key: 'totalAsistentes', width: 16 },
-  { header: 'Simpatizantes que Asistieron', key: 'simpatizantesAsistieron', width: 42 },
+  {
+    header: 'Simpatizantes que Asistieron',
+    key: 'simpatizantesAsistieron',
+    width: 42,
+  },
   { header: 'Visitas que Asistieron', key: 'visitasAsistieron', width: 42 },
   { header: 'Hermanos que Asistieron', key: 'hermanosAsistieron', width: 42 },
   { header: 'Hermanas que Asistieron', key: 'hermanasAsistieron', width: 42 },
   { header: 'Niños que Asistieron', key: 'ninosAsistieron', width: 42 },
-  { header: 'Adolescentes que Asistieron', key: 'adolescentesAsistieron', width: 42 },
-  { header: 'He. Restauración que Asistieron', key: 'heRestauracionAsistieron', width: 42 },
-  { header: 'H. Visitas que Asistieron', key: 'hermanosVisitasAsistieron', width: 42 },
+  {
+    header: 'Adolescentes que Asistieron',
+    key: 'adolescentesAsistieron',
+    width: 42,
+  },
+  {
+    header: 'He. Restauración que Asistieron',
+    key: 'heRestauracionAsistieron',
+    width: 42,
+  },
+  {
+    header: 'H. Visitas que Asistieron',
+    key: 'hermanosVisitasAsistieron',
+    width: 42,
+  },
 ];
 
 const HEADER_FILL: Fill = {
@@ -47,7 +62,7 @@ const HEADER_FILL: Fill = {
   fgColor: { argb: 'FF4472C4' },
 };
 
-const HEADER_FONT: Font = {
+const HEADER_FONT: Partial<Font> = {
   bold: true,
   color: { argb: 'FFFFFFFF' },
 };
@@ -63,7 +78,7 @@ const STATUS_ALIGNMENT: Partial<Alignment> = {
 
 export async function buildDetailWorkbook(
   input: DetailWorkbookInput
-): Promise<Uint8Array> {
+): Promise<ArrayBuffer> {
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
 
@@ -78,12 +93,12 @@ export async function buildDetailWorkbook(
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
-  return new Uint8Array(buffer);
+  return buffer as ArrayBuffer;
 }
 
 export async function buildConteoWorkbook(
   input: CountExportInput
-): Promise<Uint8Array> {
+): Promise<ArrayBuffer> {
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Conteo');
@@ -102,7 +117,6 @@ export async function buildConteoWorkbook(
     { header: 'Total Asistentes', value: input.totalAsistentes },
     { header: 'Faltantes', value: input.totalFaltantes },
   ];
-  const metaCols = [{ header: 'Concepto', key: 'concepto', width: 22 }, { header: 'Valor', key: 'valor', width: 18 }];
   meta.forEach((m) => sheet.addRow({ concepto: m.header, valor: m.value }));
 
   // Category totals section
@@ -117,14 +131,14 @@ export async function buildConteoWorkbook(
   );
 
   const buffer = await workbook.xlsx.writeBuffer();
-  return new Uint8Array(buffer);
+  return buffer as ArrayBuffer;
 }
 
 export async function buildListWorkbook(
   input: ListWorkbookInput,
   stats: ListStatsInput,
   maxRowsPerSheet = MAX_ROWS_PER_SHEET
-): Promise<Uint8Array> {
+): Promise<ArrayBuffer> {
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
 
@@ -187,7 +201,7 @@ export async function buildListWorkbook(
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
-  return new Uint8Array(buffer);
+  return buffer as ArrayBuffer;
 }
 
 function addDetailSheet(

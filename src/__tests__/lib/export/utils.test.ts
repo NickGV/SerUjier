@@ -25,12 +25,12 @@ describe('export utils', () => {
   });
 
   it('generates filenames for detail exports', () => {
-    expect(
-      generateDetailFilename('2026-05-27', 'completa', 'excel')
-    ).toBe('informe_2026-05-27_completo.xlsx');
-    expect(
-      generateDetailFilename('2026-05-27', 'faltantes', 'pdf')
-    ).toBe('informe_2026-05-27_faltantes.pdf');
+    expect(generateDetailFilename('2026-05-27', 'completa', 'excel')).toBe(
+      'informe_2026-05-27_completo.xlsx'
+    );
+    expect(generateDetailFilename('2026-05-27', 'faltantes', 'pdf')).toBe(
+      'informe_2026-05-27_faltantes.pdf'
+    );
   });
 
   it('generates filenames for list exports', () => {

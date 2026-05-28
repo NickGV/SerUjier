@@ -41,10 +41,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { buildDetailWorkbook, buildConteoWorkbook } from '@/shared/lib/export/excel';
-import { buildDetailPdfDocument, buildConteoPdfDocument } from '@/shared/lib/export/pdf';
-import type { DetailAction, DetailExportRow, CountExportInput } from '@/shared/lib/export/types';
-import { downloadBlob, generateDetailFilename, generateConteoFilename, buildConteoCsv, loadLogoBase64 } from '@/shared/lib/export/utils';
+import {
+  buildDetailWorkbook,
+  buildConteoWorkbook,
+} from '@/shared/lib/export/excel';
+import {
+  buildDetailPdfDocument,
+  buildConteoPdfDocument,
+} from '@/shared/lib/export/pdf';
+import type {
+  DetailAction,
+  DetailExportRow,
+  CountExportInput,
+} from '@/shared/lib/export/types';
+import {
+  downloadBlob,
+  generateDetailFilename,
+  generateConteoFilename,
+  buildConteoCsv,
+  loadLogoBase64,
+} from '@/shared/lib/export/utils';
 import { toast } from 'sonner';
 
 interface HistorialRecordAPI {
@@ -437,6 +453,7 @@ function ServicioHistorialContent() {
   };
 
   const handleConteoExport = async (format: 'csv' | 'excel' | 'pdf') => {
+    if (!record) return;
     setIsExportingDetail(true);
     try {
       const totalesPorCategoria = [
@@ -453,7 +470,9 @@ function ServicioHistorialContent() {
       const conteoInput: CountExportInput = {
         fecha: record.fecha,
         servicio: record.servicio,
-        ujieres: Array.isArray(record.ujier) ? record.ujier.join(', ') : record.ujier,
+        ujieres: Array.isArray(record.ujier)
+          ? record.ujier.join(', ')
+          : record.ujier,
         totalesPorCategoria,
         totalAsistentes: record.total,
         totalFaltantes: faltantes.length,
@@ -467,7 +486,9 @@ function ServicioHistorialContent() {
         downloadBlob(blob, generateConteoFilename(record.fecha, 'csv'));
       } else if (format === 'excel') {
         const buffer = await buildConteoWorkbook(conteoInput);
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
         downloadBlob(blob, generateConteoFilename(record.fecha, 'xlsx'));
       } else {
         const { pdf } = await import('@react-pdf/renderer');
@@ -483,7 +504,11 @@ function ServicioHistorialContent() {
     }
   };
 
-  const handleDetailExport = async (action: DetailAction, format: 'excel' | 'pdf') => {
+  const handleDetailExport = async (
+    action: DetailAction,
+    format: 'excel' | 'pdf'
+  ) => {
+    if (!record) return;
     setIsExportingDetail(true);
     try {
       const asistentesRows: DetailExportRow[] = asistentes.map((a) => ({
@@ -501,9 +526,18 @@ function ServicioHistorialContent() {
       }));
 
       if (format === 'excel') {
-        const buffer = await buildDetailWorkbook({ asistentes: asistentesRows, faltantes: faltantesRows, action });
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        downloadBlob(blob, generateDetailFilename(record.fecha, action, 'excel'));
+        const buffer = await buildDetailWorkbook({
+          asistentes: asistentesRows,
+          faltantes: faltantesRows,
+          action,
+        });
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        downloadBlob(
+          blob,
+          generateDetailFilename(record.fecha, action, 'excel')
+        );
       } else {
         const logoBase64 = await loadLogoBase64();
         const { pdf } = await import('@react-pdf/renderer');
@@ -523,8 +557,11 @@ function ServicioHistorialContent() {
           logoBase64,
           fecha: record.fecha,
           servicio: record.servicio,
-          ujieres: Array.isArray(record.ujier) ? record.ujier.join(', ') : record.ujier,
+          ujieres: Array.isArray(record.ujier)
+            ? record.ujier.join(', ')
+            : record.ujier,
           totalAsistentes: record.total,
+          faltantesCount: faltantes.length,
           totalesPorCategoria,
           asistentes: asistentesRows,
           faltantes: faltantesRows,

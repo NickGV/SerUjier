@@ -5,6 +5,7 @@ import path from 'node:path';
 jest.mock(
   '@react-pdf/renderer',
   () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const React = require('react');
     return {
       Document: ({ children }: { children: React.ReactNode }) =>
@@ -27,6 +28,9 @@ jest.mock(
       }) => React.createElement('text', { style }, children),
       Image: ({ src }: { src?: string }) =>
         React.createElement('image', { src }),
+      StyleSheet: {
+        create: <T extends Record<string, unknown>>(styles: T): T => styles,
+      },
       pdf: () => ({
         toBlob: jest
           .fn()
@@ -109,9 +113,13 @@ import {
   buildListWorkbook,
   chunkArray,
 } from '@/shared/lib/export/excel';
-import { buildListPdfDocument, buildDetailPdfDocument } from '@/shared/lib/export/pdf';
+import {
+  buildListPdfDocument,
+  buildDetailPdfDocument,
+} from '@/shared/lib/export/pdf';
 import type {
   CountExportInput,
+  DetailPdfInput,
   ListPdfInput,
   ListStatsInput,
   ListWorkbookInput,
@@ -367,7 +375,7 @@ describe('conteo workbook', () => {
       faltantesCount: 3,
     });
     expect(buffer).toBeDefined();
-    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.byteLength).toBeGreaterThan(0);
   });
 
   it('builds conteo workbook with zero values', async () => {
@@ -382,7 +390,7 @@ describe('conteo workbook', () => {
       faltantesCount: 0,
     });
     expect(buffer).toBeDefined();
-    expect(buffer.length).toBeGreaterThan(0);
+    expect(buffer.byteLength).toBeGreaterThan(0);
   });
 });
 
@@ -469,12 +477,16 @@ describe('list PDF document', () => {
 });
 
 describe('detail PDF document', () => {
-  const baseDetailInput: Omit<DetailPdfInput, 'action' | 'asistentes' | 'faltantes' | 'totalesPorCategoria'> = {
+  const baseDetailInput: Omit<
+    DetailPdfInput,
+    'action' | 'asistentes' | 'faltantes' | 'totalesPorCategoria'
+  > = {
     logoBase64: null,
     fecha: '2026-05-27',
     servicio: 'Culto General',
     ujieres: 'Test Ujier',
     totalAsistentes: 40,
+    faltantesCount: 0,
   };
 
   const sampleTotales: DetailPdfInput['totalesPorCategoria'] = [
@@ -492,7 +504,14 @@ describe('detail PDF document', () => {
     const input: DetailPdfInput = {
       ...baseDetailInput,
       action: 'asistentes',
-      asistentes: [{ id: '1', nombre: 'Test', categoria: 'Test', tipo: 'miembro' }],
+      asistentes: [
+        {
+          nombre: 'Test',
+          categoria: 'Test',
+          tipo: 'miembro',
+          estado: 'Asistió',
+        },
+      ],
       faltantes: [],
       totalesPorCategoria: sampleTotales,
     };
@@ -508,8 +527,16 @@ describe('detail PDF document', () => {
     const input: DetailPdfInput = {
       ...baseDetailInput,
       action: 'faltantes',
+      faltantesCount: 1,
       asistentes: [],
-      faltantes: [{ id: '1', nombre: 'Test', categoria_display: 'Test', tipo: 'miembro' }],
+      faltantes: [
+        {
+          nombre: 'Test',
+          categoria: 'Test',
+          tipo: 'miembro',
+          estado: 'Faltó',
+        },
+      ],
       totalesPorCategoria: sampleTotales,
     };
 
@@ -523,8 +550,23 @@ describe('detail PDF document', () => {
     const input: DetailPdfInput = {
       ...baseDetailInput,
       action: 'completa',
-      asistentes: [{ id: '1', nombre: 'Test', categoria: 'Test', tipo: 'miembro' }],
-      faltantes: [{ id: '2', nombre: 'Test2', categoria_display: 'Test', tipo: 'miembro' }],
+      faltantesCount: 1,
+      asistentes: [
+        {
+          nombre: 'Test',
+          categoria: 'Test',
+          tipo: 'miembro',
+          estado: 'Asistió',
+        },
+      ],
+      faltantes: [
+        {
+          nombre: 'Test2',
+          categoria: 'Test',
+          tipo: 'miembro',
+          estado: 'Faltó',
+        },
+      ],
       totalesPorCategoria: sampleTotales,
     };
 
