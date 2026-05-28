@@ -1,39 +1,23 @@
 {
-  "components": [
-    {
-      "name": "BottomNavigation",
-      "path": "src/components/bottom-navigation.tsx",
-      "description": "A component for bottom navigation used throughout the application."
-    },
-    {
-      "name": "ErrorBoundary",
-      "path": "src/components/error-boundary.tsx",
-      "description": "A component that catches JavaScript errors in the component tree."
-    },
-    {
-      "name": "ThemeProvider",
-      "path": "src/components/providers/theme-provider.tsx",
-      "description": "Provides context for managing theme-related state."
-    },
-    {
-      "name": "Button",
-      "path": "src/shared/ui/button.tsx",
-      "description": "A reusable button component."
-    },
-    {
-      "name": "Input",
-      "path": "src/shared/ui/input.tsx",
-      "description": "A reusable input component."
-    },
-    {
-      "name": "Dialog",
-      "path": "src/shared/ui/dialog.tsx",
-      "description": "A reusable dialog component."
-    },
-    {
-      "name": "Shell",
-      "path": "src/components/layout/shell.tsx",
-      "description": "A shell layout component that wraps around the main content."
-    }
-  ]
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/shared/components",
+    "ui": "@/shared/ui",
+    "lib": "@/shared/lib",
+    "utils": "@/shared/lib/utils",
+    "hooks": "@/shared/hooks"
+  },
+  "registries": {
+    "@acme": "https://acme.com/r/{name}.json"
+  }
 }
