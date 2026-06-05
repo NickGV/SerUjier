@@ -1,1 +1,5 @@
-export { default } from '@/features/simpatizantes/pages/SimpatizantesListPage';
+import { redirect } from 'next/navigation';
+
+export default function RedirectPage() {
+  redirect('/amigos');
+}

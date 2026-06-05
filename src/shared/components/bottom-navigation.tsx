@@ -1,11 +1,13 @@
 'use client';
 
+import { featureFlags } from '@/config/feature-flags';
 import { usePermisos } from '@/shared/hooks/use-permisos';
 import { type User } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
 import {
   Calculator,
   Clock,
+  Handshake,
   HeartHandshake,
   LogOut,
   Settings,
@@ -56,21 +58,34 @@ export function BottomNavigation({
 
     // Admin siempre ve todo
     if (isAdmin) {
-      return [
-        ...baseNavItems,
+      const adminItems: NavItem[] = [...baseNavItems];
+
+      if (!featureFlags.amigosUnified) {
+        adminItems.push(
+          {
+            id: 'simpatizantes',
+            label: 'Simpatizantes',
+            icon: Users,
+            description: 'Gestionar simpatizantes',
+            path: '/simpatizantes',
+          },
+          {
+            id: 'visitas',
+            label: 'Visitas',
+            icon: UserPlus,
+            description: 'Gestionar visitas',
+            path: '/visitas',
+          }
+        );
+      }
+
+      adminItems.push(
         {
-          id: 'simpatizantes',
-          label: 'Simpatizantes',
-          icon: Users,
-          description: 'Gestionar simpatizantes',
-          path: '/simpatizantes',
-        },
-        {
-          id: 'visitas',
-          label: 'Visitas',
-          icon: UserPlus,
-          description: 'Gestionar visitas',
-          path: '/visitas',
+          id: 'amigos',
+          label: 'Amigos',
+          icon: Handshake,
+          description: 'Gestionar amigos',
+          path: '/amigos',
         },
         {
           id: 'heRestauracion',
@@ -99,15 +114,17 @@ export function BottomNavigation({
           icon: Settings,
           description: 'Gestionar usuarios',
           path: '/ujieres',
-        },
-      ];
+        }
+      );
+
+      return adminItems;
     }
 
     // Para otros usuarios, construir basado en permisos
     const items: NavItem[] = [...baseNavItems];
 
-    // Simpatizantes - si puede ver
-    if (canView('simpatizantes')) {
+    // Simpatizantes - si puede ver (hidden when amigosUnified is active)
+    if (!featureFlags.amigosUnified && canView('simpatizantes')) {
       items.push({
         id: 'simpatizantes',
         label: 'Simpatizantes',
@@ -117,14 +134,25 @@ export function BottomNavigation({
       });
     }
 
-    // Visitas - si puede ver
-    if (canView('visitas')) {
+    // Visitas - si puede ver (hidden when amigosUnified is active)
+    if (!featureFlags.amigosUnified && canView('visitas')) {
       items.push({
         id: 'visitas',
         label: 'Visitas',
         icon: UserPlus,
         description: 'Gestionar visitas',
         path: '/visitas',
+      });
+    }
+
+    // Amigos - si puede ver
+    if (canView('amigos')) {
+      items.push({
+        id: 'amigos',
+        label: 'Amigos',
+        icon: Handshake,
+        description: 'Gestionar amigos',
+        path: '/amigos',
       });
     }
 
