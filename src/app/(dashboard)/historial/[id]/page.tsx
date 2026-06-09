@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@/shared/contexts/user-context';
-import { getHistorialRecordById, fetchMiembros } from '@/shared/lib/utils';
+import {
+  getHistorialRecordById,
+  fetchMiembros,
+  fetchAmigos,
+} from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -24,7 +28,6 @@ import {
   User,
   UserCheck,
   UserX,
-  UserPlus,
   Edit3,
   Search,
   Filter,
@@ -72,11 +75,12 @@ interface HistorialRecordAPI {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas?: number;
+  amigos?: number;
+  simpatizantes?: number; // Legacy field
   total: number;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-  visitasAsistieron?: Array<{ id: string; nombre: string }>;
+  amigosAsistieron?: Array<{ id: string; nombre: string }>;
+  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
+  visitasAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -90,7 +94,7 @@ interface HistorialRecordAPI {
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -104,18 +108,27 @@ interface Miembro {
   fechaRegistro: string;
 }
 
+interface Amigo {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+  migratedFrom?: 'visitas' | 'simpatizantes' | null;
+}
+
 interface AsistenteInfo {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: 'miembro' | 'simpatizante';
+  tipo: 'miembro' | 'amigo';
 }
 
 interface PersonaFiltrada {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: 'miembro' | 'simpatizante';
+  tipo: 'miembro' | 'amigo';
   status: 'asistente' | 'faltante';
 }
 
@@ -133,6 +146,7 @@ function ServicioHistorialContent() {
   const { user } = useUser();
   const [record, setRecord] = useState<HistorialRecord | null>(null);
   const [allMembers, setAllMembers] = useState<Miembro[]>([]);
+  const [allAmigos, setAllAmigos] = useState<Amigo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -150,21 +164,27 @@ function ServicioHistorialContent() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [recordData, membersData] = await Promise.all([
+        const [recordData, membersData, amigosData] = await Promise.all([
           getHistorialRecordById(recordId),
           fetchMiembros(),
+          fetchAmigos(),
         ]);
         // Ensure new fields exist with default values
+        const recordApi = recordData as HistorialRecordAPI;
         const normalizedRecord: HistorialRecord = {
-          ...recordData,
-          visitas: (recordData as HistorialRecordAPI).visitas || 0,
-          heRestauracion:
-            (recordData as HistorialRecordAPI).heRestauracion || 0,
-          hermanosVisitas:
-            (recordData as HistorialRecordAPI).hermanosVisitas || 0,
+          ...recordApi,
+          amigos: recordApi.amigos ?? recordApi.simpatizantes ?? 0,
+          amigosAsistieron:
+            recordApi.amigosAsistieron ??
+            recordApi.simpatizantesAsistieron ??
+            recordApi.visitasAsistieron ??
+            [],
+          heRestauracion: recordApi.heRestauracion || 0,
+          hermanosVisitas: recordApi.hermanosVisitas || 0,
         };
         setRecord(normalizedRecord);
         setAllMembers(membersData);
+        setAllAmigos(amigosData);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Error cargando datos';
         setError(msg);
@@ -208,26 +228,14 @@ function ServicioHistorialContent() {
 
     const asistentes: AsistenteInfo[] = [];
 
-    // Agregar simpatizantes
-    if (record.simpatizantesAsistieron) {
-      record.simpatizantesAsistieron.forEach((simpatizante) => {
+    // Agregar amigos
+    if (record.amigosAsistieron) {
+      record.amigosAsistieron.forEach((amigo) => {
         asistentes.push({
-          id: simpatizante.id,
-          nombre: simpatizante.nombre,
-          categoria: 'Simpatizantes',
-          tipo: 'simpatizante',
-        });
-      });
-    }
-
-    // Agregar visitas
-    if (record.visitasAsistieron) {
-      record.visitasAsistieron.forEach((visita) => {
-        asistentes.push({
-          id: visita.id,
-          nombre: visita.nombre,
-          categoria: 'Visitas',
-          tipo: 'simpatizante',
+          id: amigo.id,
+          nombre: amigo.nombre,
+          categoria: 'Amigos',
+          tipo: 'amigo',
         });
       });
     }
@@ -294,23 +302,65 @@ function ServicioHistorialContent() {
       }));
   };
 
+  // Obtener amigos faltantes
+  const getAmigosFaltantes = (): (Amigo & { categoria_display: string })[] => {
+    if (!record) return [];
+
+    const asistentes = getAllAsistentes();
+    const asistenteIds = new Set(
+      asistentes.filter((a) => a.tipo === 'amigo').map((a) => a.id)
+    );
+
+    return allAmigos
+      .filter((amigo) => !asistenteIds.has(amigo.id))
+      .map((amigo) => ({
+        ...amigo,
+        categoria_display: 'Amigos',
+      }));
+  };
+
+  // Obtener todos los faltantes (miembros + amigos) con su tipo
+  const getAllFaltantes = (): {
+    id: string;
+    nombre: string;
+    categoria_display: string;
+    tipo: 'miembro' | 'amigo';
+  }[] => {
+    return [
+      ...getMiembrosFaltantes().map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        categoria_display: f.categoria_display,
+        tipo: 'miembro' as const,
+      })),
+      ...getAmigosFaltantes().map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        categoria_display: f.categoria_display,
+        tipo: 'amigo' as const,
+      })),
+    ];
+  };
+
   // Filtrar datos según los filtros activos
   const getFilteredData = (): PersonaFiltrada[] => {
     const asistentes = getAllAsistentes();
-    const faltantes = getMiembrosFaltantes();
+    const faltantes = getAllFaltantes();
+
+    const faltantesData: PersonaFiltrada[] = faltantes.map((f) => ({
+      id: f.id,
+      nombre: f.nombre,
+      categoria: f.categoria_display,
+      tipo: f.tipo,
+      status: 'faltante' as const,
+    }));
 
     let dataToFilter: PersonaFiltrada[] = [];
 
     if (filterType === 'all') {
       dataToFilter = [
         ...asistentes.map((a) => ({ ...a, status: 'asistente' as const })),
-        ...faltantes.map((f) => ({
-          id: f.id,
-          nombre: f.nombre,
-          categoria: f.categoria_display,
-          tipo: 'miembro' as const,
-          status: 'faltante' as const,
-        })),
+        ...faltantesData,
       ];
     } else if (filterType === 'asistentes') {
       dataToFilter = asistentes.map((a) => ({
@@ -318,13 +368,7 @@ function ServicioHistorialContent() {
         status: 'asistente' as const,
       }));
     } else {
-      dataToFilter = faltantes.map((f) => ({
-        id: f.id,
-        nombre: f.nombre,
-        categoria: f.categoria_display,
-        tipo: 'miembro' as const,
-        status: 'faltante' as const,
-      }));
+      dataToFilter = faltantesData;
     }
 
     // Filtrar por término de búsqueda
@@ -358,8 +402,7 @@ function ServicioHistorialContent() {
         hermanas: 'rose',
         niños: 'amber',
         adolescentes: 'purple',
-        simpatizantes: 'emerald',
-        visitas: 'blue',
+        amigos: 'emerald',
         herestauracion: 'orange',
         'hermanos visitas': 'indigo',
       }[categoria.toLowerCase()] || 'gray';
@@ -385,10 +428,8 @@ function ServicioHistorialContent() {
           return <Baby className={`${iconSize} text-red-600`} />;
         case 'adolescentes':
           return <Zap className={`${iconSize} text-red-600`} />;
-        case 'simpatizantes':
+        case 'amigos':
           return <Users className={`${iconSize} text-red-600`} />;
-        case 'visitas':
-          return <UserPlus className={`${iconSize} text-red-600`} />;
         case 'herestauracion':
           return <User className={`${iconSize} text-red-600`} />;
         case 'hermanos visitas':
@@ -408,10 +449,8 @@ function ServicioHistorialContent() {
         return <Baby className={`${iconSize} text-amber-600`} />;
       case 'adolescentes':
         return <Zap className={`${iconSize} text-purple-600`} />;
-      case 'simpatizantes':
+      case 'amigos':
         return <Users className={`${iconSize} text-emerald-600`} />;
-      case 'visitas':
-        return <UserPlus className={`${iconSize} text-blue-600`} />;
       case 'herestauracion':
         return <User className={`${iconSize} text-orange-600`} />;
       case 'hermanos visitas':
@@ -439,10 +478,8 @@ function ServicioHistorialContent() {
         return 'bg-amber-100';
       case 'adolescentes':
         return 'bg-purple-100';
-      case 'simpatizantes':
+      case 'amigos':
         return 'bg-emerald-100';
-      case 'visitas':
-        return 'bg-blue-100';
       case 'herestauracion':
         return 'bg-orange-100';
       case 'hermanos visitas':
@@ -461,8 +498,7 @@ function ServicioHistorialContent() {
         { label: 'Hermanas', value: record.hermanas },
         { label: 'Niños', value: record.ninos },
         { label: 'Adolescentes', value: record.adolescentes },
-        { label: 'Simpatizantes', value: record.simpatizantes },
-        { label: 'Visitas', value: record.visitas || 0 },
+        { label: 'Amigos', value: record.amigos },
         { label: 'He. Restauración', value: record.heRestauracion || 0 },
         { label: 'H. Visitas', value: record.hermanosVisitas || 0 },
       ];
@@ -520,8 +556,8 @@ function ServicioHistorialContent() {
 
       const faltantesRows: DetailExportRow[] = faltantes.map((f) => ({
         nombre: f.nombre,
-        categoria: f.categoria_display || f.categoria,
-        tipo: 'miembro',
+        categoria: f.categoria_display,
+        tipo: f.tipo,
         estado: 'Faltó',
       }));
 
@@ -547,8 +583,7 @@ function ServicioHistorialContent() {
           { label: 'Hermanas', value: record.hermanas },
           { label: 'Niños', value: record.ninos },
           { label: 'Adolescentes', value: record.adolescentes },
-          { label: 'Simpatizantes', value: record.simpatizantes },
-          { label: 'Visitas', value: record.visitas || 0 },
+          { label: 'Amigos', value: record.amigos },
           { label: 'He. Restauración', value: record.heRestauracion || 0 },
           { label: 'H. Visitas', value: record.hermanosVisitas || 0 },
         ];
@@ -612,7 +647,7 @@ function ServicioHistorialContent() {
   }
 
   const asistentes = getAllAsistentes();
-  const faltantes = getMiembrosFaltantes();
+  const faltantes = getAllFaltantes();
   const filteredData = getFilteredData();
 
   return (
@@ -714,15 +749,9 @@ function ServicioHistorialContent() {
             </div>
             <div className="text-center p-3 bg-emerald-50 rounded-lg">
               <div className="text-lg font-bold text-emerald-600">
-                {record.simpatizantes}
+                {record.amigos}
               </div>
-              <div className="text-xs text-gray-500">Simpat.</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-lg font-bold text-blue-600">
-                {record.visitas || 0}
-              </div>
-              <div className="text-xs text-gray-500">Visitas</div>
+              <div className="text-xs text-gray-500">Amigos</div>
             </div>
             <div className="text-center p-3 bg-orange-50 rounded-lg">
               <div className="text-lg font-bold text-orange-600">
@@ -775,7 +804,7 @@ function ServicioHistorialContent() {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Users className="w-5 h-5 text-blue-600" />
               <span className="text-sm font-medium text-blue-700">
-                Total Miembros
+                Total Asistentes
               </span>
             </div>
             <div className="text-2xl font-bold text-blue-700">
@@ -931,11 +960,10 @@ function ServicioHistorialContent() {
                 <SelectItem value="hermanas">Hermanas</SelectItem>
                 <SelectItem value="ninos">Niños</SelectItem>
                 <SelectItem value="adolescentes">Adolescentes</SelectItem>
-                <SelectItem value="simpatizantes">Simpatizantes</SelectItem>
-                <SelectItem value="visitas">Visitas</SelectItem>
+                <SelectItem value="amigos">Amigos</SelectItem>
                 <SelectItem value="herestauracion">HeRestauracion</SelectItem>
                 <SelectItem value="hermanos visitas">
-                  Hermanos Visitas
+                  Hermanos Visita
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -973,8 +1001,8 @@ function ServicioHistorialContent() {
             {filterType === 'asistentes'
               ? 'Asistentes'
               : filterType === 'faltantes'
-                ? 'Miembros Faltantes'
-                : 'Todos los Miembros'}
+                ? 'Faltantes'
+                : 'Todos los Asistentes'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -1038,7 +1066,7 @@ function ServicioHistorialContent() {
                             : 'bg-purple-50 text-purple-700 border-purple-200'
                         }`}
                       >
-                        {person.tipo === 'miembro' ? 'Miembro' : 'Simpatizante'}
+                        {person.tipo === 'miembro' ? 'Miembro' : 'Amigo'}
                       </Badge>
                     </div>
                   </div>

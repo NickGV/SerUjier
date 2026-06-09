@@ -53,11 +53,12 @@ interface HistorialRecordAPI {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas?: number;
+  amigos?: number;
+  simpatizantes?: number; // Legacy field
   total: number;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-  visitasAsistieron?: Array<{ id: string; nombre: string }>;
+  amigosAsistieron?: Array<{ id: string; nombre: string }>;
+  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
+  visitasAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -71,7 +72,7 @@ interface HistorialRecordAPI {
 }
 
 interface HistorialRecord extends HistorialRecordAPI {
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -137,7 +138,12 @@ function HistorialContent() {
       const normalizedData: HistorialRecord[] = data.map(
         (record: HistorialRecordAPI) => ({
           ...record,
-          visitas: record.visitas || 0,
+          amigos: record.amigos ?? record.simpatizantes ?? 0,
+          amigosAsistieron:
+            record.amigosAsistieron ??
+            record.simpatizantesAsistieron ??
+            record.visitasAsistieron ??
+            [],
           heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
@@ -269,12 +275,8 @@ function HistorialContent() {
     (sum, record) => sum + record.adolescentes,
     0
   );
-  const totalSimpatizantes = filteredData.reduce(
-    (sum, record) => sum + record.simpatizantes,
-    0
-  );
-  const totalVisitas = filteredData.reduce(
-    (sum, record) => sum + (record.visitas || 0),
+  const totalAmigos = filteredData.reduce(
+    (sum, record) => sum + record.amigos,
     0
   );
   const totalheRestauracion = filteredData.reduce(
@@ -290,8 +292,7 @@ function HistorialContent() {
     totalHermanas +
     totalNinos +
     totalAdolescentes +
-    totalSimpatizantes +
-    totalVisitas +
+    totalAmigos +
     totalheRestauracion +
     totalHermanosVisitas;
 
@@ -334,13 +335,11 @@ function HistorialContent() {
         'Hermanas',
         'Niños',
         'Adolescentes',
-        'Simpatizantes',
-        'Visitas',
+        'Amigos',
         'Hermanos en Restauración',
         'Hermanos Visitas',
         'Total',
-        'Simpatizantes Asistieron',
-        'Visitas Asistieron',
+        'Amigos Asistieron',
         'Hermanos Asistieron',
         'Hermanas Asistieron',
         'Niños Asistieron',
@@ -364,17 +363,12 @@ function HistorialContent() {
             record.hermanas,
             record.ninos,
             record.adolescentes,
-            record.simpatizantes,
-            record.visitas || 0,
+            record.amigos,
             record.heRestauracion || 0,
             record.hermanosVisitas || 0,
             record.total,
             `"${
-              record.simpatizantesAsistieron?.map((s) => s.nombre).join('; ') ||
-              ''
-            }"`,
-            `"${
-              record.visitasAsistieron?.map((v) => v.nombre).join('; ') || ''
+              record.amigosAsistieron?.map((a) => a.nombre).join('; ') || ''
             }"`,
             `"${
               record.miembrosAsistieron?.hermanos
@@ -447,15 +441,12 @@ function HistorialContent() {
         hermanas: record.hermanas,
         ninos: record.ninos,
         adolescentes: record.adolescentes,
-        simpatizantes: record.simpatizantes,
-        visitas: record.visitas || 0,
+        amigos: record.amigos,
         heRestauracion: record.heRestauracion || 0,
         hermanosVisitas: record.hermanosVisitas || 0,
         totalAsistentes: record.total,
-        simpatizantesAsistieron:
-          record.simpatizantesAsistieron?.map((s) => s.nombre).join(', ') || '',
-        visitasAsistieron:
-          record.visitasAsistieron?.map((v) => v.nombre).join(', ') || '',
+        amigosAsistieron:
+          record.amigosAsistieron?.map((a) => a.nombre).join(', ') || '',
         hermanosAsistieron:
           record.miembrosAsistieron?.hermanos
             ?.map((m) => m.nombre)
@@ -491,8 +482,7 @@ function HistorialContent() {
         { concepto: 'Total Hermanas', valor: totalHermanas },
         { concepto: 'Total Niños', valor: totalNinos },
         { concepto: 'Total Adolescentes', valor: totalAdolescentes },
-        { concepto: 'Total Simpatizantes', valor: totalSimpatizantes },
-        { concepto: 'Total Visitas', valor: totalVisitas },
+        { concepto: 'Total Amigos', valor: totalAmigos },
         { concepto: 'Total He. Restauración', valor: totalheRestauracion },
         { concepto: 'Total H. Visitas', valor: totalHermanosVisitas },
         { concepto: 'Gran Total', valor: granTotal },
@@ -508,11 +498,10 @@ function HistorialContent() {
           porcentaje: '0%',
         },
         {
-          categoria: 'Simpatizantes',
-          cantidad: totalSimpatizantes,
+          categoria: 'Amigos',
+          cantidad: totalAmigos,
           porcentaje: '0%',
         },
-        { categoria: 'Visitas', cantidad: totalVisitas, porcentaje: '0%' },
         {
           categoria: 'He. Restauración',
           cantidad: totalheRestauracion,
@@ -534,8 +523,7 @@ function HistorialContent() {
         totalHermanas,
         totalNinos,
         totalAdolescentes,
-        totalSimpatizantes,
-        totalVisitas,
+        totalAmigos,
         totalHeRestauracion: totalheRestauracion,
         totalHermanosVisitas,
         granTotal,
@@ -575,8 +563,7 @@ function HistorialContent() {
         totalHermanas,
         totalNinos,
         totalAdolescentes,
-        totalSimpatizantes,
-        totalVisitas,
+        totalAmigos,
         totalHeRestauracion: totalheRestauracion,
         totalHermanosVisitas,
         granTotal,
@@ -621,7 +608,12 @@ function HistorialContent() {
       const normalizedData: HistorialRecord[] = updatedData.map(
         (record: HistorialRecordAPI) => ({
           ...record,
-          visitas: record.visitas || 0,
+          amigos: record.amigos ?? record.simpatizantes ?? 0,
+          amigosAsistieron:
+            record.amigosAsistieron ??
+            record.simpatizantesAsistieron ??
+            record.visitasAsistieron ??
+            [],
           heRestauracion: record.heRestauracion || 0,
           hermanosVisitas: record.hermanosVisitas || 0,
         })
@@ -1064,15 +1056,9 @@ function HistorialContent() {
                   </div>
                   <div className="text-center p-2 bg-emerald-50 rounded-lg">
                     <div className="text-sm font-semibold text-emerald-600">
-                      {record.simpatizantes}
+                      {record.amigos}
                     </div>
-                    <div className="text-xs text-gray-500">Simpat.</div>
-                  </div>
-                  <div className="text-center p-2 bg-blue-50 rounded-lg">
-                    <div className="text-sm font-semibold text-blue-600">
-                      {record.visitas || 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Visitas</div>
+                    <div className="text-xs text-gray-500">Amigos</div>
                   </div>
                   <div className="text-center p-2 bg-orange-50 rounded-lg">
                     <div className="text-sm font-semibold text-orange-600">
@@ -1088,44 +1074,22 @@ function HistorialContent() {
                   </div>
                 </div>
 
-                {/* Lista de simpatizantes que asistieron */}
-                {record.simpatizantesAsistieron &&
-                  record.simpatizantesAsistieron.length > 0 && (
+                {/* Lista de amigos que asistieron */}
+                {record.amigosAsistieron &&
+                  record.amigosAsistieron.length > 0 && (
                     <div className="mb-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                       <div className="text-xs text-emerald-700 mb-1 flex items-center gap-1 font-medium">
                         <Users className="w-3 h-3" />
-                        Simpatizantes que asistieron (
-                        {record.simpatizantesAsistieron.length}):
+                        Amigos que asistieron ({record.amigosAsistieron.length}
+                        ):
                       </div>
                       <div className="text-xs text-emerald-800">
-                        {record.simpatizantesAsistieron.map((s) => (
+                        {record.amigosAsistieron.map((a) => (
                           <span
-                            key={s.id}
+                            key={a.id}
                             className="inline-block bg-emerald-100 px-2 py-1 rounded mr-1 mb-1"
                           >
-                            {s.nombre}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                {/* Lista de visitas que asistieron */}
-                {record.visitasAsistieron &&
-                  record.visitasAsistieron.length > 0 && (
-                    <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                      <div className="text-xs text-blue-700 mb-1 flex items-center gap-1 font-medium">
-                        <Users className="w-3 h-3" />
-                        Visitas que asistieron (
-                        {record.visitasAsistieron.length}):
-                      </div>
-                      <div className="text-xs text-blue-800">
-                        {record.visitasAsistieron.map((v) => (
-                          <span
-                            key={v.id}
-                            className="inline-block bg-blue-100 px-2 py-1 rounded mr-1 mb-1"
-                          >
-                            {v.nombre}
+                            {a.nombre}
                           </span>
                         ))}
                       </div>

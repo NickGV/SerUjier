@@ -2,8 +2,7 @@
 export * from './historial';
 export * from './miembros';
 export * from './permisos';
-export * from './simpatizantes';
-export * from './visitas';
+
 export * from './he-restauracion';
 export * from './usuarios';
 

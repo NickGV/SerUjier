@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React from 'react';
 import {
   Document,
@@ -338,8 +339,7 @@ function buildListTableRows(
         <Text style={styles.cellNarrow}>{record.hermanas}</Text>
         <Text style={styles.cellNarrow}>{record.ninos}</Text>
         <Text style={styles.cellNarrow}>{record.adolescentes}</Text>
-        <Text style={styles.cellNarrow}>{record.simpatizantes}</Text>
-        <Text style={styles.cellNarrow}>{record.visitas || 0}</Text>
+        <Text style={styles.cellNarrow}>{record.amigos}</Text>
         <Text style={styles.cellNarrow}>{record.heRestauracion || 0}</Text>
         <Text style={styles.cellNarrow}>{record.hermanosVisitas || 0}</Text>
         <Text style={styles.cellNarrow}>{record.total}</Text>
@@ -424,8 +424,7 @@ function buildRecordsPages(
             <Text style={styles.cellNarrow}>Hnas</Text>
             <Text style={styles.cellNarrow}>Niños</Text>
             <Text style={styles.cellNarrow}>Adol</Text>
-            <Text style={styles.cellNarrow}>Simp</Text>
-            <Text style={styles.cellNarrow}>Vis</Text>
+            <Text style={styles.cellNarrow}>Amig</Text>
             <Text style={styles.cellNarrow}>HeR</Text>
             <Text style={styles.cellNarrow}>HVis</Text>
             <Text style={styles.cellNarrow}>Total</Text>
@@ -452,8 +451,7 @@ export function buildListPdfDocument(
     { label: 'Hermanas', value: input.stats.totalHermanas },
     { label: 'Niños', value: input.stats.totalNinos },
     { label: 'Adolescentes', value: input.stats.totalAdolescentes },
-    { label: 'Simpatizantes', value: input.stats.totalSimpatizantes },
-    { label: 'Visitas', value: input.stats.totalVisitas },
+    { label: 'Amigos', value: input.stats.totalAmigos },
     { label: 'He. Restauración', value: input.stats.totalHeRestauracion },
     { label: 'H. Visitas', value: input.stats.totalHermanosVisitas },
     { label: 'Total', value: input.stats.granTotal },

@@ -48,6 +48,12 @@ yarn-error.log*
 next-env.d.ts
 
 
+# Firebase service account keys (keep local)
+service-account.json
+
+# Firestore backup dumps (keep local)
+backup-*.json
+
 # agents
 .atl/
 .agents/

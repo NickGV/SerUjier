@@ -37,8 +37,7 @@ export function BulkCountDialog({
     (parseInt(bulkCounts.hermanas) || 0) +
     (parseInt(bulkCounts.ninos) || 0) +
     (parseInt(bulkCounts.adolescentes) || 0) +
-    (parseInt(bulkCounts.simpatizantes) || 0) +
-    (parseInt(bulkCounts.visitas) || 0) +
+    (parseInt(bulkCounts.amigos) || 0) +
     (parseInt(bulkCounts.heRestauracion) || 0) +
     (parseInt(bulkCounts.hermanosVisitas) || 0);
 
@@ -119,29 +118,13 @@ export function BulkCountDialog({
 
           <div>
             <label className="text-xs font-medium text-emerald-700 mb-2 block">
-              Simpatizantes
+              Amigos
             </label>
             <Input
               type="number"
               placeholder="0"
-              value={bulkCounts.simpatizantes}
-              onChange={(e) =>
-                handleInputChange('simpatizantes', e.target.value)
-              }
-              className="h-10 text-center text-sm"
-              min="0"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-green-700 mb-2 block">
-              Visitas
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={bulkCounts.visitas}
-              onChange={(e) => handleInputChange('visitas', e.target.value)}
+              value={bulkCounts.amigos}
+              onChange={(e) => handleInputChange('amigos', e.target.value)}
               className="h-10 text-center text-sm"
               min="0"
             />

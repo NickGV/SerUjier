@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@/shared/contexts/user-context';
 import { type DatosServicioBase } from '@/shared/types';
+import { type AmigoLite } from '@/features/asistencia/types';
 import { calculateManualCounters } from '@/features/asistencia/utils/conteo-calculations';
 import { getServicioPorFecha } from '@/features/asistencia/lib/servicio-por-fecha';
 import {
@@ -16,8 +17,7 @@ interface ConteoState {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantesCount: number;
-  visitasCount: number;
+  amigosCount: number;
   heRestauracionCount: number;
   hermanosVisitasCount: number;
   fecha: string;
@@ -28,20 +28,7 @@ interface ConteoState {
   modoConsecutivo: boolean;
   isEditMode: boolean;
   editingRecordId: string | null;
-  simpatizantesDelDia: Array<{
-    id: string;
-    nombre: string;
-    telefono?: string;
-    notas?: string;
-    fechaRegistro?: string;
-  }>;
-  visitasDelDia: Array<{
-    id: string;
-    nombre: string;
-    telefono?: string;
-    notas?: string;
-    fechaRegistro?: string;
-  }>;
+  amigosDelDia: AmigoLite[];
   hermanosDelDia: Array<{ id: string; nombre: string }>;
   hermanasDelDia: Array<{ id: string; nombre: string }>;
   ninosDelDia: Array<{ id: string; nombre: string }>;
@@ -76,8 +63,7 @@ function createInitialState(): ConteoState {
     hermanas: 0,
     ninos: 0,
     adolescentes: 0,
-    simpatizantesCount: 0,
-    visitasCount: 0,
+    amigosCount: 0,
     heRestauracionCount: 0,
     hermanosVisitasCount: 0,
     fecha: today, // Usar función local en lugar de toISOString()
@@ -88,8 +74,7 @@ function createInitialState(): ConteoState {
     modoConsecutivo: false,
     isEditMode: false,
     editingRecordId: null,
-    simpatizantesDelDia: [],
-    visitasDelDia: [],
+    amigosDelDia: [],
     hermanosDelDia: [],
     hermanasDelDia: [],
     ninosDelDia: [],
@@ -179,12 +164,10 @@ export function usePersistentConteo() {
       hermanas: 0,
       ninos: 0,
       adolescentes: 0,
-      simpatizantesCount: 0,
-      visitasCount: 0,
+      amigosCount: 0,
       heRestauracionCount: 0,
       hermanosVisitasCount: 0,
-      simpatizantesDelDia: [],
-      visitasDelDia: [],
+      amigosDelDia: [],
       hermanosDelDia: [],
       hermanasDelDia: [],
       ninosDelDia: [],
@@ -212,12 +195,10 @@ export function usePersistentConteo() {
         hermanas: number;
         ninos: number;
         adolescentes: number;
-        simpatizantes: number;
-        visitas?: number;
+        amigos: number;
         heRestauracion?: number;
         hermanosVisitas?: number;
-        simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-        visitasAsistieron?: Array<{ id: string; nombre: string }>;
+        amigosAsistieron?: Array<{ id: string; nombre: string }>;
         miembrosAsistieron?: {
           hermanos?: Array<{ id: string; nombre: string }>;
           hermanas?: Array<{ id: string; nombre: string }>;
@@ -248,8 +229,7 @@ export function usePersistentConteo() {
         hermanas: manualCounters.hermanas,
         ninos: manualCounters.ninos,
         adolescentes: manualCounters.adolescentes,
-        simpatizantesCount: manualCounters.simpatizantes,
-        visitasCount: manualCounters.visitas || 0,
+        amigosCount: manualCounters.amigos,
         heRestauracionCount: manualCounters.heRestauracion,
         hermanosVisitasCount: manualCounters.hermanosVisitas,
         fecha: historialData.fecha,
@@ -259,8 +239,9 @@ export function usePersistentConteo() {
         ujierPersonalizado: getCustomUjierString(historialData.ujier),
         selectedUjieres: ujieresArray,
         modoConsecutivo: false,
-        simpatizantesDelDia: historialData.simpatizantesAsistieron || [],
-        visitasDelDia: historialData.visitasAsistieron || [],
+        amigosDelDia: (historialData.amigosAsistieron || []).map(
+          (a) => ({ ...a, migratedFrom: null }) as AmigoLite
+        ),
         hermanosDelDia: historialData.miembrosAsistieron?.hermanos || [],
         hermanasDelDia: historialData.miembrosAsistieron?.hermanas || [],
         ninosDelDia: historialData.miembrosAsistieron?.ninos || [],

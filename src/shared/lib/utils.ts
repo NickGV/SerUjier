@@ -337,6 +337,88 @@ export async function deleteSimpatizante(id: string) {
   }
 }
 
+export async function fetchAmigos() {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'amigos'));
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Array<{
+      id: string;
+      nombre: string;
+      telefono?: string;
+      notas?: string;
+      fechaRegistro: string;
+      migratedFrom?: 'visitas' | 'simpatizantes' | null;
+    }>;
+  } catch (error) {
+    console.error('Error fetching amigos:', error);
+    throw error;
+  }
+}
+
+export async function getAmigoById(id: string) {
+  try {
+    const amigoRef = doc(db, 'amigos', id);
+    const amigoSnap = await getDoc(amigoRef);
+
+    if (amigoSnap.exists()) {
+      return {
+        id: amigoSnap.id,
+        ...amigoSnap.data(),
+      } as {
+        id: string;
+        nombre: string;
+        telefono?: string;
+        notas?: string;
+        fechaRegistro: string;
+        migratedFrom?: 'visitas' | 'simpatizantes' | null;
+      };
+    } else {
+      throw new Error('Amigo no encontrado');
+    }
+  } catch (error) {
+    console.error('Error fetching amigo by id:', error);
+    throw error;
+  }
+}
+
+export async function updateAmigo(
+  id: string,
+  data: Partial<{
+    nombre: string;
+    telefono?: string;
+    notas?: string;
+  }>
+) {
+  try {
+    // Clean the data to remove undefined/empty values before sending to Firebase
+    const cleanedData = cleanDataForFirebase(data);
+
+    // Only proceed if there's actually data to update
+    if (Object.keys(cleanedData).length === 0) {
+      return;
+    }
+
+    const amigoRef = doc(db, 'amigos', id);
+    await updateDoc(amigoRef, cleanedData);
+  } catch (error) {
+    console.error('Error updating amigo:', error);
+    throw error;
+  }
+}
+
+export async function deleteAmigo(id: string) {
+  try {
+    const amigoRef = doc(db, 'amigos', id);
+    await deleteDoc(amigoRef);
+  } catch (error) {
+    console.error('Error deleting amigo:', error);
+    throw error;
+  }
+}
+
 export async function fetchHistorial() {
   try {
     const q = query(collection(db, 'historial'), orderBy('fecha', 'desc'));

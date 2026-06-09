@@ -15,24 +15,6 @@ export type Ujier = User & {
   additionalField: string; // Replace with actual fields
 };
 
-export interface Simpatizante {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-  [key: string]: unknown; // Permitir propiedades adicionales
-}
-
-export interface Visita {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-  [key: string]: unknown; // Permitir propiedades adicionales
-}
-
 export interface HeRestauracion {
   id: string;
   nombre: string;
@@ -74,14 +56,12 @@ export interface DatosServicioBase {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
   total: number;
   servicio: string;
-  simpatizantesAsistieron: Array<MiembroSimplificado>;
-  visitasAsistieron: Array<MiembroSimplificado>;
+  amigosAsistieron: Array<MiembroSimplificado>;
   miembrosAsistieron: MiembrosAsistieron;
   hermanosVisitasAsistieron: Array<MiembroSimplificado>;
 }
