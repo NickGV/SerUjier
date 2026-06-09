@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@/shared/contexts/user-context';
-import { getHistorialRecordById, fetchMiembros, fetchAmigos } from '@/shared/lib/utils';
+import {
+  getHistorialRecordById,
+  fetchMiembros,
+  fetchAmigos,
+} from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -315,23 +319,48 @@ function ServicioHistorialContent() {
       }));
   };
 
+  // Obtener todos los faltantes (miembros + amigos) con su tipo
+  const getAllFaltantes = (): {
+    id: string;
+    nombre: string;
+    categoria_display: string;
+    tipo: 'miembro' | 'amigo';
+  }[] => {
+    return [
+      ...getMiembrosFaltantes().map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        categoria_display: f.categoria_display,
+        tipo: 'miembro' as const,
+      })),
+      ...getAmigosFaltantes().map((f) => ({
+        id: f.id,
+        nombre: f.nombre,
+        categoria_display: f.categoria_display,
+        tipo: 'amigo' as const,
+      })),
+    ];
+  };
+
   // Filtrar datos según los filtros activos
   const getFilteredData = (): PersonaFiltrada[] => {
     const asistentes = getAllAsistentes();
-    const faltantes = getMiembrosFaltantes();
+    const faltantes = getAllFaltantes();
+
+    const faltantesData: PersonaFiltrada[] = faltantes.map((f) => ({
+      id: f.id,
+      nombre: f.nombre,
+      categoria: f.categoria_display,
+      tipo: f.tipo,
+      status: 'faltante' as const,
+    }));
 
     let dataToFilter: PersonaFiltrada[] = [];
 
     if (filterType === 'all') {
       dataToFilter = [
         ...asistentes.map((a) => ({ ...a, status: 'asistente' as const })),
-        ...faltantes.map((f) => ({
-          id: f.id,
-          nombre: f.nombre,
-          categoria: f.categoria_display,
-          tipo: 'miembro' as const,
-          status: 'faltante' as const,
-        })),
+        ...faltantesData,
       ];
     } else if (filterType === 'asistentes') {
       dataToFilter = asistentes.map((a) => ({
@@ -339,13 +368,7 @@ function ServicioHistorialContent() {
         status: 'asistente' as const,
       }));
     } else {
-      dataToFilter = faltantes.map((f) => ({
-        id: f.id,
-        nombre: f.nombre,
-        categoria: f.categoria_display,
-        tipo: 'miembro' as const,
-        status: 'faltante' as const,
-      }));
+      dataToFilter = faltantesData;
     }
 
     // Filtrar por término de búsqueda
@@ -533,8 +556,8 @@ function ServicioHistorialContent() {
 
       const faltantesRows: DetailExportRow[] = faltantes.map((f) => ({
         nombre: f.nombre,
-        categoria: f.categoria_display || f.categoria,
-        tipo: 'miembro',
+        categoria: f.categoria_display,
+        tipo: f.tipo,
         estado: 'Faltó',
       }));
 
@@ -624,7 +647,7 @@ function ServicioHistorialContent() {
   }
 
   const asistentes = getAllAsistentes();
-  const faltantes = getMiembrosFaltantes();
+  const faltantes = getAllFaltantes();
   const filteredData = getFilteredData();
 
   return (
@@ -978,7 +1001,7 @@ function ServicioHistorialContent() {
             {filterType === 'asistentes'
               ? 'Asistentes'
               : filterType === 'faltantes'
-                ? 'Miembros Faltantes'
+                ? 'Faltantes'
                 : 'Todos los Asistentes'}
           </CardTitle>
         </CardHeader>
