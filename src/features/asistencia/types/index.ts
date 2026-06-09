@@ -86,7 +86,11 @@ export interface AmigosDialogProps extends ConteoDialogProps {
   amigosDelDia: AmigoLite[];
   baseAmigos: AmigoLite[];
   onAddAmigos: (amigos: AmigoLite[]) => void;
-  onAddNewAmigo: (amigo: Omit<AmigoLite, 'id'>) => Promise<void>;
+  onAddNewAmigo: (amigo: {
+    nombre: string;
+    telefono?: string;
+    notas?: string;
+  }) => Promise<void>;
   onRemoveAmigo: (id: string) => void;
   onClearAllAmigos: () => void;
 }
@@ -130,20 +134,4 @@ export interface HermanosVisitasDialogProps extends ConteoDialogProps {
   hermanosVisitasDelDia: HermanoVisita[];
   onAddHermanoVisita: (hermano: { nombre: string; iglesia?: string }) => void;
   onRemoveHermanoVisita: (id: string) => void;
-}
-
-// @deprecated Replaced by AmigoLite
-export type SimpatizanteLite = AmigoLite;
-// @deprecated Replaced by AmigoLite
-export type VisitaLite = AmigoLite;
-
-// @deprecated Use AmigosDialogProps instead
-export interface SimpatizantesDialogProps extends ConteoDialogProps {
-  simpatizantes: AmigoLite[];
-  simpatizantesDelDia: AmigoLite[];
-  baseSimpatizantes: AmigoLite[];
-  onAddSimpatizantes: (simpatizantes: AmigoLite[]) => void;
-  onAddNewSimpatizante: (simpatizante: Omit<AmigoLite, 'id'>) => Promise<void>;
-  onRemoveSimpatizante: (id: string) => void;
-  onClearAllSimpatizantes: () => void;
 }

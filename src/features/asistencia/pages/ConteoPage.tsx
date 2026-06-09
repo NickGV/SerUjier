@@ -37,7 +37,7 @@ import {
   HeRestauracionDialog,
   HermanosVisitasDialog,
   MiembrosDialog,
-  SimpatizantesDialog,
+  AmigosDialog,
 } from '@/features/asistencia/components';
 import type {
   AmigoLite,
@@ -549,20 +549,20 @@ export default function ConteoPage() {
       )}
 
       {/* Diálogos modulares */}
-      <SimpatizantesDialog
+      <AmigosDialog
         isOpen={showAmigosDialog}
         onClose={() => setShowAmigosDialog(false)}
-        simpatizantes={amigos}
-        simpatizantesDelDia={conteoState.amigosDelDia}
-        baseSimpatizantes={
+        amigos={amigos}
+        amigosDelDia={conteoState.amigosDelDia}
+        baseAmigos={
           conteoState.modoConsecutivo
             ? (datosServicioBase?.amigosAsistieron as AmigoLite[]) || []
             : []
         }
-        onAddSimpatizantes={amigosHandlers.handleAdd}
-        onAddNewSimpatizante={amigosHandlers.handleAddNew}
-        onRemoveSimpatizante={amigosHandlers.handleRemove}
-        onClearAllSimpatizantes={amigosHandlers.handleClearAll}
+        onAddAmigos={amigosHandlers.handleAdd}
+        onAddNewAmigo={amigosHandlers.handleAddNew}
+        onRemoveAmigo={amigosHandlers.handleRemove}
+        onClearAllAmigos={amigosHandlers.handleClearAll}
       />
 
       <HeRestauracionDialog
