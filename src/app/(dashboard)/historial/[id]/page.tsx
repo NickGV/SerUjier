@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@/shared/contexts/user-context';
-import { getHistorialRecordById, fetchMiembros } from '@/shared/lib/utils';
+import { getHistorialRecordById, fetchMiembros, fetchAmigos } from '@/shared/lib/utils';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -104,6 +104,15 @@ interface Miembro {
   fechaRegistro: string;
 }
 
+interface Amigo {
+  id: string;
+  nombre: string;
+  telefono?: string;
+  notas?: string;
+  fechaRegistro?: string;
+  migratedFrom?: 'visitas' | 'simpatizantes' | null;
+}
+
 interface AsistenteInfo {
   id: string;
   nombre: string;
@@ -133,6 +142,7 @@ function ServicioHistorialContent() {
   const { user } = useUser();
   const [record, setRecord] = useState<HistorialRecord | null>(null);
   const [allMembers, setAllMembers] = useState<Miembro[]>([]);
+  const [allAmigos, setAllAmigos] = useState<Amigo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -150,9 +160,10 @@ function ServicioHistorialContent() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [recordData, membersData] = await Promise.all([
+        const [recordData, membersData, amigosData] = await Promise.all([
           getHistorialRecordById(recordId),
           fetchMiembros(),
+          fetchAmigos(),
         ]);
         // Ensure new fields exist with default values
         const recordApi = recordData as HistorialRecordAPI;
@@ -169,6 +180,7 @@ function ServicioHistorialContent() {
         };
         setRecord(normalizedRecord);
         setAllMembers(membersData);
+        setAllAmigos(amigosData);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Error cargando datos';
         setError(msg);
@@ -283,6 +295,23 @@ function ServicioHistorialContent() {
                 : miembro.categoria === 'adolescente'
                   ? 'Adolescentes'
                   : 'HeRestauracion',
+      }));
+  };
+
+  // Obtener amigos faltantes
+  const getAmigosFaltantes = (): (Amigo & { categoria_display: string })[] => {
+    if (!record) return [];
+
+    const asistentes = getAllAsistentes();
+    const asistenteIds = new Set(
+      asistentes.filter((a) => a.tipo === 'amigo').map((a) => a.id)
+    );
+
+    return allAmigos
+      .filter((amigo) => !asistenteIds.has(amigo.id))
+      .map((amigo) => ({
+        ...amigo,
+        categoria_display: 'Amigos',
       }));
   };
 
@@ -752,7 +781,7 @@ function ServicioHistorialContent() {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Users className="w-5 h-5 text-blue-600" />
               <span className="text-sm font-medium text-blue-700">
-                Total Miembros
+                Total Asistentes
               </span>
             </div>
             <div className="text-2xl font-bold text-blue-700">
@@ -911,7 +940,7 @@ function ServicioHistorialContent() {
                 <SelectItem value="amigos">Amigos</SelectItem>
                 <SelectItem value="herestauracion">HeRestauracion</SelectItem>
                 <SelectItem value="hermanos visitas">
-                  Hermanos Visitas
+                  Hermanos Visita
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -950,7 +979,7 @@ function ServicioHistorialContent() {
               ? 'Asistentes'
               : filterType === 'faltantes'
                 ? 'Miembros Faltantes'
-                : 'Todos los Miembros'}
+                : 'Todos los Asistentes'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
