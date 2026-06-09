@@ -4,10 +4,6 @@ import { usePermisos } from '@/shared/hooks/use-permisos';
 import { usePathname, useRouter } from 'next/navigation';
 import { type User } from '@/shared/types';
 
-declare global {
-  var __MOCK_AMIGOS_UNIFIED: boolean | undefined;
-}
-
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
@@ -19,17 +15,6 @@ const mockUsePermisos = usePermisos as jest.Mock;
 
 jest.mock('@/shared/hooks/use-permisos', () => ({
   usePermisos: jest.fn(),
-}));
-
-// Mock feature-flags with a getter so we can control per-test
-globalThis.__MOCK_AMIGOS_UNIFIED = false;
-
-jest.mock('@/config/feature-flags', () => ({
-  featureFlags: {
-    get amigosUnified() {
-      return globalThis.__MOCK_AMIGOS_UNIFIED;
-    },
-  },
 }));
 
 const baseUser: User = {
@@ -44,7 +29,6 @@ const mockRouter = { push: jest.fn() };
 describe('BottomNavigation — amigos nav item', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    globalThis.__MOCK_AMIGOS_UNIFIED = false;
     (usePathname as jest.Mock).mockReturnValue('/');
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
   });
@@ -81,8 +65,7 @@ describe('BottomNavigation — amigos nav item', () => {
   it('does NOT show "Amigos" nav item when canView("amigos") returns false', () => {
     mockCanView.mockImplementation((module: string) => {
       if (module === 'amigos') return false;
-      if (module === 'simpatizantes') return true;
-      return false;
+      return true;
     });
 
     mockUsePermisos.mockReturnValue({
@@ -109,7 +92,7 @@ describe('BottomNavigation — amigos nav item', () => {
     expect(amigosLink).toHaveAttribute('title', 'Gestionar amigos');
   });
 
-  it('still shows legacy "Simpatizantes" and "Visitas" items alongside Amigos', () => {
+  it('does NOT show legacy "Simpatizantes" or "Visitas" items', () => {
     mockCanView.mockImplementation(() => true);
     mockUsePermisos.mockReturnValue({
       canView: mockCanView,
@@ -120,72 +103,7 @@ describe('BottomNavigation — amigos nav item', () => {
     render(<BottomNavigation currentUser={baseUser} onLogout={jest.fn()} />);
 
     expect(screen.getByText('Amigos')).toBeInTheDocument();
-    expect(screen.getByText('Simpatizantes')).toBeInTheDocument();
-    expect(screen.getByText('Visitas')).toBeInTheDocument();
-  });
-
-  describe('amigosUnified feature flag', () => {
-    it('hides legacy Simpatizantes and Visitas for admin when flag is true', () => {
-      globalThis.__MOCK_AMIGOS_UNIFIED = true;
-
-      mockUsePermisos.mockReturnValue({
-        canView: mockCanView,
-        isAdmin: true,
-        isLoading: false,
-      });
-
-      render(<BottomNavigation currentUser={baseUser} onLogout={jest.fn()} />);
-
-      expect(screen.queryByText('Simpatizantes')).not.toBeInTheDocument();
-      expect(screen.queryByText('Visitas')).not.toBeInTheDocument();
-    });
-
-    it('shows Amigos nav item for admin when flag is true', () => {
-      globalThis.__MOCK_AMIGOS_UNIFIED = true;
-
-      mockUsePermisos.mockReturnValue({
-        canView: mockCanView,
-        isAdmin: true,
-        isLoading: false,
-      });
-
-      render(<BottomNavigation currentUser={baseUser} onLogout={jest.fn()} />);
-
-      expect(screen.getByText('Amigos')).toBeInTheDocument();
-    });
-
-    it('hides legacy items for non-admin with permissions when flag is true', () => {
-      globalThis.__MOCK_AMIGOS_UNIFIED = true;
-      mockCanView.mockImplementation(() => true);
-
-      mockUsePermisos.mockReturnValue({
-        canView: mockCanView,
-        isAdmin: false,
-        isLoading: false,
-      });
-
-      render(<BottomNavigation currentUser={baseUser} onLogout={jest.fn()} />);
-
-      expect(screen.queryByText('Simpatizantes')).not.toBeInTheDocument();
-      expect(screen.queryByText('Visitas')).not.toBeInTheDocument();
-      expect(screen.getByText('Amigos')).toBeInTheDocument();
-    });
-
-    it('shows legacy items when flag is false (default)', () => {
-      globalThis.__MOCK_AMIGOS_UNIFIED = false;
-      mockCanView.mockImplementation(() => true);
-
-      mockUsePermisos.mockReturnValue({
-        canView: mockCanView,
-        isAdmin: false,
-        isLoading: false,
-      });
-
-      render(<BottomNavigation currentUser={baseUser} onLogout={jest.fn()} />);
-
-      expect(screen.getByText('Simpatizantes')).toBeInTheDocument();
-      expect(screen.getByText('Visitas')).toBeInTheDocument();
-      expect(screen.getByText('Amigos')).toBeInTheDocument();
-    });
+    expect(screen.queryByText('Simpatizantes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Visitas')).not.toBeInTheDocument();
   });
 });

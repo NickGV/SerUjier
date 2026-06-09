@@ -15,24 +15,6 @@ export type Ujier = User & {
   additionalField: string; // Replace with actual fields
 };
 
-export interface Simpatizante {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-  [key: string]: unknown; // Permitir propiedades adicionales
-}
-
-export interface Visita {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro?: string;
-  [key: string]: unknown; // Permitir propiedades adicionales
-}
-
 export interface HeRestauracion {
   id: string;
   nombre: string;

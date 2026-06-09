@@ -1,6 +1,5 @@
 'use client';
 
-import { featureFlags } from '@/config/feature-flags';
 import { usePermisos } from '@/shared/hooks/use-permisos';
 import { type User } from '@/shared/types';
 import { Button } from '@/shared/ui/button';
@@ -12,8 +11,6 @@ import {
   LogOut,
   Settings,
   UserCheck,
-  UserPlus,
-  Users,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -60,25 +57,6 @@ export function BottomNavigation({
     if (isAdmin) {
       const adminItems: NavItem[] = [...baseNavItems];
 
-      if (!featureFlags.amigosUnified) {
-        adminItems.push(
-          {
-            id: 'simpatizantes',
-            label: 'Simpatizantes',
-            icon: Users,
-            description: 'Gestionar simpatizantes',
-            path: '/simpatizantes',
-          },
-          {
-            id: 'visitas',
-            label: 'Visitas',
-            icon: UserPlus,
-            description: 'Gestionar visitas',
-            path: '/visitas',
-          }
-        );
-      }
-
       adminItems.push(
         {
           id: 'amigos',
@@ -122,28 +100,6 @@ export function BottomNavigation({
 
     // Para otros usuarios, construir basado en permisos
     const items: NavItem[] = [...baseNavItems];
-
-    // Simpatizantes - si puede ver (hidden when amigosUnified is active)
-    if (!featureFlags.amigosUnified && canView('simpatizantes')) {
-      items.push({
-        id: 'simpatizantes',
-        label: 'Simpatizantes',
-        icon: Users,
-        description: 'Gestionar simpatizantes',
-        path: '/simpatizantes',
-      });
-    }
-
-    // Visitas - si puede ver (hidden when amigosUnified is active)
-    if (!featureFlags.amigosUnified && canView('visitas')) {
-      items.push({
-        id: 'visitas',
-        label: 'Visitas',
-        icon: UserPlus,
-        description: 'Gestionar visitas',
-        path: '/visitas',
-      });
-    }
 
     // Amigos - si puede ver
     if (canView('amigos')) {
