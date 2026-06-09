@@ -1,13 +1,8 @@
-import {
-  type MiembroSimplificado,
-  type Simpatizante,
-  type Visita,
-  type HeRestauracion,
-} from '@/shared/types';
+import { type MiembroSimplificado, type HeRestauracion } from '@/shared/types';
+import { type Amigo } from '@/types/amigos';
 
-// Usamos el tipo Simpatizante de shared/types para mantener consistencia
-export type SimpatizanteLite = Simpatizante & { [key: string]: unknown };
-export type VisitaLite = Visita & { [key: string]: unknown };
+// Usamos el tipo Amigo de @/types/amigos para mantener consistencia
+export type AmigoLite = Amigo & { [key: string]: unknown };
 export type HeRestauracionLite = HeRestauracion & { [key: string]: unknown };
 
 // Tipo para hermanos visitas (solo nombre, son de otra iglesia)
@@ -23,8 +18,7 @@ export interface ConteoStateBase {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantesCount: number;
-  visitasCount: number;
+  amigosCount: number;
   heRestauracionCount: number;
   hermanosVisitasCount: number;
   fecha: string;
@@ -34,8 +28,7 @@ export interface ConteoStateBase {
   modoConsecutivo: boolean;
   isEditMode: boolean;
   editingRecordId: string | null;
-  simpatizantesDelDia: SimpatizanteLite[];
-  visitasDelDia: VisitaLite[];
+  amigosDelDia: AmigoLite[];
   hermanosDelDia: MiembroSimplificado[];
   hermanasDelDia: MiembroSimplificado[];
   ninosDelDia: MiembroSimplificado[];
@@ -58,8 +51,7 @@ export interface BulkCounts {
   hermanas: string;
   ninos: string;
   adolescentes: string;
-  simpatizantes: string;
-  visitas: string;
+  amigos: string;
   heRestauracion: string;
   hermanosVisitas: string;
 }
@@ -80,7 +72,7 @@ export interface AsistenteInfo {
   id: string;
   nombre: string;
   categoria: string;
-  tipo: 'miembro' | 'simpatizante';
+  tipo: 'miembro' | 'amigo';
   esBase?: boolean;
 }
 
@@ -89,16 +81,14 @@ export interface ConteoDialogProps {
   onClose: () => void;
 }
 
-export interface SimpatizantesDialogProps extends ConteoDialogProps {
-  simpatizantes: SimpatizanteLite[];
-  simpatizantesDelDia: SimpatizanteLite[];
-  baseSimpatizantes: SimpatizanteLite[];
-  onAddSimpatizantes: (simpatizantes: SimpatizanteLite[]) => void;
-  onAddNewSimpatizante: (
-    simpatizante: Omit<SimpatizanteLite, 'id'>
-  ) => Promise<void>;
-  onRemoveSimpatizante: (id: string) => void;
-  onClearAllSimpatizantes: () => void;
+export interface AmigosDialogProps extends ConteoDialogProps {
+  amigos: AmigoLite[];
+  amigosDelDia: AmigoLite[];
+  baseAmigos: AmigoLite[];
+  onAddAmigos: (amigos: AmigoLite[]) => void;
+  onAddNewAmigo: (amigo: Omit<AmigoLite, 'id'>) => Promise<void>;
+  onRemoveAmigo: (id: string) => void;
+  onClearAllAmigos: () => void;
 }
 
 export type CategoriaPlural =
@@ -132,7 +122,7 @@ export interface AsistentesDialogProps extends ConteoDialogProps {
   onRemoveAsistente: (
     id: string,
     categoria: string,
-    tipo: 'miembro' | 'simpatizante'
+    tipo: 'miembro' | 'amigo'
   ) => void;
 }
 
@@ -140,4 +130,20 @@ export interface HermanosVisitasDialogProps extends ConteoDialogProps {
   hermanosVisitasDelDia: HermanoVisita[];
   onAddHermanoVisita: (hermano: { nombre: string; iglesia?: string }) => void;
   onRemoveHermanoVisita: (id: string) => void;
+}
+
+// @deprecated Replaced by AmigoLite
+export type SimpatizanteLite = AmigoLite;
+// @deprecated Replaced by AmigoLite
+export type VisitaLite = AmigoLite;
+
+// @deprecated Use AmigosDialogProps instead
+export interface SimpatizantesDialogProps extends ConteoDialogProps {
+  simpatizantes: AmigoLite[];
+  simpatizantesDelDia: AmigoLite[];
+  baseSimpatizantes: AmigoLite[];
+  onAddSimpatizantes: (simpatizantes: AmigoLite[]) => void;
+  onAddNewSimpatizante: (simpatizante: Omit<AmigoLite, 'id'>) => Promise<void>;
+  onRemoveSimpatizante: (id: string) => void;
+  onClearAllSimpatizantes: () => void;
 }

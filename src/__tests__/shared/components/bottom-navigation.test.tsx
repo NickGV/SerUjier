@@ -4,6 +4,10 @@ import { usePermisos } from '@/shared/hooks/use-permisos';
 import { usePathname, useRouter } from 'next/navigation';
 import { type User } from '@/shared/types';
 
+declare global {
+  var __MOCK_AMIGOS_UNIFIED: boolean | undefined;
+}
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
@@ -18,12 +22,12 @@ jest.mock('@/shared/hooks/use-permisos', () => ({
 }));
 
 // Mock feature-flags with a getter so we can control per-test
-(globalThis as any).__MOCK_AMIGOS_UNIFIED = false;
+globalThis.__MOCK_AMIGOS_UNIFIED = false;
 
 jest.mock('@/config/feature-flags', () => ({
   featureFlags: {
     get amigosUnified() {
-      return (globalThis as any).__MOCK_AMIGOS_UNIFIED;
+      return globalThis.__MOCK_AMIGOS_UNIFIED;
     },
   },
 }));
@@ -40,7 +44,7 @@ const mockRouter = { push: jest.fn() };
 describe('BottomNavigation — amigos nav item', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (globalThis as any).__MOCK_AMIGOS_UNIFIED = false;
+    globalThis.__MOCK_AMIGOS_UNIFIED = false;
     (usePathname as jest.Mock).mockReturnValue('/');
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
   });
@@ -122,7 +126,7 @@ describe('BottomNavigation — amigos nav item', () => {
 
   describe('amigosUnified feature flag', () => {
     it('hides legacy Simpatizantes and Visitas for admin when flag is true', () => {
-      (globalThis as any).__MOCK_AMIGOS_UNIFIED = true;
+      globalThis.__MOCK_AMIGOS_UNIFIED = true;
 
       mockUsePermisos.mockReturnValue({
         canView: mockCanView,
@@ -137,7 +141,7 @@ describe('BottomNavigation — amigos nav item', () => {
     });
 
     it('shows Amigos nav item for admin when flag is true', () => {
-      (globalThis as any).__MOCK_AMIGOS_UNIFIED = true;
+      globalThis.__MOCK_AMIGOS_UNIFIED = true;
 
       mockUsePermisos.mockReturnValue({
         canView: mockCanView,
@@ -151,7 +155,7 @@ describe('BottomNavigation — amigos nav item', () => {
     });
 
     it('hides legacy items for non-admin with permissions when flag is true', () => {
-      (globalThis as any).__MOCK_AMIGOS_UNIFIED = true;
+      globalThis.__MOCK_AMIGOS_UNIFIED = true;
       mockCanView.mockImplementation(() => true);
 
       mockUsePermisos.mockReturnValue({
@@ -168,7 +172,7 @@ describe('BottomNavigation — amigos nav item', () => {
     });
 
     it('shows legacy items when flag is false (default)', () => {
-      (globalThis as any).__MOCK_AMIGOS_UNIFIED = false;
+      globalThis.__MOCK_AMIGOS_UNIFIED = false;
       mockCanView.mockImplementation(() => true);
 
       mockUsePermisos.mockReturnValue({

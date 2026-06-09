@@ -41,15 +41,17 @@ describe('exportAmigosToCSV', () => {
 
     // Mock Blob constructor
     blobContent = [];
-    (global as any).Blob = jest.fn().mockImplementation((content, _options) => {
-      blobContent = content;
-      return { size: 100 };
-    });
+    (globalThis as unknown as { Blob: unknown }).Blob = jest
+      .fn()
+      .mockImplementation((content: unknown[], _options: unknown) => {
+        blobContent = content as string[];
+        return { size: 100 };
+      });
 
-    (global as any).URL = {
+    (globalThis as unknown as { URL: unknown }).URL = {
       createObjectURL: createObjectURLMock,
       revokeObjectURL: revokeObjectURLMock,
-    };
+    } as unknown as typeof URL;
 
     // Mock document.createElement for anchor tag
     const originalCreateElement = document.createElement.bind(document);

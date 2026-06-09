@@ -7,21 +7,16 @@ import { useConteoSave } from '@/features/asistencia/hooks/use-conteo-save';
 import { usePersistentConteo } from '@/features/asistencia/hooks/use-persistent-conteo';
 import { getServicioPorFecha } from '@/features/asistencia/lib/servicio-por-fecha';
 import { getActiveUjieres } from '@/features/asistencia/utils/ujier-utils';
+import { addAmigo, fetchAmigos } from '@/firebase/amigos';
 import {
-  addSimpatizante,
-  addVisita,
   addHeRestauracion,
   fetchMiembros,
-  fetchSimpatizantes,
   fetchUjieres,
-  fetchVisitas,
   fetchHeRestauracion,
 } from '@/shared/firebase';
 import {
   type Miembro,
   type MiembroSimplificado,
-  type Simpatizante,
-  type Visita,
   type HeRestauracion,
 } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
@@ -43,14 +38,11 @@ import {
   HermanosVisitasDialog,
   MiembrosDialog,
   SimpatizantesDialog,
-  SimpatizantesList,
-  VisitasDialog,
 } from '@/features/asistencia/components';
 import type {
+  AmigoLite,
   CategoriaPlural,
   ConteoStateWithIndex,
-  SimpatizanteLite,
-  VisitaLite,
 } from '@/features/asistencia/types';
 import { getAllAsistentes } from '@/features/asistencia/utils/helpers';
 import { calculateAllTotals } from '../lib/calculations';
@@ -74,9 +66,8 @@ export default function ConteoPage() {
   const datosServicioBase = conteoState.datosServicioBase;
 
   // Estados para datos de Firebase
-  const [simpatizantes, setSimpatizantes] = useState<Simpatizante[]>([]);
+  const [amigos, setAmigos] = useState<AmigoLite[]>([]);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
-  const [visitas, setVisitas] = useState<Visita[]>([]);
   const [heRestauracion, setHeRestauracion] = useState<HeRestauracion[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -132,8 +123,7 @@ export default function ConteoPage() {
   });
 
   // Estados para los diálogos
-  const [showSimpatizantesDialog, setShowSimpatizantesDialog] = useState(false);
-  const [showVisitasDialog, setShowVisitasDialog] = useState(false);
+  const [showAmigosDialog, setShowAmigosDialog] = useState(false);
   const [showHeRestauracionDialog, setShowHeRestauracionDialog] =
     useState(false);
   const [showAsistentesDialog, setShowAsistentesDialog] = useState(false);
@@ -153,22 +143,15 @@ export default function ConteoPage() {
         setLoading(true);
       }
 
-      const [
-        simpatizantesData,
-        miembrosData,
-        ujieresData,
-        visitasData,
-        heRestauracionData,
-      ] = await Promise.all([
-        fetchSimpatizantes(),
-        fetchMiembros(),
-        fetchUjieres(),
-        fetchVisitas(),
-        fetchHeRestauracion(),
-      ]);
-      setSimpatizantes(simpatizantesData);
+      const [amigosData, miembrosData, ujieresData, heRestauracionData] =
+        await Promise.all([
+          fetchAmigos(),
+          fetchMiembros(),
+          fetchUjieres(),
+          fetchHeRestauracion(),
+        ]);
+      setAmigos(amigosData as AmigoLite[]);
       setMiembros(miembrosData);
-      setVisitas(visitasData);
       setHeRestauracion(heRestauracionData);
       // Extraer solo los nombres de los ujieres activos usando la utilidad
       const nombresUjieres = getActiveUjieres(ujieresData);
@@ -203,89 +186,47 @@ export default function ConteoPage() {
 
   // ========== HANDLERS AGRUPADOS ==========
 
-  // Handlers para simpatizantes
-  const simpatizantesHandlers = {
-    handleAdd: (newSimpatizantes: Simpatizante[]) => {
+  // Handlers para amigos (unifica simpatizantes + visitas)
+  const amigosHandlers = {
+    handleAdd: (newAmigos: AmigoLite[]) => {
       updateConteo({
-        simpatizantesDelDia: [
-          ...conteoState.simpatizantesDelDia,
-          ...newSimpatizantes,
-        ],
+        amigosDelDia: [...conteoState.amigosDelDia, ...newAmigos],
       });
     },
 
-    handleAddNew: async (
-      simpatizanteData: Omit<SimpatizanteLite, 'id'> & { nombre: string }
-    ) => {
-      const withFecha = {
+    handleAddNew: async (amigoData: {
+      nombre: string;
+      telefono?: string;
+      notas?: string;
+    }) => {
+      const amigoInput = {
+        nombre: amigoData.nombre,
+        telefono: amigoData.telefono ?? '',
+        notas: amigoData.notas ?? '',
         fechaRegistro: new Date().toISOString().split('T')[0],
-        ...simpatizanteData,
+        migratedFrom: null,
       };
-      const result = await addSimpatizante(withFecha);
-      const creado: SimpatizanteLite = {
+      const result = await addAmigo(amigoInput);
+      const creado: AmigoLite = {
+        ...amigoInput,
         id: (result as { id: string }).id,
-        ...withFecha,
       };
 
       updateConteo({
-        simpatizantesDelDia: [...conteoState.simpatizantesDelDia, creado],
+        amigosDelDia: [...conteoState.amigosDelDia, creado],
       });
-      setSimpatizantes((prev) => [...prev, creado]);
+      setAmigos((prev) => [...prev, creado]);
     },
 
-    handleRemove: (simpatizanteId: string) => {
+    handleRemove: (amigoId: string) => {
       updateConteo({
-        simpatizantesDelDia: conteoState.simpatizantesDelDia.filter(
-          (s) => s.id !== simpatizanteId
-        ),
+        amigosDelDia: conteoState.amigosDelDia.filter((a) => a.id !== amigoId),
       });
     },
 
     handleClearAll: () => {
       updateConteo({
-        simpatizantesDelDia: [],
-      });
-    },
-  };
-
-  // Handlers para visitas
-  const visitasHandlers = {
-    handleAdd: (newVisitas: Visita[]) => {
-      updateConteo({
-        visitasDelDia: [...conteoState.visitasDelDia, ...newVisitas],
-      });
-    },
-
-    handleAddNew: async (
-      visitaData: Omit<VisitaLite, 'id'> & { nombre: string }
-    ) => {
-      const withFecha = {
-        fechaRegistro: new Date().toISOString().split('T')[0],
-        ...visitaData,
-      };
-      const result = await addVisita(withFecha);
-      const creada: VisitaLite = {
-        id: (result as { id: string }).id,
-        ...withFecha,
-      };
-
-      updateConteo({
-        visitasDelDia: [...conteoState.visitasDelDia, creada],
-      });
-      setVisitas((prev) => [...prev, creada]);
-    },
-
-    handleRemove: (visitaId: string) => {
-      updateConteo({
-        visitasDelDia: conteoState.visitasDelDia.filter(
-          (v) => v.id !== visitaId
-        ),
-      });
-    },
-
-    handleClearAll: () => {
-      updateConteo({
-        visitasDelDia: [],
+        amigosDelDia: [],
       });
     },
   };
@@ -412,8 +353,7 @@ export default function ConteoPage() {
 
   // Handlers para los diálogos
   const dialogHandlers = {
-    openSimpatizantes: () => setShowSimpatizantesDialog(true),
-    openVisitas: () => setShowVisitasDialog(true),
+    openAmigos: () => setShowAmigosDialog(true),
     openHeRestauracion: () => setShowHeRestauracionDialog(true),
     openMiembros: (categoria: CategoriaPlural) => {
       setCategoriaSeleccionada(categoria);
@@ -424,10 +364,8 @@ export default function ConteoPage() {
   };
 
   const handleOpenDialog = (categoria: string) => {
-    if (categoria === 'simpatizantes') {
-      dialogHandlers.openSimpatizantes();
-    } else if (categoria === 'visitas') {
-      dialogHandlers.openVisitas();
+    if (categoria === 'amigos') {
+      dialogHandlers.openAmigos();
     } else if (categoria === 'heRestauracion') {
       dialogHandlers.openHeRestauracion();
     } else if (categoria === 'hermanosVisitas') {
@@ -467,10 +405,10 @@ export default function ConteoPage() {
     conteoState.hermanasDelDia.length > 0 ||
     conteoState.ninosDelDia.length > 0 ||
     conteoState.adolescentesDelDia.length > 0 ||
-    conteoState.simpatizantesDelDia.length > 0 ||
+    conteoState.amigosDelDia.length > 0 ||
     (conteoState.modoConsecutivo &&
-      ((datosServicioBase?.simpatizantesAsistieron &&
-        datosServicioBase.simpatizantesAsistieron.length > 0) ||
+      ((datosServicioBase?.amigosAsistieron &&
+        datosServicioBase.amigosAsistieron.length > 0) ||
         (datosServicioBase?.miembrosAsistieron?.hermanos &&
           datosServicioBase.miembrosAsistieron.hermanos.length > 0) ||
         (datosServicioBase?.miembrosAsistieron?.hermanas &&
@@ -486,7 +424,7 @@ export default function ConteoPage() {
     conteoState.hermanasDelDia.length +
     conteoState.ninosDelDia.length +
     conteoState.adolescentesDelDia.length +
-    conteoState.simpatizantesDelDia.length +
+    conteoState.amigosDelDia.length +
     (conteoState.modoConsecutivo &&
     datosServicioBase?.miembrosAsistieron?.hermanos
       ? datosServicioBase.miembrosAsistieron.hermanos.length
@@ -502,8 +440,8 @@ export default function ConteoPage() {
     datosServicioBase?.miembrosAsistieron?.adolescentes
       ? datosServicioBase.miembrosAsistieron.adolescentes.length
       : 0) +
-    (conteoState.modoConsecutivo && datosServicioBase?.simpatizantesAsistieron
-      ? datosServicioBase.simpatizantesAsistieron.length
+    (conteoState.modoConsecutivo && datosServicioBase?.amigosAsistieron
+      ? datosServicioBase.amigosAsistieron.length
       : 0);
 
   if (loading || !isLoaded || loadingEdit) {
@@ -612,36 +550,19 @@ export default function ConteoPage() {
 
       {/* Diálogos modulares */}
       <SimpatizantesDialog
-        isOpen={showSimpatizantesDialog}
-        onClose={() => setShowSimpatizantesDialog(false)}
-        simpatizantes={simpatizantes}
-        simpatizantesDelDia={conteoState.simpatizantesDelDia}
+        isOpen={showAmigosDialog}
+        onClose={() => setShowAmigosDialog(false)}
+        simpatizantes={amigos}
+        simpatizantesDelDia={conteoState.amigosDelDia}
         baseSimpatizantes={
           conteoState.modoConsecutivo
-            ? (datosServicioBase?.simpatizantesAsistieron as SimpatizanteLite[]) ||
-              []
+            ? (datosServicioBase?.amigosAsistieron as AmigoLite[]) || []
             : []
         }
-        onAddSimpatizantes={simpatizantesHandlers.handleAdd}
-        onAddNewSimpatizante={simpatizantesHandlers.handleAddNew}
-        onRemoveSimpatizante={simpatizantesHandlers.handleRemove}
-        onClearAllSimpatizantes={simpatizantesHandlers.handleClearAll}
-      />
-
-      <VisitasDialog
-        isOpen={showVisitasDialog}
-        onClose={() => setShowVisitasDialog(false)}
-        visitas={visitas}
-        visitasDelDia={conteoState.visitasDelDia}
-        baseVisitas={
-          conteoState.modoConsecutivo
-            ? (datosServicioBase?.visitasAsistieron as VisitaLite[]) || []
-            : []
-        }
-        onAddVisitas={visitasHandlers.handleAdd}
-        onAddNewVisita={visitasHandlers.handleAddNew}
-        onRemoveVisita={visitasHandlers.handleRemove}
-        onClearAllVisitas={visitasHandlers.handleClearAll}
+        onAddSimpatizantes={amigosHandlers.handleAdd}
+        onAddNewSimpatizante={amigosHandlers.handleAddNew}
+        onRemoveSimpatizante={amigosHandlers.handleRemove}
+        onClearAllSimpatizantes={amigosHandlers.handleClearAll}
       />
 
       <HeRestauracionDialog
@@ -710,12 +631,14 @@ export default function ConteoPage() {
             miembrosHandlers.handleRemove(categoria as CategoriaPlural, id);
           } else if (categoria === 'heRestauracion') {
             heRestauracionHandlers.handleRemove(id);
-          } else if (categoria === 'visitas') {
-            visitasHandlers.handleRemove(id);
+          } else if (
+            categoria === 'amigos' ||
+            categoria === 'visitas' ||
+            categoria === 'simpatizantes'
+          ) {
+            amigosHandlers.handleRemove(id);
           } else if (categoria === 'hermanosVisitas') {
             hermanosVisitasHandlers.handleRemove(id);
-          } else {
-            simpatizantesHandlers.handleRemove(id);
           }
         }}
       />
@@ -768,12 +691,6 @@ export default function ConteoPage() {
         </span>
       </Button>
 
-      {/* Simpatizantes del día */}
-      <SimpatizantesList
-        simpatizantesDelDia={conteoState.simpatizantesDelDia}
-        onRemoveSimpatizante={simpatizantesHandlers.handleRemove}
-      />
-
       {/* Dialog para continuar con dominical */}
       {showContinuarDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -820,8 +737,8 @@ export default function ConteoPage() {
                 <div className="text-xs text-gray-500">
                   H: {datosServicioBase.hermanos} | M:{' '}
                   {datosServicioBase.hermanas} | N: {datosServicioBase.ninos} |
-                  A: {datosServicioBase.adolescentes} | S:{' '}
-                  {datosServicioBase.simpatizantes}
+                  A: {datosServicioBase.adolescentes} | Am:{' '}
+                  {datosServicioBase.amigos}
                 </div>
               </div>
             )}

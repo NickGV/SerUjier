@@ -74,14 +74,12 @@ export interface DatosServicioBase {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
   total: number;
   servicio: string;
-  simpatizantesAsistieron: Array<MiembroSimplificado>;
-  visitasAsistieron: Array<MiembroSimplificado>;
+  amigosAsistieron: Array<MiembroSimplificado>;
   miembrosAsistieron: MiembrosAsistieron;
   hermanosVisitasAsistieron: Array<MiembroSimplificado>;
 }

@@ -6,7 +6,7 @@ export type ExportFormat = 'excel' | 'pdf';
 export interface DetailExportRow {
   nombre: string;
   categoria: string;
-  tipo: 'miembro' | 'simpatizante';
+  tipo: 'miembro' | 'amigo';
   estado: 'Asistió' | 'Faltó';
 }
 
@@ -17,7 +17,6 @@ export interface DetailWorkbookInput {
 }
 
 export interface ListExportRow extends HistorialRecord {
-  visitas: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -31,8 +30,7 @@ export interface ListStatsInput {
   totalHermanas: number;
   totalNinos: number;
   totalAdolescentes: number;
-  totalSimpatizantes: number;
-  totalVisitas: number;
+  totalAmigos: number;
   totalHeRestauracion: number;
   totalHermanosVisitas: number;
   granTotal: number;
@@ -54,13 +52,11 @@ export interface ListWorkbookInput {
     hermanas: number;
     ninos: number;
     adolescentes: number;
-    simpatizantes: number;
-    visitas: number;
+    amigos: number;
     heRestauracion: number;
     hermanosVisitas: number;
     totalAsistentes: number;
-    simpatizantesAsistieron: string;
-    visitasAsistieron: string;
+    amigosAsistieron: string;
     hermanosAsistieron: string;
     hermanasAsistieron: string;
     ninosAsistieron: string;
@@ -86,8 +82,7 @@ export interface ListPdfRecord {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas?: number;
+  amigos: number;
   heRestauracion?: number;
   hermanosVisitas?: number;
   total: number;

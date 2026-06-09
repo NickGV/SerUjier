@@ -21,13 +21,11 @@ export interface HistorialRecord {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas?: number;
+  amigos: number;
   heRestauracion?: number;
   hermanosVisitas?: number;
   total: number;
-  simpatizantesAsistieron?: MiembroSimplificado[];
-  visitasAsistieron?: MiembroSimplificado[];
+  amigosAsistieron?: MiembroSimplificado[];
   miembrosAsistieron?: MiembrosAsistieron;
   hermanosVisitasAsistieron?: Array<{
     id: string;

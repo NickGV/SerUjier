@@ -16,8 +16,7 @@ interface UseConteoCountersProps {
     hermanas?: number;
     ninos?: number;
     adolescentes?: number;
-    simpatizantes?: number;
-    visitas?: number;
+    amigos?: number;
     heRestauracion?: number;
     hermanosVisitas?: number;
     miembrosAsistieron?: {
@@ -27,8 +26,7 @@ interface UseConteoCountersProps {
       adolescentes?: MiembroSimplificado[];
       heRestauracion?: MiembroSimplificado[];
     };
-    simpatizantesAsistieron?: { id: string; nombre: string }[];
-    visitasAsistieron?: { id: string; nombre: string }[];
+    amigosAsistieron?: { id: string; nombre: string }[];
     hermanosVisitasAsistieron?: {
       id: string;
       nombre: string;
@@ -67,11 +65,8 @@ export function useConteoCounters({
       case 'adolescentes':
         updates.adolescentes = newValue;
         break;
-      case 'simpatizantes':
-        updates.simpatizantesCount = newValue;
-        break;
-      case 'visitas':
-        updates.visitasCount = newValue;
+      case 'amigos':
+        updates.amigosCount = newValue;
         break;
       case 'heRestauracion':
         updates.heRestauracionCount = newValue;
@@ -163,34 +158,19 @@ export function useConteoCounters({
         : [],
     },
     {
-      key: 'simpatizantes',
-      label: 'Simpatizantes',
-      value: conteoState.simpatizantesCount,
-      setter: (value: number) => updateConteo({ simpatizantesCount: value }),
-      color: CATEGORIA_COLORS.simpatizantes,
-      categoria: 'simpatizantes',
+      key: 'amigos',
+      label: 'Amigos',
+      value: conteoState.amigosCount,
+      setter: (value: number) => updateConteo({ amigosCount: value }),
+      color: CATEGORIA_COLORS.amigos,
+      categoria: 'amigos',
       baseValue: conteoState.modoConsecutivo
-        ? datosServicioBase?.simpatizantes || 0
+        ? datosServicioBase?.amigos || 0
         : 0,
       baseMiembros: conteoState.modoConsecutivo
-        ? datosServicioBase?.simpatizantesAsistieron || []
+        ? datosServicioBase?.amigosAsistieron || []
         : [],
-      miembrosDelDia: conteoState.simpatizantesDelDia,
-    },
-    {
-      key: 'visitas',
-      label: 'Visitas',
-      value: conteoState.visitasCount || 0,
-      setter: (value: number) => updateConteo({ visitasCount: value }),
-      color: CATEGORIA_COLORS.visitas,
-      categoria: 'visitas',
-      baseValue: conteoState.modoConsecutivo
-        ? datosServicioBase?.visitas || 0
-        : 0,
-      baseMiembros: conteoState.modoConsecutivo
-        ? datosServicioBase?.visitasAsistieron || []
-        : [],
-      miembrosDelDia: conteoState.visitasDelDia || [],
+      miembrosDelDia: conteoState.amigosDelDia,
     },
     {
       key: 'hermanosVisitas',

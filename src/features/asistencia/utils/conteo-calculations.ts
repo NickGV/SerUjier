@@ -8,12 +8,10 @@ export interface HistorialDataForCalculation {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas?: number;
+  amigos: number;
   heRestauracion?: number;
   hermanosVisitas?: number;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>;
-  visitasAsistieron?: Array<{ id: string; nombre: string }>;
+  amigosAsistieron?: Array<{ id: string; nombre: string }>;
   miembrosAsistieron?: {
     hermanos?: Array<{ id: string; nombre: string }>;
     hermanas?: Array<{ id: string; nombre: string }>;
@@ -33,8 +31,7 @@ export interface ManualCounters {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -57,9 +54,7 @@ export function calculateManualCounters(
   const ninosConNombre = historialData.miembrosAsistieron?.ninos?.length || 0;
   const adolescentesConNombre =
     historialData.miembrosAsistieron?.adolescentes?.length || 0;
-  const simpatizantesConNombre =
-    historialData.simpatizantesAsistieron?.length || 0;
-  const visitasConNombre = historialData.visitasAsistieron?.length || 0;
+  const amigosConNombre = historialData.amigosAsistieron?.length || 0;
   const heRestauracionConNombre =
     historialData.miembrosAsistieron?.heRestauracion?.length || 0;
   const hermanosVisitasConNombre =
@@ -74,11 +69,7 @@ export function calculateManualCounters(
       0,
       historialData.adolescentes - adolescentesConNombre
     ),
-    simpatizantes: Math.max(
-      0,
-      historialData.simpatizantes - simpatizantesConNombre
-    ),
-    visitas: Math.max(0, (historialData.visitas || 0) - visitasConNombre),
+    amigos: Math.max(0, historialData.amigos - amigosConNombre),
     heRestauracion: Math.max(
       0,
       (historialData.heRestauracion || 0) - heRestauracionConNombre
@@ -100,8 +91,7 @@ export function calculateManualCounters(
 export function calculateTotalAttendance(
   counters: ManualCounters,
   namedAttendees: {
-    simpatizantes: number;
-    visitas: number;
+    amigos: number;
     hermanos: number;
     hermanas: number;
     ninos: number;
@@ -115,12 +105,10 @@ export function calculateTotalAttendance(
     counters.hermanas +
     counters.ninos +
     counters.adolescentes +
-    counters.simpatizantes +
-    counters.visitas +
+    counters.amigos +
     counters.heRestauracion +
     counters.hermanosVisitas +
-    namedAttendees.simpatizantes +
-    namedAttendees.visitas +
+    namedAttendees.amigos +
     namedAttendees.hermanos +
     namedAttendees.hermanas +
     namedAttendees.ninos +

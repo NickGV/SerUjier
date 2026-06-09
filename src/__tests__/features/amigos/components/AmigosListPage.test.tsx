@@ -1,9 +1,31 @@
+import { type ReactNode } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AmigosListPage from '@/features/amigos/pages/AmigosListPage';
 import { useAmigos } from '@/features/amigos/hooks/use-amigos';
 import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { useSearch } from '@/shared/hooks/use-search';
 import { type Amigo } from '@/types/amigos';
+
+// Types for mock UI components
+interface MockStyled {
+  children?: ReactNode;
+  className?: string;
+}
+interface MockButton extends MockStyled {
+  onClick?: () => void;
+  disabled?: boolean;
+}
+interface MockInput extends MockStyled {
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  'aria-label'?: string;
+}
+interface MockDialog {
+  children?: ReactNode;
+  open?: boolean;
+}
 
 // Mock hooks
 const mockAddAmigo = jest.fn();
@@ -43,7 +65,7 @@ jest.mock('@/shared/hooks/use-search', () => ({
 }));
 
 jest.mock('@/shared/ui/button', () => ({
-  Button: ({ children, onClick, disabled, className }: any) => (
+  Button: ({ children, onClick, disabled, className }: MockButton) => (
     <button onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
@@ -51,22 +73,22 @@ jest.mock('@/shared/ui/button', () => ({
 }));
 
 jest.mock('@/shared/ui/badge', () => ({
-  Badge: ({ children, className }: any) => (
+  Badge: ({ children, className }: MockStyled) => (
     <span className={className}>{children}</span>
   ),
 }));
 
 jest.mock('@/shared/ui/card', () => ({
-  Card: ({ children, className }: any) => (
+  Card: ({ children, className }: MockStyled) => (
     <div className={className}>{children}</div>
   ),
-  CardContent: ({ children, className }: any) => (
+  CardContent: ({ children, className }: MockStyled) => (
     <div className={className}>{children}</div>
   ),
-  CardHeader: ({ children, className }: any) => (
+  CardHeader: ({ children, className }: MockStyled) => (
     <div className={className}>{children}</div>
   ),
-  CardTitle: ({ children, className }: any) => (
+  CardTitle: ({ children, className }: MockStyled) => (
     <h2 className={className}>{children}</h2>
   ),
 }));
@@ -79,7 +101,7 @@ jest.mock('@/shared/ui/input', () => ({
     disabled,
     className,
     'aria-label': ariaLabel,
-  }: any) => (
+  }: MockInput) => (
     <input
       placeholder={placeholder}
       value={value}
@@ -92,39 +114,59 @@ jest.mock('@/shared/ui/input', () => ({
 }));
 
 jest.mock('@/shared/ui/alert-dialog', () => ({
-  AlertDialog: ({ children, open }: any) =>
+  AlertDialog: ({ children, open }: MockDialog) =>
     open ? <div>{children}</div> : null,
-  AlertDialogContent: ({ children }: any) => <div>{children}</div>,
-  AlertDialogHeader: ({ children }: any) => <div>{children}</div>,
-  AlertDialogTitle: ({ children }: any) => <h3>{children}</h3>,
-  AlertDialogDescription: ({ children }: any) => <p>{children}</p>,
-  AlertDialogFooter: ({ children }: any) => <div>{children}</div>,
-  AlertDialogCancel: ({ children, onClick, disabled }: any) => (
+  AlertDialogContent: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogHeader: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogTitle: ({ children }: { children?: ReactNode }) => (
+    <h3>{children}</h3>
+  ),
+  AlertDialogDescription: ({ children }: { children?: ReactNode }) => (
+    <p>{children}</p>
+  ),
+  AlertDialogFooter: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogCancel: ({ children, onClick, disabled }: MockButton) => (
     <button onClick={onClick} disabled={disabled}>
       {children}
     </button>
   ),
-  AlertDialogAction: ({ children, onClick, disabled, className }: any) => (
+  AlertDialogAction: ({
+    children,
+    onClick,
+    disabled,
+    className,
+  }: MockButton & MockStyled) => (
     <button onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
   ),
-  AlertDialogTrigger: ({ children }: any) => <div>{children}</div>,
+  AlertDialogTrigger: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('@/shared/ui/dialog', () => ({
-  Dialog: ({ children, open }: any) => (open ? <div>{children}</div> : null),
-  DialogContent: ({ children, className }: any) => (
+  Dialog: ({ children, open }: MockDialog) =>
+    open ? <div>{children}</div> : null,
+  DialogContent: ({ children, className }: MockStyled) => (
     <div className={className}>{children}</div>
   ),
-  DialogHeader: ({ children }: any) => <div>{children}</div>,
-  DialogTitle: ({ children }: any) => <h3>{children}</h3>,
+  DialogHeader: ({ children }: { children?: ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: { children?: ReactNode }) => <h3>{children}</h3>,
 }));
 
 jest.mock('lucide-react', () => ({
   Loader2: () => <span>Loader2</span>,
   Plus: () => <span>Plus</span>,
-  RefreshCw: ({ className }: any) => (
+  RefreshCw: ({ className }: { className?: string }) => (
     <span className={className}>RefreshCw</span>
   ),
   Search: () => <span>SearchIcon</span>,

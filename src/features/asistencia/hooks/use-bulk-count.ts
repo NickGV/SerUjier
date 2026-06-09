@@ -13,8 +13,7 @@ const initialBulkCounts: BulkCounts = {
   hermanas: '',
   ninos: '',
   adolescentes: '',
-  simpatizantes: '',
-  visitas: '',
+  amigos: '',
   heRestauracion: '',
   hermanosVisitas: '',
 };
@@ -29,8 +28,7 @@ export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
       hermanas: parseInt(bulkCounts.hermanas) || 0,
       ninos: parseInt(bulkCounts.ninos) || 0,
       adolescentes: parseInt(bulkCounts.adolescentes) || 0,
-      simpatizantes: parseInt(bulkCounts.simpatizantes) || 0,
-      visitas: parseInt(bulkCounts.visitas) || 0,
+      amigos: parseInt(bulkCounts.amigos) || 0,
       heRestauracion: parseInt(bulkCounts.heRestauracion) || 0,
       hermanosVisitas: parseInt(bulkCounts.hermanosVisitas) || 0,
     };
@@ -40,8 +38,7 @@ export function useBulkCount({ conteoState, updateConteo }: UseBulkCountProps) {
       hermanas: conteoState.hermanas + counts.hermanas,
       ninos: conteoState.ninos + counts.ninos,
       adolescentes: conteoState.adolescentes + counts.adolescentes,
-      simpatizantesCount: conteoState.simpatizantesCount + counts.simpatizantes,
-      visitasCount: (conteoState.visitasCount || 0) + counts.visitas,
+      amigosCount: conteoState.amigosCount + counts.amigos,
       heRestauracionCount:
         conteoState.heRestauracionCount + counts.heRestauracion,
       hermanosVisitasCount:

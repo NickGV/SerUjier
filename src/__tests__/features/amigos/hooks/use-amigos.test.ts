@@ -69,7 +69,11 @@ describe('useAmigos', () => {
     it('adds fechaRegistro before calling addItem', async () => {
       const { result } = renderHook(() => useAmigos());
 
-      const testData: any = { nombre: 'Juan Perez', telefono: '123456789' };
+      const testData = {
+        nombre: 'Juan Perez',
+        telefono: '123456789',
+        migratedFrom: null as const,
+      };
       await act(async () => {
         await result.current.addAmigo(testData);
       });
@@ -92,7 +96,8 @@ describe('useAmigos', () => {
         await result.current.addAmigo({
           nombre: '',
           telefono: '123456789',
-        } as any);
+          migratedFrom: null,
+        });
       });
 
       expect(toast.error).toHaveBeenCalledWith('El nombre es requerido');
@@ -106,7 +111,8 @@ describe('useAmigos', () => {
         await result.current.addAmigo({
           nombre: '   ',
           telefono: '123456789',
-        } as any);
+          migratedFrom: null,
+        });
       });
 
       expect(toast.error).toHaveBeenCalledWith('El nombre es requerido');
@@ -124,7 +130,8 @@ describe('useAmigos', () => {
           result.current.addAmigo({
             nombre: 'Juan',
             notas: 'test',
-          } as any)
+            migratedFrom: null,
+          })
         ).rejects.toThrow('Firestore error');
       });
     });

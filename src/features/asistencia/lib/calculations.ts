@@ -9,8 +9,7 @@ export interface CategoryTotals {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
   total: number;
@@ -24,8 +23,7 @@ interface BaseValues {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
 }
@@ -57,8 +55,7 @@ function getBaseValues(
       hermanas: 0,
       ninos: 0,
       adolescentes: 0,
-      simpatizantes: 0,
-      visitas: 0,
+      amigos: 0,
       heRestauracion: 0,
       hermanosVisitas: 0,
     };
@@ -69,8 +66,7 @@ function getBaseValues(
     hermanas: datosServicioBase.hermanas || 0,
     ninos: datosServicioBase.ninos || 0,
     adolescentes: datosServicioBase.adolescentes || 0,
-    simpatizantes: datosServicioBase.simpatizantes || 0,
-    visitas: datosServicioBase.visitas || 0,
+    amigos: datosServicioBase.amigos || 0,
     heRestauracion: datosServicioBase.heRestauracion || 0,
     hermanosVisitas: datosServicioBase.hermanosVisitas || 0,
   };
@@ -115,16 +111,10 @@ export function calculateAllTotals(
     baseValues.adolescentes
   );
 
-  const simpatizantes = calculateCategoryTotal(
-    conteoState.simpatizantesCount,
-    conteoState.simpatizantesDelDia.length,
-    baseValues.simpatizantes
-  );
-
-  const visitas = calculateCategoryTotal(
-    conteoState.visitasCount || 0,
-    conteoState.visitasDelDia?.length || 0,
-    baseValues.visitas
+  const amigos = calculateCategoryTotal(
+    conteoState.amigosCount,
+    conteoState.amigosDelDia.length,
+    baseValues.amigos
   );
 
   const heRestauracion = calculateCategoryTotal(
@@ -144,8 +134,7 @@ export function calculateAllTotals(
     hermanas +
     ninos +
     adolescentes +
-    simpatizantes +
-    visitas +
+    amigos +
     heRestauracion +
     hermanosVisitas;
 
@@ -154,8 +143,7 @@ export function calculateAllTotals(
     hermanas,
     ninos,
     adolescentes,
-    simpatizantes,
-    visitas,
+    amigos,
     heRestauracion,
     hermanosVisitas,
     total,
@@ -169,12 +157,8 @@ function buildAsistentesArrays(
   conteoState: ConteoState,
   datosServicioBase: DatosServicioBase | null
 ) {
-  const baseSimpatizantes = conteoState.modoConsecutivo
-    ? datosServicioBase?.simpatizantesAsistieron || []
-    : [];
-
-  const baseVisitas = conteoState.modoConsecutivo
-    ? datosServicioBase?.visitasAsistieron || []
+  const baseAmigos = conteoState.modoConsecutivo
+    ? datosServicioBase?.amigosAsistieron || []
     : [];
 
   const baseMiembros = conteoState.modoConsecutivo
@@ -198,18 +182,11 @@ function buildAsistentesArrays(
     : [];
 
   return {
-    simpatizantesAsistieron: [
-      ...baseSimpatizantes,
-      ...conteoState.simpatizantesDelDia.map((s) => ({
-        id: s.id,
-        nombre: s.nombre,
-      })),
-    ],
-    visitasAsistieron: [
-      ...baseVisitas,
-      ...(conteoState.visitasDelDia || []).map((v) => ({
-        id: v.id,
-        nombre: v.nombre,
+    amigosAsistieron: [
+      ...baseAmigos,
+      ...conteoState.amigosDelDia.map((a) => ({
+        id: a.id,
+        nombre: a.nombre,
       })),
     ],
     miembrosAsistieron: {
@@ -271,13 +248,11 @@ export interface ConteoDataResult {
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  simpatizantes: number;
-  visitas: number;
+  amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
   total: number;
-  simpatizantesAsistieron: Array<{ id: string; nombre: string }>;
-  visitasAsistieron: Array<{ id: string; nombre: string }>;
+  amigosAsistieron: Array<{ id: string; nombre: string }>;
   miembrosAsistieron: {
     hermanos: Array<{ id: string; nombre: string }>;
     hermanas: Array<{ id: string; nombre: string }>;
@@ -320,8 +295,7 @@ export function buildConteoData(
     hermanas: totals.hermanas,
     ninos: totals.ninos,
     adolescentes: totals.adolescentes,
-    simpatizantes: totals.simpatizantes,
-    visitas: totals.visitas,
+    amigos: totals.amigos,
     heRestauracion: totals.heRestauracion,
     hermanosVisitas: totals.hermanosVisitas,
     total: totals.total,
