@@ -186,7 +186,7 @@ export default function ConteoPage() {
 
   // ========== HANDLERS AGRUPADOS ==========
 
-  // Handlers para amigos (unifica simpatizantes + visitas)
+  // Handlers para amigos
   const amigosHandlers = {
     handleAdd: (newAmigos: AmigoLite[]) => {
       updateConteo({
@@ -631,11 +631,7 @@ export default function ConteoPage() {
             miembrosHandlers.handleRemove(categoria as CategoriaPlural, id);
           } else if (categoria === 'heRestauracion') {
             heRestauracionHandlers.handleRemove(id);
-          } else if (
-            categoria === 'amigos' ||
-            categoria === 'visitas' ||
-            categoria === 'simpatizantes'
-          ) {
+          } else if (categoria === 'amigos') {
             amigosHandlers.handleRemove(id);
           } else if (categoria === 'hermanosVisitas') {
             hermanosVisitasHandlers.handleRemove(id);

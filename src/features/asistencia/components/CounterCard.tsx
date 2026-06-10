@@ -59,11 +59,7 @@ export function CounterCard({
                   variant="outline"
                   size="sm"
                   className="w-10 h-10 md:w-12 md:h-12 p-0 rounded-full bg-transparent border-gray-300 hover:bg-gray-50 active:bg-gray-100"
-                  onClick={() =>
-                    counter.categoria === 'simpatizantes'
-                      ? onOpenDialog('simpatizantes')
-                      : onOpenDialog(counter.categoria)
-                  }
+                  onClick={() => onOpenDialog(counter.categoria)}
                   aria-label={`Agregar ${counter.label}`}
                 >
                   <UserPlus className="w-5 h-5 md:w-6 md:h-6" />

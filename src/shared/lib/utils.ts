@@ -40,44 +40,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Placeholder data fetchers. Replace with Firestore queries using db from lib/firebase.
-export async function fetchSimpatizantes() {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'simpatizantes'));
-
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Array<{
-      id: string;
-      nombre: string;
-      telefono?: string;
-      notas?: string;
-      fechaRegistro: string;
-    }>;
-  } catch (error) {
-    console.error('Error fetching simpatizantes:', error);
-    throw error;
-  }
-}
-
-export async function addSimpatizante(simpatizante: {
-  nombre: string;
-  telefono?: string;
-  notas?: string;
-  fechaRegistro: string;
-}) {
-  try {
-    // Clean the data to remove undefined/empty values before sending to Firebase
-    const cleanedData = cleanDataForFirebase(simpatizante);
-    const docRef = await addDoc(collection(db, 'simpatizantes'), cleanedData);
-    return { id: docRef.id };
-  } catch (error) {
-    console.error('Error adding simpatizante:', error);
-    throw error;
-  }
-}
-
 export async function fetchMiembros() {
   try {
     const q = query(collection(db, 'miembros'), orderBy('nombre', 'asc'));
@@ -273,66 +235,6 @@ export async function getUjierById(id: string) {
     }
   } catch (error) {
     console.error('Error fetching ujier by id:', error);
-    throw error;
-  }
-}
-
-export async function updateSimpatizante(
-  id: string,
-  data: Partial<{
-    nombre: string;
-    telefono?: string;
-    notas?: string;
-  }>
-) {
-  try {
-    // Clean the data to remove undefined/empty values before sending to Firebase
-    const cleanedData = cleanDataForFirebase(data);
-
-    // Only proceed if there's actually data to update
-    if (Object.keys(cleanedData).length === 0) {
-      return;
-    }
-
-    const simpatizanteRef = doc(db, 'simpatizantes', id);
-    await updateDoc(simpatizanteRef, cleanedData);
-  } catch (error) {
-    console.error('Error updating simpatizante:', error);
-    throw error;
-  }
-}
-
-export async function getSimpatizanteById(id: string) {
-  try {
-    const simpatizanteRef = doc(db, 'simpatizantes', id);
-    const simpatizanteSnap = await getDoc(simpatizanteRef);
-
-    if (simpatizanteSnap.exists()) {
-      return {
-        id: simpatizanteSnap.id,
-        ...simpatizanteSnap.data(),
-      } as {
-        id: string;
-        nombre: string;
-        telefono?: string;
-        notas?: string;
-        fechaRegistro: string;
-      };
-    } else {
-      throw new Error('Simpatizante no encontrado');
-    }
-  } catch (error) {
-    console.error('Error fetching simpatizante by id:', error);
-    throw error;
-  }
-}
-
-export async function deleteSimpatizante(id: string) {
-  try {
-    const simpatizanteRef = doc(db, 'simpatizantes', id);
-    await deleteDoc(simpatizanteRef);
-  } catch (error) {
-    console.error('Error deleting simpatizante:', error);
     throw error;
   }
 }

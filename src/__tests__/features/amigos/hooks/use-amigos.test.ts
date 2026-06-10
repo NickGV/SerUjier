@@ -72,7 +72,7 @@ describe('useAmigos', () => {
       const testData = {
         nombre: 'Juan Perez',
         telefono: '123456789',
-        migratedFrom: null as const,
+        migratedFrom: null,
       };
       await act(async () => {
         await result.current.addAmigo(testData);

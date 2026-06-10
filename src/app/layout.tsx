@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     template: '%s | SerUjier',
   },
   description:
-    'Aplicación para gestión de ujieres, simpatizantes y miembros. Registra asistencias y administra información.',
-  keywords: ['ujier', 'iglesia', 'asistencia', 'gestión', 'simpatizantes'],
+    'Aplicación para gestión de ujieres, miembros y amigos. Registra asistencias y administra información.',
+  keywords: ['ujier', 'iglesia', 'asistencia', 'gestión', 'amigos'],
   authors: [{ name: 'SerUjier Team' }],
   creator: 'SerUjier',
   publisher: 'SerUjier',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     locale: 'es_ES',
     siteName: 'SerUjier',
     title: 'SerUjier - Gestión de Ujieres',
-    description: 'Aplicación para gestión de ujieres, simpatizantes y miembros',
+    description: 'Aplicación para gestión de ujieres, amigos y miembros',
   },
 };
 

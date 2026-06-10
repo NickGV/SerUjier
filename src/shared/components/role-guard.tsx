@@ -12,7 +12,7 @@ import type { Permission } from '@/shared/types/permisos';
 type AllowedRole = 'admin' | 'directiva' | 'ujier';
 type ProtectedRoute =
   | 'conteo'
-  | 'simpatizantes'
+  | 'amigos'
   | 'miembros'
   | 'historial'
   | 'ujieres'
@@ -29,7 +29,7 @@ interface RoleGuardProps {
 // Definir qué roles pueden acceder a qué rutas (fallback si no hay permisos asignados)
 const ROUTE_PERMISSIONS: Record<ProtectedRoute, AllowedRole[]> = {
   conteo: ['admin', 'directiva', 'ujier'],
-  simpatizantes: ['admin', 'directiva', 'ujier'],
+  amigos: ['admin', 'directiva', 'ujier'],
   miembros: ['admin', 'directiva', 'ujier'],
   historial: ['admin', 'directiva'],
   ujieres: ['admin', 'directiva'],

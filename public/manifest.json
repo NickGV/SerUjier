@@ -1,7 +1,7 @@
 {
   "name": "SerUjier - Gestión de Ujieres",
   "short_name": "SerUjier",
-  "description": "Aplicación para gestión de ujieres, simpatizantes y miembros. Registra asistencias, conteos y administra información.",
+  "description": "Aplicación para gestión de ujieres, amigos. Registra asistencias, conteos y administra información.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -50,10 +50,10 @@
       "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Simpatizantes",
-      "short_name": "Simpatizantes",
-      "description": "Gestionar simpatizantes",
-      "url": "/simpatizantes",
+      "name": "Amigos",
+      "short_name": "Amigos",
+      "description": "Gestionar amigos",
+      "url": "/amigos",
       "icons": [{ "src": "/icons/android-chrome-192x192.png", "sizes": "192x192" }]
     },
     {
