@@ -2,8 +2,6 @@
 // Formato: modulo.accion
 
 export const MODULES = [
-  'simpatizantes',
-  'visitas',
   'amigos',
   'heRestauracion',
   'miembros',
@@ -23,16 +21,6 @@ export type Action = (typeof ACTIONS)[number];
 
 // Todos los permisos posibles
 export const ALL_PERMISSIONS = [
-  // Simpatizantes
-  'simpatizantes.view',
-  'simpatizantes.create',
-  'simpatizantes.edit',
-  'simpatizantes.delete',
-  // Visitas
-  'visitas.view',
-  'visitas.create',
-  'visitas.edit',
-  'visitas.delete',
   // Amigos
   'amigos.view',
   'amigos.create',
@@ -66,18 +54,6 @@ export const PERMISSIONS_BY_MODULE: Record<
   Module,
   { permission: Permission; label: string }[]
 > = {
-  simpatizantes: [
-    { permission: 'simpatizantes.view', label: 'Ver simpatizantes' },
-    { permission: 'simpatizantes.create', label: 'Crear simpatizantes' },
-    { permission: 'simpatizantes.edit', label: 'Editar simpatizantes' },
-    { permission: 'simpatizantes.delete', label: 'Eliminar simpatizantes' },
-  ],
-  visitas: [
-    { permission: 'visitas.view', label: 'Ver visitas' },
-    { permission: 'visitas.create', label: 'Crear visitas' },
-    { permission: 'visitas.edit', label: 'Editar visitas' },
-    { permission: 'visitas.delete', label: 'Eliminar visitas' },
-  ],
   amigos: [
     { permission: 'amigos.view', label: 'Ver amigos' },
     { permission: 'amigos.create', label: 'Crear amigos' },
@@ -126,8 +102,6 @@ export const PERMISSIONS_BY_MODULE: Record<
 
 // Labels para los módulos
 export const MODULE_LABELS: Record<Module, string> = {
-  simpatizantes: 'Simpatizantes',
-  visitas: 'Visitas',
   amigos: 'Amigos',
   heRestauracion: 'Hermanos en Restauración',
   miembros: 'Miembros',

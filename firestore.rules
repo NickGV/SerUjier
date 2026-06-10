@@ -4,27 +4,23 @@ service cloud.firestore {
     match /ujieres/{ujierId} {
       allow read, write: if request.auth != null; // Allow authenticated users to read and write ujieres
     }
-    
-    match /simpatizantes/{simpatizanteId} {
-      allow read, write: if request.auth != null; // Allow authenticated users to read and write simpatizantes
+
+    match /amigos/{amigosId} {
+      allow read, write: if request.auth != null; // Allow authenticated users to read and write Amigos
     }
-    
-    match /visitas/{visitaId} {
-      allow read, write: if request.auth != null; // Allow authenticated users to read and write visitas
-    }
-    
+
     match /heRestauracion/{heRestauracionId} {
       allow read, write: if request.auth != null; // Allow authenticated users to read and write heRestauracion
     }
-    
+
     match /miembros/{miembroId} {
       allow read, write: if request.auth != null; // Allow authenticated users to read and write miembros
     }
-    
+
     match /conteo/{conteoId} {
       allow read, write: if request.auth != null; // Allow authenticated users to read and write conteo
     }
-    
+
     // Additional rules can be added here as needed
   }
 }

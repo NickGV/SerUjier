@@ -434,7 +434,7 @@ function UjieresContent() {
             <DialogHeader>
               <DialogTitle>Crear Nuevo Usuario</DialogTitle>
               <p className="text-sm text-gray-600">
-                Complete la informaci?n para crear una nueva cuenta de usuario
+                Complete la informacion para crear una nueva cuenta de usuario
               </p>
             </DialogHeader>
             <div className="space-y-4">
@@ -453,18 +453,18 @@ function UjieresContent() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Contrase?a Inicial *
+                  Contraseña Inicial *
                 </label>
                 <Input
                   type="password"
-                  placeholder="Contrase?a segura"
+                  placeholder="Contraseña segura"
                   value={newUsuario.password}
                   onChange={(e) =>
                     setNewUsuario({ ...newUsuario, password: e.target.value })
                   }
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  El usuario podr? cambiar su contrase?a despu?s del primer
+                  El usuario podrá cambiar su contraseña después del primer
                   acceso
                 </p>
               </div>
@@ -488,7 +488,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Ujier</div>
                           <div className="text-xs text-gray-500">
-                            Acceso b?sico: conteo y simpatizantes
+                            Acceso básico: conteo y amigos
                           </div>
                         </div>
                       </div>
@@ -499,7 +499,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Directiva</div>
                           <div className="text-xs text-gray-500">
-                            Acceso a reportes y gesti?n limitada
+                            Acceso a reportes y gestión limitada
                           </div>
                         </div>
                       </div>
@@ -587,7 +587,7 @@ function UjieresContent() {
                 </div>
                 {/* Action buttons */}
                 <div className="ml-4 flex flex-wrap gap-2">
-                  {/* Bot?n de permisos solo para admin */}
+                  {/* Botón de permisos solo para admin */}
                   {isAdmin && (
                     <Button
                       variant="outline"
@@ -669,7 +669,7 @@ function UjieresContent() {
             </h3>
             <p className="text-gray-500 mb-4">
               {searchTerm || filterRole !== 'todos'
-                ? 'Intente ajustar los filtros de b?squeda'
+                ? 'Intente ajustar los filtros de búsqueda'
                 : 'No hay usuarios registrados en el sistema'}
             </p>
           </CardContent>
@@ -713,12 +713,12 @@ function UjieresContent() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-red-600">
                 <AlertTriangle className="w-5 h-5" />
-                Confirmar Eliminaci?n
+                Confirmar Eliminación
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
-                ?Est?s seguro de que deseas eliminar este usuario? Esta acci?n
+                Estás seguro de que deseas eliminar este usuario? Esta acción no
                 no se puede deshacer.
               </p>
               <div className="flex gap-2">
@@ -772,11 +772,11 @@ function UjieresContent() {
 
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Contrase?a *
+                  Contraseña *
                 </label>
                 <Input
                   type="password"
-                  placeholder="Nueva contrase?a"
+                  placeholder="Nueva contraseña"
                   value={editingUsuario.password}
                   onChange={(e) =>
                     setEditingUsuario({
@@ -786,7 +786,7 @@ function UjieresContent() {
                   }
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Deja en blanco para mantener la contrase?a actual
+                  Deja en blanco para mantener la contraseña actual
                 </p>
               </div>
 
@@ -810,7 +810,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Ujier</div>
                           <div className="text-xs text-gray-500">
-                            Acceso b?sico: conteo y simpatizantes
+                            Acceso básico: conteo y amigos
                           </div>
                         </div>
                       </div>
@@ -821,7 +821,7 @@ function UjieresContent() {
                         <div>
                           <div className="font-medium">Directiva</div>
                           <div className="text-xs text-gray-500">
-                            Acceso a reportes y gesti?n limitada
+                            Acceso a reportes y gestión limitada
                           </div>
                         </div>
                       </div>

@@ -391,7 +391,7 @@ function UjierDetailContent() {
                     <div>
                       <div className="font-medium">Ujier</div>
                       <div className="text-xs text-gray-500">
-                        Acceso básico: conteo y simpatizantes
+                        Acceso basico: conteo y amigos
                       </div>
                     </div>
                   </div>
@@ -493,8 +493,8 @@ function UjierDetailContent() {
             <div className="text-sm max-w-xs">
               {ujier.rol === 'admin' && 'Acceso completo al sistema'}
               {ujier.rol === 'directiva' &&
-                'Dashboard, conteo, simpatizantes, historial, usuarios (limitado)'}
-              {ujier.rol === 'ujier' && 'Solo conteo y simpatizantes'}
+                'Dashboard, conteo, amigos, historial, usuarios (limitado)'}
+              {ujier.rol === 'ujier' && 'Solo conteo y amigos'}
             </div>
           </div>
           <div className="flex justify-between">

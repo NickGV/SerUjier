@@ -12,12 +12,14 @@ describe('permisos - amigos module', () => {
       expect(MODULES.includes('amigos')).toBe(true);
     });
 
-    it('still includes "simpatizantes" for backward compatibility', () => {
-      expect(MODULES.includes('simpatizantes')).toBe(true);
+    it('does NOT include removed "simpatizantes" module', () => {
+      expect((MODULES as readonly string[]).includes('simpatizantes')).toBe(
+        false
+      );
     });
 
-    it('still includes "visitas" for backward compatibility', () => {
-      expect(MODULES.includes('visitas')).toBe(true);
+    it('does NOT include removed "visitas" module', () => {
+      expect((MODULES as readonly string[]).includes('visitas')).toBe(false);
     });
   });
 
@@ -45,14 +47,22 @@ describe('permisos - amigos module', () => {
       expect(isValidPermission('amigos.delete')).toBe(true);
     });
 
-    it('still includes simpatizantes permissions for backward compat', () => {
-      expect(ALL_PERMISSIONS.includes('simpatizantes.view')).toBe(true);
-      expect(ALL_PERMISSIONS.includes('simpatizantes.create')).toBe(true);
+    it('does NOT include removed simpatizantes permissions', () => {
+      expect(
+        (ALL_PERMISSIONS as readonly string[]).includes('simpatizantes.view')
+      ).toBe(false);
+      expect(
+        (ALL_PERMISSIONS as readonly string[]).includes('simpatizantes.create')
+      ).toBe(false);
     });
 
-    it('still includes visitas permissions for backward compat', () => {
-      expect(ALL_PERMISSIONS.includes('visitas.view')).toBe(true);
-      expect(ALL_PERMISSIONS.includes('visitas.create')).toBe(true);
+    it('does NOT include removed visitas permissions', () => {
+      expect(
+        (ALL_PERMISSIONS as readonly string[]).includes('visitas.view')
+      ).toBe(false);
+      expect(
+        (ALL_PERMISSIONS as readonly string[]).includes('visitas.create')
+      ).toBe(false);
     });
   });
 
@@ -75,12 +85,16 @@ describe('permisos - amigos module', () => {
       );
     });
 
-    it('still has simpatizantes entry for backward compat', () => {
-      expect(PERMISSIONS_BY_MODULE.simpatizantes).toBeDefined();
+    it('does NOT have removed simpatizantes entry', () => {
+      expect(
+        (PERMISSIONS_BY_MODULE as Record<string, unknown>).simpatizantes
+      ).toBeUndefined();
     });
 
-    it('still has visitas entry for backward compat', () => {
-      expect(PERMISSIONS_BY_MODULE.visitas).toBeDefined();
+    it('does NOT have removed visitas entry', () => {
+      expect(
+        (PERMISSIONS_BY_MODULE as Record<string, unknown>).visitas
+      ).toBeUndefined();
     });
   });
 
@@ -89,12 +103,16 @@ describe('permisos - amigos module', () => {
       expect(MODULE_LABELS.amigos).toBe('Amigos');
     });
 
-    it('still maps "simpatizantes" for backward compat', () => {
-      expect(MODULE_LABELS.simpatizantes).toBe('Simpatizantes');
+    it('does NOT map removed "simpatizantes"', () => {
+      expect(
+        (MODULE_LABELS as Record<string, string | undefined>).simpatizantes
+      ).toBeUndefined();
     });
 
-    it('still maps "visitas" for backward compat', () => {
-      expect(MODULE_LABELS.visitas).toBe('Visitas');
+    it('does NOT map removed "visitas"', () => {
+      expect(
+        (MODULE_LABELS as Record<string, string | undefined>).visitas
+      ).toBeUndefined();
     });
   });
 });

@@ -99,14 +99,14 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
 export function canAccess(
   role: AppRole,
-  route: 'conteo' | 'simpatizantes' | 'historial' | 'ujieres' | 'admin'
+  route: 'conteo' | 'amigos' | 'historial' | 'ujieres' | 'admin'
 ) {
   if (role === 'admin') return true;
   if (role === 'directiva') {
-    return ['conteo', 'simpatizantes', 'historial', 'ujieres'].includes(route);
+    return ['conteo', 'amigos', 'historial', 'ujieres'].includes(route);
   }
   if (role === 'ujier') {
-    return ['conteo', 'simpatizantes'].includes(route);
+    return ['conteo', 'amigos'].includes(route);
   }
   return false;
 }

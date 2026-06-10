@@ -39,10 +39,9 @@ const PRECACHE_URLS = [
 // URLs que se cachearán en runtime
 const RUNTIME_CACHE_URLS = [
   "/conteo",
-  "/simpatizantes",
+  "/amigos",
   "/miembros",
   "/ujieres",
-  "/visitas",
   "/historial",
   "/he-restauracion",
 ];
