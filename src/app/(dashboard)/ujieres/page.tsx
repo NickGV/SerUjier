@@ -223,7 +223,8 @@ function UjieresContent() {
       toast.error('No tienes permiso para editar usuarios');
       return;
     }
-    setEditingUsuario({ ...usuario });
+    // No pre-cargar la contraseña hasheada para evitar doble hash al guardar
+    setEditingUsuario({ ...usuario, password: '' });
   };
 
   // Función para abrir el diálogo de permisos
@@ -243,8 +244,13 @@ function UjieresContent() {
 
     setIsSaving(true);
     try {
-      const { id, ...updateData } = editingUsuario;
-      // Excluir fechaCreacion del update ya que no debe cambiar
+      const { id, password, ...restData } = editingUsuario;
+      // Solo incluir la contraseña si el admin escribió una nueva
+      // Si está vacía, mantener la existente (no mandar el campo)
+      const updateData: Partial<Ujier> = { ...restData };
+      if (password.trim()) {
+        updateData.password = password;
+      }
       await updateUjier(id, updateData);
 
       // Recargar los datos
@@ -889,8 +895,7 @@ function UjieresContent() {
                   onClick={handleSaveUsuario}
                   disabled={
                     isSaving ||
-                    !editingUsuario.nombre.trim() ||
-                    !editingUsuario.password.trim()
+                    !editingUsuario.nombre.trim()
                   }
                 >
                   <Save className="w-4 h-4 mr-2" />

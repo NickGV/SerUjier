@@ -92,7 +92,7 @@ function UjierDetailContent() {
             setUjier(data);
             setEditedUsuario({
               nombre: data.nombre,
-              password: data.password,
+              password: '', // No precargar el hash para evitar doble hashing al guardar
               rol: data.rol,
               activo: data.activo,
             });
@@ -148,13 +148,17 @@ function UjierDetailContent() {
       if (canEditFullProfile) {
         // Admin puede cambiar todo
         dataToUpdate.nombre = editedUsuario.nombre;
-        dataToUpdate.password = editedUsuario.password;
+        if (editedUsuario.password.trim()) {
+          dataToUpdate.password = editedUsuario.password;
+        }
         dataToUpdate.rol = editedUsuario.rol;
         dataToUpdate.activo = editedUsuario.activo;
       } else if (canEditLimitedFields) {
         // Usuarios con permiso de editar pueden cambiar campos limitados
         dataToUpdate.nombre = editedUsuario.nombre;
-        dataToUpdate.password = editedUsuario.password;
+        if (editedUsuario.password.trim()) {
+          dataToUpdate.password = editedUsuario.password;
+        }
         if (canToggleStatus) {
           dataToUpdate.activo = editedUsuario.activo;
         }
