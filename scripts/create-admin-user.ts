@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { adminDb } from '@/shared/lib/firebase-admin';
 
 const createAdminUser = async () => {
@@ -10,31 +11,41 @@ const createAdminUser = async () => {
 
     if (!existingAdmin.empty) {
       const adminDoc = existingAdmin.docs[0];
-      await adminDoc.ref.update({
-        activo: true,
-        rol: 'admin',
-        updatedAt: new Date().toISOString(),
-      });
+      // Si el admin existe y tiene password en formato viejo, migrarlo
+      const adminData = adminDoc.data();
+      if (adminData.password && !adminData.password.startsWith('$2')) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await adminDoc.ref.update({
+          password: hashedPassword,
+          activo: true,
+          rol: 'admin',
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        await adminDoc.ref.update({
+          activo: true,
+          rol: 'admin',
+          updatedAt: new Date().toISOString(),
+        });
+      }
       return;
     }
 
-    // Crear contraseña encriptada usando el sistema de salt
-    const password = 'admin123';
-    const salt = 'ujier_salt_2025';
-    const encryptedPassword = btoa(password + salt);
-
-    // Crear usuario admin
+    // Crear usuario admin con bcrypt
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     const adminUser = {
       nombre: 'admin',
-      password: encryptedPassword,
+      password: hashedPassword,
       rol: 'admin',
       activo: true,
       email: 'admin@ujier.local',
       createdAt: new Date().toISOString(),
     };
 
-    const docRef = await adminDb.collection('usuarios').add(adminUser);
-  } catch (error) {}
+    await adminDb.collection('usuarios').add(adminUser);
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+  }
 };
 
 export { createAdminUser };
