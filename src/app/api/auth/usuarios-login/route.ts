@@ -1,71 +1,34 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { adminDb, adminAuth } from '@/shared/lib/firebase-admin';
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic';
 
-// TODO: Verificar si se puede usar el hashPassword de utils.ts, arreglar el update de password del ujier para que use esta encriptacion
-// const encryptPassword = (password: string): string => {
-//   // Usando btoa para encoding base64 simple + un salt
-//   const salt = "ujier_salt_2025"
-//   return btoa(password + salt)
-// }
-
-// const verifyPassword = (password: string, encryptedPassword: string): boolean => {
-//   const salt = "ujier_salt_2025"
-//   return btoa(password + salt) === encryptedPassword
-// }
-
-const verifyPassword = (
-  password: string,
-  encryptedPassword: string,
-  userName: string
-): boolean => {
+const verifyPassword = (password: string, storedPassword: string): boolean => {
   try {
-    // Según el sistema original, las contraseñas se generan como:
-    // 1. Tomar el primer nombre en minúsculas sin tildes
-    // 2. Agregar un punto: "nombre."
-    // 3. Encriptar con btoa(password + "ujier_salt_2025")
-
-    const salt = 'ujier_salt_2025';
-
-    // Normalizar el nombre de usuario para generar la contraseña base
-    const primerNombre = userName.split(' ')[0].toLowerCase();
-    const nombreNormalizado = primerNombre
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Quitar tildes
-      .replace(/[^a-z]/g, ''); // Solo letras minúsculas
-
-    const passwordEsperada = nombreNormalizado + '.';
-
-    // Verificar si la contraseña ingresada coincide con la esperada
-    if (password === passwordEsperada) {
-      // Encriptar la contraseña esperada y compararla con la almacenada
-      const encryptedExpected = Buffer.from(
-        passwordEsperada + salt,
-        'utf8'
-      ).toString('base64');
-      return encryptedExpected === encryptedPassword;
+    // Try bcrypt first (new format)
+    if (storedPassword.startsWith('$2')) {
+      return bcrypt.compareSync(password, storedPassword);
     }
-
-    // Fallback: intentar con la contraseña ingresada directamente
-    const encryptedInput = Buffer.from(password + salt, 'utf8').toString(
-      'base64'
-    );
-    return encryptedInput === encryptedPassword;
-  } catch (error) {
-    console.error('Error verifying password:', error);
-    return false;
+  } catch {
+    // fall through to old format
   }
+
+  // Fallback: old base64 format
+  const salt = 'ujier_salt_2025';
+  const encryptedInput = Buffer.from(password + salt, 'utf8').toString('base64');
+  return encryptedInput === storedPassword;
 };
 
 export async function GET() {
   try {
     const usuariosSnapshot = await adminDb.collection('usuarios').get();
-    const usuarios = usuariosSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const usuarios = usuariosSnapshot.docs.map((doc) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...data } = doc.data();
+      return { id: doc.id, ...data };
+    });
 
     return NextResponse.json({ usuarios });
   } catch (error) {
@@ -110,16 +73,25 @@ export async function POST(req: Request) {
     }
 
     // Verificar contraseña
-    const isValidPassword = verifyPassword(
-      password,
-      userData.password,
-      userData.nombre
-    );
+    const isValidPassword = verifyPassword(password, userData.password);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Contraseña incorrecta' },
         { status: 401 }
       );
+    }
+
+    // Si la contraseña aún está en formato base64 antiguo, migrarla a bcrypt
+    if (!userData.password.startsWith('$2')) {
+      try {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        await adminDb.collection('usuarios').doc(userDoc.id).update({
+          password: hashedPassword,
+        });
+      } catch (migrationError) {
+        console.error('Error migrating password to bcrypt:', migrationError);
+        // Non-blocking: login still succeeds even if migration fails
+      }
     }
 
     // Preparar datos del usuario (sin la contraseña)

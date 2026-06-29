@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { adminAuth, adminDb } from '@/shared/lib/firebase-admin';
 import { Buffer } from 'buffer';
 
@@ -32,16 +33,43 @@ export async function POST(req: Request) {
     const userDoc = snapshot.docs[0];
     const userData = userDoc.data();
 
-    // Decode the password from Base64 and compare
-    const storedPassword = Buffer.from(userData.password, 'base64').toString(
-      'utf-8'
-    );
+    const storedPassword = userData.password;
 
-    if (storedPassword !== password) {
+    // First try bcrypt (new format)
+    let isValid = false;
+    if (storedPassword.startsWith('$2')) {
+      try {
+        isValid = bcrypt.compareSync(password, storedPassword);
+      } catch {
+        isValid = false;
+      }
+    }
+
+    // Fallback: old base64 format
+    if (!isValid) {
+      const decoded = Buffer.from(storedPassword, 'base64').toString('utf-8');
+      const salt = 'ujier_salt_2025';
+      isValid = decoded === password + salt;
+    }
+
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Usuario o contraseña incorrectos' },
         { status: 401 }
       );
+    }
+
+    // Si la contraseña aún está en formato base64 antiguo, migrarla a bcrypt
+    if (!storedPassword.startsWith('$2')) {
+      try {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        await adminDb.collection('usuarios').doc(userDoc.id).update({
+          password: hashedPassword,
+        });
+      } catch (migrationError) {
+        console.error('Error migrating password to bcrypt:', migrationError);
+        // Non-blocking: login still succeeds even if migration fails
+      }
     }
 
     if (!userData.activo && userData.rol !== 'admin') {

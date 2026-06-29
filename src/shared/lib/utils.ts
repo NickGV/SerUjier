@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
@@ -29,11 +30,9 @@ function cleanDataForFirebase<T extends Record<string, unknown>>(
   return cleaned as Partial<T>;
 }
 
-// Función para hashear contraseñas (mismo algoritmo que en la API de login)
+// Hashea contraseñas usando bcrypt (en reemplazo del antiguo base64 + salt)
 export function hashPassword(password: string): string {
-  const salt = 'ujier_salt_2025';
-  // Usar btoa para compatibilidad con el navegador
-  return btoa(password + salt);
+  return bcrypt.hashSync(password, 10);
 }
 
 export function cn(...inputs: ClassValue[]) {
