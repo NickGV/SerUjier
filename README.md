@@ -9,6 +9,9 @@ Ujier App es una plataforma web construida con Next.js para gestionar ujieres, s
 - **Herramientas de conteo** que permiten registrar asistentes por categoría, agrupar registros masivos y llevar control de simpatizantes, visitas y apartados.
 - **Historial enriquecido** con filtros por fecha, servicio y ujier, además de exportaciones en CSV, Excel y reportes de texto detallados.
 - **Gestión de ujieres y simpatizantes** con activación/desactivación, edición de perfiles y control de estados.
+- **Gestión de Amigos** con CRUD completo, búsqueda y exportación a CSV.
+- **Gestión de Hermanos en Restauración** con CRUD completo y búsqueda.
+- **Sistema de permisos por roles** configurable: cada módulo y acción (ver, crear, editar, eliminar) se asigna por usuario, no solo por rol.
 - **Experiencia PWA y mobile-first** gracias a Tailwind CSS, componentes de Radix UI y service worker para instalación y uso offline básico.
 - **Arquitectura modular y escalable** con componentes reutilizables, hooks centralizados y tipado TypeScript robusto.
 
@@ -25,23 +28,32 @@ Ujier App es una plataforma web construida con Next.js para gestionar ujieres, s
 
 ```
 src/
+├─ __tests__/           # Tests unitarios y de integración
 ├─ app/                 # Rutas de Next.js para páginas y APIs
 │  ├─ (auth)/           # Flujos de autenticación
 │  ├─ (dashboard)/      # Módulos del panel principal
-│  └─ api/              # Endpoints serverless (auth, ujieres, users, health)
+│  └─ api/              # Endpoints serverless (auth, users, health)
+├─ config/              # Configuración (feature-flags)
+├─ features/            # Módulos de negocio
+│  ├─ amigos/           # CRUD de Amigos con exportación CSV
+│  ├─ asistencia/       # Sistema de conteo y diálogos
+│  ├─ he-restauracion/  # Gestión de Hermanos en Restauración
+│  ├─ historial/        # Historial y reportes
+│  ├─ miembros/         # Gestión de miembros
+│  └─ ujieres/          # Gestión de ujieres
+├─ metadata/            # Metadatos SEO por módulo
+├─ middleware.ts        # Middleware de autenticación y sesión
+├─ services/            # Servicios transversales (migraciones)
 ├─ shared/              # Componentes y utilidades compartidas
-│  ├─ components/       # Componentes UI reutilizables (SelectableListDialog)
-│  ├─ hooks/            # Hooks genéricos (useFirebaseCRUD, useDebounce)
+│  ├─ components/       # Componentes UI reutilizables
+│  ├─ contexts/         # Contextos de React (usuario, tema)
 │  ├─ firebase/         # Módulos Firebase especializados
-│  ├─ types/            # Tipos centralizados
+│  ├─ hooks/            # Hooks genéricos (useSearch, usePermisos, etc.)
+│  ├─ types/            # Tipos centralizados (roles, permisos)
 │  ├─ ui/               # Componentes UI base (shadcn/ui)
 │  └─ lib/              # Utilidades y helpers
-├─ features/            # Módulos de negocio
-│  ├─ asistencia/       # Sistema de conteo y diálogos
-│  ├─ simpatizantes/    # Gestión de simpatizantes
-│  ├─ miembros/         # Gestión de miembros
-│  ├─ ujieres/          # Gestión de ujieres
-│  └─ historial/        # Historial y reportes
+└─ types/               # Tipos específicos (Amigos)
+docs/                   # Documentación de usuario
 public/
 ├─ manifest.json        # Configuración PWA
 ├─ sw.js                # Service worker personalizado
@@ -107,17 +119,28 @@ Para generar una build de producción ejecuta `npm run build` y luego `npm start
 - **SelectableListDialog**: Componente genérico para selección de items con búsqueda, filtrado y selección múltiple
 - **CounterCard**: Tarjeta para mostrar contadores con acciones
 - **BulkCountDialog**: Diálogo para conteo masivo
+- **BottomNavigation**: Navegación inferior responsiva con acceso rápido a módulos
+- **PWA Components**: `InstallPrompt`, `PWAUpdatePrompt`, `PWARegister` para experiencia de instalación
+- **ThemeProvider**: Proveedor de tema claro/oscuro
 
 ### Hooks Compartidos
 
 - **useFirebaseCRUD**: Hook genérico para operaciones CRUD con Firebase
+- **usePermisos**: Hook para verificar permisos por módulo y acción (ver, crear, editar, eliminar)
+- **useModulePermissions**: Hook simplificado por módulo (`canView`, `canCreate`, `canEdit`, `canDelete`)
+- **useSearch**: Hook de búsqueda con filtrado en tiempo real
 - **useDebounce**: Hook para manejar delayed updates
-- **useSimpatizantes**: Hook específico para gestión de simpatizantes
-- **useMiembros**: Hook específico para gestión de miembros
-- **useUjieres**: Hook específico para gestión de ujieres
+- **useAsyncAction**: Hook para manejar estados de carga en acciones asíncronas
+
+### Sistema de Roles y Permisos
+
+- **Permisos granulares**: cada módulo (amigos, heRestauracion, miembros, historial, usuarios) tiene permisos independientes de ver, crear, editar y eliminar.
+- **Roles base**: `admin`, `directiva`, `ujier` — el admin tiene todos los permisos; los demás roles son configurables por módulo.
+- **Persistencia**: los permisos personalizados se guardan en Firestore y se sincronizan en tiempo real.
 
 ### Módulos Firebase
 
+- **permisos.ts**: Gestión de permisos por usuario
 - **simpatizantes.ts**: CRUD operations para simpatizantes
 - **miembros.ts**: CRUD operations para miembros
 - **historial.ts**: CRUD operations para historial
@@ -155,4 +178,6 @@ Para generar una build de producción ejecuta `npm run build` y luego `npm start
 
 ## Licencia
 
-Este proyecto está licenciado bajo MIT. Consulta el archivo `LICENSE` para más información.
+Este proyecto está licenciado bajo **MIT**. Consulta el archivo `LICENSE` para más información.
+
+**Uso comercial**: Si utilizas este proyecto en un producto o servicio comercial, agradecemos — aunque no es un requisito legal — que incluyas una atribución visible al repositorio original: [https://github.com/tuusuario/ser-ujier](https://github.com/tuusuario/ser-ujier). La licencia MIT ya exige conservar el copyright y el texto de la licencia en cualquier redistribución; este es solo un gesto adicional para apoyar el proyecto.
