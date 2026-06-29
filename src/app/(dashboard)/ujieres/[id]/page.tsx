@@ -142,7 +142,7 @@ function UjierDetailContent() {
     if (!ujier) return;
 
     try {
-      const dataToUpdate: Partial<Ujier> = {};
+      const dataToUpdate: Partial<Ujier> & { password?: string } = {};
 
       if (canEditFullProfile) {
         // Admin puede cambiar todo

@@ -247,8 +247,10 @@ function UjieresContent() {
       const { id, password, ...restData } = editingUsuario;
       // Solo incluir la contraseña si el admin escribió una nueva
       // Si está vacía, mantener la existente (no mandar el campo)
-      const updateData: Partial<Ujier> = { ...restData };
-      if (password.trim()) {
+      const updateData: Partial<Ujier> & { password?: string } = {
+        ...restData,
+      };
+      if (password?.trim()) {
         updateData.password = password;
       }
       await updateUjier(id, updateData);
@@ -893,10 +895,7 @@ function UjieresContent() {
                 <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   onClick={handleSaveUsuario}
-                  disabled={
-                    isSaving ||
-                    !editingUsuario.nombre.trim()
-                  }
+                  disabled={isSaving || !editingUsuario.nombre.trim()}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {isSaving ? 'Guardando...' : 'Guardar Cambios'}

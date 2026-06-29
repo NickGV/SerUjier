@@ -17,7 +17,9 @@ const verifyPassword = (password: string, storedPassword: string): boolean => {
 
   // Fallback: old base64 format
   const salt = 'ujier_salt_2025';
-  const encryptedInput = Buffer.from(password + salt, 'utf8').toString('base64');
+  const encryptedInput = Buffer.from(password + salt, 'utf8').toString(
+    'base64'
+  );
   return encryptedInput === storedPassword;
 };
 
