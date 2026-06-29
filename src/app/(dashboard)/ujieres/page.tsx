@@ -51,7 +51,7 @@ import { toast } from 'sonner';
 interface Ujier {
   id: string;
   nombre: string;
-  password: string;
+  password?: string;
   rol: 'admin' | 'directiva' | 'ujier';
   activo: boolean;
   fechaCreacion: string;

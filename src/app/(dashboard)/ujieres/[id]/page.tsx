@@ -31,7 +31,6 @@ import { useEffect, useState } from 'react';
 interface Ujier {
   id: string;
   nombre: string;
-  password: string;
   rol: 'admin' | 'directiva' | 'ujier';
   activo: boolean;
   fechaCreacion: string;
@@ -500,10 +499,6 @@ function UjierDetailContent() {
                 'Dashboard, conteo, amigos, historial, usuarios (limitado)'}
               {ujier.rol === 'ujier' && 'Solo conteo y amigos'}
             </div>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Contraseña:</span>
-            <span className="text-sm font-mono">{ujier.password}</span>
           </div>
         </CardContent>
       </Card>

@@ -137,13 +137,22 @@ export async function fetchUjieres() {
     const q = query(collection(db, 'usuarios'), orderBy('nombre', 'asc'));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Array<{
+    return querySnapshot.docs.map((doc) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...data } = doc.data() as {
+        nombre: string;
+        password: string;
+        rol: 'admin' | 'directiva' | 'ujier';
+        activo: boolean;
+        fechaCreacion: string;
+      };
+      return {
+        id: doc.id,
+        ...data,
+      };
+    }) as Array<{
       id: string;
       nombre: string;
-      password: string;
       rol: 'admin' | 'directiva' | 'ujier';
       activo: boolean;
       fechaCreacion: string;
@@ -219,13 +228,20 @@ export async function getUjierById(id: string) {
     const ujierSnap = await getDoc(ujierRef);
 
     if (ujierSnap.exists()) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...data } = ujierSnap.data() as {
+        nombre: string;
+        password: string;
+        rol: 'admin' | 'directiva' | 'ujier';
+        activo: boolean;
+        fechaCreacion: string;
+      };
       return {
         id: ujierSnap.id,
-        ...ujierSnap.data(),
+        ...data,
       } as {
         id: string;
         nombre: string;
-        password: string;
         rol: 'admin' | 'directiva' | 'ujier';
         activo: boolean;
         fechaCreacion: string;
