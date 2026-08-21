@@ -1,4 +1,8 @@
-import { type MiembroSimplificado, type HeRestauracion } from '@/shared/types';
+import {
+  type MiembroSimplificado,
+  type HeRestauracion,
+  type Miembro,
+} from '@/shared/types';
 import { type Amigo } from '@/types/amigos';
 
 // Usamos el tipo Amigo de @/types/amigos para mantener consistencia
@@ -112,14 +116,9 @@ export interface MiembrosDialogProps extends ConteoDialogProps {
   onClearAllMiembros: () => void;
 }
 
-// Representa un miembro completo disponible para seleccionar (subset del modelo Miembro)
-export interface MiembroExtended extends MiembroSimplificado {
-  telefono?: string;
-  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
-  notas?: string;
-  fechaRegistro?: string;
-  [key: string]: unknown; // Permitir propiedades adicionales
-}
+// Representa un miembro completo disponible para seleccionar.
+// Alias to the shared `Miembro` type (single source of truth).
+export type MiembroExtended = Miembro;
 
 export interface AsistentesDialogProps extends ConteoDialogProps {
   asistentes: AsistenteInfo[];

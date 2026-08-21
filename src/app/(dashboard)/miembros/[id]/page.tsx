@@ -19,7 +19,8 @@ import {
   getMiembroById,
   updateMiembro,
   deleteMiembro,
-} from '@/shared/lib/utils';
+} from '@/shared/firebase/miembros';
+import { type Miembro } from '@/shared/types';
 import {
   ArrowLeft,
   UserCheck,
@@ -36,15 +37,6 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
-
-interface Miembro {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
-  notas?: string;
-  fechaRegistro: string;
-}
 
 const MiembroDetail = () => {
   const { user } = useUser();
@@ -287,11 +279,16 @@ const MiembroDetail = () => {
                 Fecha de Registro
               </p>
               <p className="text-gray-600">
-                {new Date(miembro.fechaRegistro).toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {miembro.fechaRegistro
+                  ? new Date(miembro.fechaRegistro).toLocaleDateString(
+                      'es-ES',
+                      {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
+                  : 'N/A'}
               </p>
             </div>
           </div>
@@ -320,11 +317,13 @@ const MiembroDetail = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <div className="text-lg font-bold">
-                {Math.floor(
-                  (new Date().getTime() -
-                    new Date(miembro.fechaRegistro).getTime()) /
-                    (1000 * 60 * 60 * 24)
-                )}
+                {miembro.fechaRegistro
+                  ? Math.floor(
+                      (new Date().getTime() -
+                        new Date(miembro.fechaRegistro).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : 'N/A'}
               </div>
               <div className="text-slate-200 text-xs">Días como miembro</div>
             </div>

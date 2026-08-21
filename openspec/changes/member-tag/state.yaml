@@ -1,0 +1,37 @@
+change: member-tag
+store: openspec
+created: 2026-08-21
+preflight:
+  execution_mode: interactive
+  artifact_store: openspec
+  delivery_strategy: single-pr
+  review_budget_lines: 800
+delivery_resolution:
+  decided: 2026-08-21
+  outcome: chained-prs
+  chain_strategy: stacked-to-main
+  slices:
+    - "PR 1 / Slice A: backend — types, CRUD consolidation, esMiembro field, migration, service tests (tasks phases 1-5)"
+    - "PR 2 / Slice B: UI — Switch, Badge, membership filter, detail page, UI tests (tasks phases 6-8)"
+phases:
+  explore: done
+  proposal: done
+  spec: done
+  design: done
+  tasks: done
+  apply: in_progress  # Slice A (tasks phases 1-5) done and verified; Slice B (phases 6-8) pending
+  verify: in_progress  # Slice A verify-report.md: 0 CRITICAL, 2 WARNING (expected); Slice B verify pending
+  archive: pending
+product_decisions:
+  data_model: "boolean esMiembro (default false)"
+  scope: "consolidate duplicated Miembro type (4 files) and dual CRUD modules in this change"
+  legacy_data: "backfill script with prior backup; hermano/hermana default true, nino/adolescente default false, manual adjustment for adolescent members via UI"
+  tests: "seed first miembros test suite in this change (mirror amigos pattern)"
+proposal_confirmed_assumptions:
+  stats_grid: "unchanged, categoria-only"
+  default_list_view: "todos (membership filter starts unfiltered)"
+  membership_toggle_permission: "no new gate; anyone who can edit a miembro"
+  badge_scope: "Miembros list and detail page only, not attendance MiembrosDialog"
+  backfill_execution: "one-time, manual, admin credentials, not on deploy"
+notes:
+  - "Exploration finding 'corrupted src/shared/firebase/miembros.ts' was refuted by orchestrator verification (file is valid TS); duplication of CRUD modules and Miembro types is the real, verified risk."

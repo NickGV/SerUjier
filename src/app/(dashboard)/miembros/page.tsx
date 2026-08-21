@@ -7,7 +7,7 @@ import {
   deleteMiembro,
   fetchMiembros,
   updateMiembro,
-} from '@/shared/lib/utils';
+} from '@/shared/firebase/miembros';
 import { type Miembro } from '@/shared/types';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -56,11 +56,13 @@ export default function MiembrosPage() {
     nombre: string;
     telefono: string;
     categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
+    esMiembro: boolean;
     notas: string;
   }>({
     nombre: '',
     telefono: '',
     categoria: 'hermano',
+    esMiembro: false,
     notas: '',
   });
 
@@ -153,6 +155,7 @@ export default function MiembrosPage() {
           nombre: '',
           telefono: '',
           categoria: 'hermano',
+          esMiembro: false,
           notas: '',
         });
         setShowAddDialog(false);

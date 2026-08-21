@@ -32,10 +32,19 @@ export interface Miembro {
   nombre: string;
   telefono?: string;
   categoria: miembroCategoria;
+  esMiembro: boolean;
   notas?: string;
   fechaRegistro?: string;
   [key: string]: unknown; // Permitir propiedades adicionales
 }
+
+// Explicit write contract for miembros CRUD. A Pick (not an Omit of Miembro)
+// defeats the index signature above, so a write path that forgets
+// `esMiembro` fails type-check instead of silently compiling.
+export type MiembroInput = Pick<
+  Miembro,
+  'nombre' | 'telefono' | 'categoria' | 'esMiembro' | 'notas' | 'fechaRegistro'
+>;
 
 export interface MiembroSimplificado {
   id: string;
