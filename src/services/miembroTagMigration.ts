@@ -88,7 +88,7 @@ export async function runMiembroTagMigration(
       `[DRY RUN] Would update ${toUpdate.length} of ${totalScanned} documents (${totalSkipped} already tagged)`
     );
     return {
-      success: true,
+      success: errors.length === 0,
       totalScanned,
       totalUpdated: toUpdate.length,
       totalSkipped,
@@ -97,21 +97,40 @@ export async function runMiembroTagMigration(
   }
 
   if (options.execute) {
-    const batches = chunkArray(toUpdate, options.batchSize ?? 500);
+    // Minimal update payload: write only the field this migration owns so a
+    // concurrent edit to other fields on the same document is never reverted.
+    const minimalUpdates = toUpdate.map(({ id, data }) => ({
+      id,
+      data: { esMiembro: data.esMiembro as boolean },
+    }));
+    const batches = chunkArray(minimalUpdates, options.batchSize ?? 500);
     deps.log(
-      `Updating ${toUpdate.length} documents in ${batches.length} batch(es)...`
+      `Updating ${minimalUpdates.length} documents in ${batches.length} batch(es)...`
     );
 
+    let successfulUpdates = 0;
     for (let i = 0; i < batches.length; i++) {
-      await deps.writeBatch('miembros', batches[i]);
-      deps.log(`Wrote batch ${i + 1}/${batches.length}`);
+      const batch = batches[i];
+      try {
+        await deps.writeBatch('miembros', batch);
+        successfulUpdates += batch.length;
+        deps.log(`Wrote batch ${i + 1}/${batches.length}`);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        for (const document of batch) {
+          errors.push({ id: document.id, error: errorMsg });
+        }
+        deps.errorLog(
+          `Error writing batch ${i + 1}/${batches.length}: ${errorMsg}`
+        );
+      }
     }
 
-    deps.log(`Successfully updated ${toUpdate.length} documents`);
+    deps.log(`Successfully updated ${successfulUpdates} documents`);
     return {
       success: errors.length === 0,
       totalScanned,
-      totalUpdated: toUpdate.length,
+      totalUpdated: successfulUpdates,
       totalSkipped,
       errors,
     };

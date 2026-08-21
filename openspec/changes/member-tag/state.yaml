@@ -19,8 +19,8 @@ phases:
   spec: done
   design: done
   tasks: done
-  apply: in_progress  # Slice A (tasks phases 1-5) done and verified; Slice B (phases 6-8) pending
-  verify: in_progress  # Slice A verify-report.md: 0 CRITICAL, 2 WARNING (expected); Slice B verify pending
+  apply: done  # Slice A delivered as PR #15; Slice B (phases 6-8 + review follow-up fixes) implemented
+  verify: done  # Final verify: pass_with_warnings, 9/9 requirements, 15/15 scenarios, 0 CRITICAL
   archive: pending
 product_decisions:
   data_model: "boolean esMiembro (default false)"
