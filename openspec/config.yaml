@@ -3,8 +3,8 @@ schema: spec-driven
 context: |
   Tech stack: Next.js 15.4.8, React 19.1.1, TypeScript 5 (strict), Tailwind CSS v4, shadcn/ui, Firebase/Firestore
   Architecture: App Router pages under src/app/(dashboard)/; feature folders under src/features/{feature}/ (hooks + components + services + pages); shared types in src/shared/types/; Firebase CRUD via useFirebaseCRUD<T> hooks and src/shared/firebase/ modules
-  Testing: jest (`npm test`), tests mirror src/ under src/__tests__/
-  Style: ESLint via `npm run lint`, build via `npm run build` (next build)
+  Testing: jest (`pnpm test`), tests mirror src/ under src/__tests__/
+  Style: ESLint via `pnpm lint`, build via `pnpm build` (next build)
 
 rules:
   proposal:
@@ -23,10 +23,10 @@ rules:
       - Follow existing code patterns (amigos feature is the reference pattern)
       - UI copy in the app is Spanish (neutral); code identifiers and comments in English
     tdd: false
-    test_command: "npm test"
+    test_command: "pnpm test"
   verify:
-    test_command: "npm test"
-    build_command: "npm run build"
+    test_command: "pnpm test"
+    build_command: "pnpm build"
     coverage_threshold: 0
   archive:
     - Warn before merging destructive deltas

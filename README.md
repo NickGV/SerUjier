@@ -66,7 +66,7 @@ scripts/
 ## Requisitos previos
 
 - Node.js 18.18 o superior (recomendado 20 LTS).
-- npm 9+, pnpm 9+ o yarn 4 (elige tu gestor preferido).
+- pnpm 10+ (gestor de paquetes del proyecto; si tenés Corepack, `corepack enable` toma la versión fijada en `package.json`).
 - Cuenta y proyecto en Firebase con Authentication y Firestore habilitados.
 
 ## Variables de entorno
@@ -99,18 +99,23 @@ FIREBASE_SERVICE_ACCOUNT_BASE64= # Alternativa base64 al bloque anterior
    cd ser-ujier
    ```
 2. **Instalar dependencias**
+
+   Este proyecto usa **pnpm** como gestor de paquetes (fijado en el campo
+   `packageManager` de `package.json`). Es el mismo que usa el despliegue, así
+   que no mezcles npm o yarn: `pnpm-lock.yaml` es el único lockfile del repo.
+
    ```bash
-   npm install
-   # o pnpm install / yarn install
+   pnpm install
    ```
+
 3. **Configurar variables** en `.env.local` con los valores de Firebase.
 4. **Arrancar el entorno de desarrollo**
    ```bash
-   npm run dev
+   pnpm dev
    ```
 5. **Abrir la aplicación** en `http://localhost:3000`.
 
-Para generar una build de producción ejecuta `npm run build` y luego `npm start`.
+Para generar una build de producción ejecuta `pnpm build` y luego `pnpm start`.
 
 ## Componentes y Hooks Clave
 
@@ -148,12 +153,14 @@ Para generar una build de producción ejecuta `npm run build` y luego `npm start
 
 ## Scripts disponibles
 
-- `npm run dev`: levanta el servidor de desarrollo de Next.js.
-- `npm run build`: crea la compilación optimizada.
-- `npm run start`: ejecuta la build previa en modo producción.
-- `npm run lint`: ejecuta ESLint sobre el proyecto.
-- `scripts/create-admin-user.ts`: crea un usuario con rol de administrador (ejecuta con `npx tsx scripts/create-admin-user.ts`).
-- `scripts/seed-usuarios.ts`: carga datos iniciales de usuarios (ejecuta con `npx tsx scripts/seed-usuarios.ts`).
+- `pnpm dev`: levanta el servidor de desarrollo de Next.js.
+- `pnpm build`: crea la compilación optimizada.
+- `pnpm start`: ejecuta la build previa en modo producción.
+- `pnpm lint`: ejecuta ESLint sobre el proyecto.
+- `pnpm test`: ejecuta la suite de Jest.
+- `pnpm check`: corre formato, lint y type-check en conjunto.
+- `scripts/create-admin-user.ts`: crea un usuario con rol de administrador (ejecuta con `pnpm dlx tsx scripts/create-admin-user.ts`).
+- `scripts/seed-usuarios.ts`: carga datos iniciales de usuarios (ejecuta con `pnpm dlx tsx scripts/seed-usuarios.ts`).
 
 > Si prefieres otra herramienta para ejecutar TypeScript (por ejemplo `ts-node`), ajústala en los comandos anteriores.
 

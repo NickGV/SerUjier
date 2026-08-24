@@ -59,3 +59,7 @@ backup-*.json
 .agents/
 .claude/
 skills-lock.json
+
+# Solo pnpm: evita que un `npm install`/`yarn` accidental recree un lockfile rival
+package-lock.json
+yarn.lock
