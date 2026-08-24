@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import { Switch } from '@/shared/ui/switch';
 import { useUser } from '@/shared/contexts/user-context';
 import { toast } from 'sonner';
 import {
@@ -250,12 +251,17 @@ const MiembroDetail = () => {
               <CardTitle className="text-xl font-bold text-gray-800">
                 {miembro.nombre}
               </CardTitle>
-              <Badge
-                variant="outline"
-                className={`w-fit mt-1 ${getCategoriaColor(miembro.categoria)}`}
-              >
-                {getCategoriaLabel(miembro.categoria)}
-              </Badge>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge
+                  variant="outline"
+                  className={getCategoriaColor(miembro.categoria)}
+                >
+                  {getCategoriaLabel(miembro.categoria)}
+                </Badge>
+                {miembro.esMiembro === true && (
+                  <Badge variant="secondary">Miembro</Badge>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -457,6 +463,18 @@ const MiembroDetail = () => {
                     <SelectItem value="adolescente">Adolescente</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Miembro
+                </label>
+                <Switch
+                  checked={editingMiembro.esMiembro}
+                  onCheckedChange={(checked) =>
+                    setEditingMiembro({ ...editingMiembro, esMiembro: checked })
+                  }
+                />
               </div>
 
               <div>

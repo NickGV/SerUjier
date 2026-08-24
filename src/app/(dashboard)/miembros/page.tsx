@@ -1,6 +1,10 @@
 'use client';
 
 import { useModulePermissions } from '@/shared/hooks/use-permisos';
+import {
+  filterMiembros,
+  type MembershipFilter,
+} from '@/shared/lib/miembros-filters';
 import { sortByNombre } from '@/shared/lib/sort-utils';
 import {
   addMiembro,
@@ -27,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import { Switch } from '@/shared/ui/switch';
 import {
   AlertTriangle,
   Baby,
@@ -51,6 +56,8 @@ export default function MiembrosPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  const [filtroMembership, setFiltroMembership] =
+    useState<MembershipFilter>('todos');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newMiembro, setNewMiembro] = useState<{
     nombre: string;
@@ -125,14 +132,12 @@ export default function MiembrosPage() {
     );
   }
 
-  const filteredMiembros = miembros.filter((miembro) => {
-    const nombreMatch = miembro.nombre
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const categoriaMatch =
-      filtroCategoria === 'todos' || miembro.categoria === filtroCategoria;
-    return nombreMatch && categoriaMatch;
-  });
+  const filteredMiembros = filterMiembros(
+    miembros,
+    searchTerm,
+    filtroCategoria,
+    filtroMembership
+  );
 
   // Ordenar miembros alfabéticamente
   const sortedMiembros = sortByNombre(filteredMiembros);
@@ -377,22 +382,48 @@ export default function MiembrosPage() {
             />
           </div>
 
-          <div>
-            <label className="text-xs text-gray-600 mb-1 block">
-              Categoría
-            </label>
-            <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos</SelectItem>
-                <SelectItem value="hermano">Hermanos</SelectItem>
-                <SelectItem value="hermana">Hermanas</SelectItem>
-                <SelectItem value="nino">Niños</SelectItem>
-                <SelectItem value="adolescente">Adolescentes</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">
+                Categoría
+              </label>
+              <Select
+                value={filtroCategoria}
+                onValueChange={setFiltroCategoria}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="hermano">Hermanos</SelectItem>
+                  <SelectItem value="hermana">Hermanas</SelectItem>
+                  <SelectItem value="nino">Niños</SelectItem>
+                  <SelectItem value="adolescente">Adolescentes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-600 mb-1 block">
+                Membresía
+              </label>
+              <Select
+                value={filtroMembership}
+                onValueChange={(value: MembershipFilter) =>
+                  setFiltroMembership(value)
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="miembros">Miembros</SelectItem>
+                  <SelectItem value="no-miembros">No miembros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -444,6 +475,18 @@ export default function MiembrosPage() {
                     <SelectItem value="adolescente">Adolescente</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Miembro
+                </label>
+                <Switch
+                  checked={newMiembro.esMiembro}
+                  onCheckedChange={(checked) =>
+                    setNewMiembro({ ...newMiembro, esMiembro: checked })
+                  }
+                />
               </div>
 
               <div>
@@ -524,6 +567,11 @@ export default function MiembrosPage() {
                     >
                       {getCategoriaLabel(miembro.categoria)}
                     </Badge>
+                    {miembro.esMiembro === true && (
+                      <Badge variant="secondary" className="text-xs">
+                        Miembro
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-xs">
                       Desde:{' '}
                       {miembro.fechaRegistro
@@ -580,7 +628,9 @@ export default function MiembrosPage() {
               No se encontraron miembros
             </h3>
             <p className="text-gray-500">
-              {searchTerm || filtroCategoria !== 'todos'
+              {searchTerm ||
+              filtroCategoria !== 'todos' ||
+              filtroMembership !== 'todos'
                 ? 'Intenta con un término de búsqueda diferente'
                 : 'Aún no hay miembros registrados'}
             </p>
@@ -674,6 +724,18 @@ export default function MiembrosPage() {
                     <SelectItem value="adolescente">Adolescente</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Miembro
+                </label>
+                <Switch
+                  checked={editingMiembro.esMiembro}
+                  onCheckedChange={(checked) =>
+                    setEditingMiembro({ ...editingMiembro, esMiembro: checked })
+                  }
+                />
               </div>
 
               <div>
