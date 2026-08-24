@@ -10,17 +10,26 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { type Miembro } from '../types';
+import { type Miembro, type MiembroInput } from '../types';
+
+// Single read boundary for miembros documents. Missing, null, or
+// non-boolean `esMiembro` values default to `false` — the only place
+// that default is applied (no scattered `?? false` in UI code).
+export function normalizeMiembro(
+  id: string,
+  data: Record<string, unknown>
+): Miembro {
+  return { ...data, id, esMiembro: data.esMiembro === true } as Miembro;
+}
 
 export async function fetchMiembros(): Promise<Miembro[]> {
   try {
     const q = query(collection(db, 'miembros'), orderBy('nombre', 'asc'));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Miembro[];
+    return querySnapshot.docs.map((doc) =>
+      normalizeMiembro(doc.id, doc.data())
+    );
   } catch (error) {
     console.error('Error fetching miembros:', error);
     throw error;
@@ -28,7 +37,7 @@ export async function fetchMiembros(): Promise<Miembro[]> {
 }
 
 export async function addMiembro(
-  miembro: Omit<Miembro, 'id'>
+  miembro: MiembroInput
 ): Promise<{ id: string }> {
   try {
     const docRef = await addDoc(collection(db, 'miembros'), miembro);
@@ -41,7 +50,7 @@ export async function addMiembro(
 
 export async function updateMiembro(
   id: string,
-  data: Partial<Omit<Miembro, 'id'>>
+  data: Partial<MiembroInput>
 ): Promise<void> {
   try {
     const miembroRef = doc(db, 'miembros', id);
@@ -58,10 +67,7 @@ export async function getMiembroById(id: string): Promise<Miembro> {
     const miembroSnap = await getDoc(miembroRef);
 
     if (miembroSnap.exists()) {
-      return {
-        id: miembroSnap.id,
-        ...miembroSnap.data(),
-      } as Miembro;
+      return normalizeMiembro(miembroSnap.id, miembroSnap.data());
     } else {
       throw new Error('Miembro no encontrado');
     }

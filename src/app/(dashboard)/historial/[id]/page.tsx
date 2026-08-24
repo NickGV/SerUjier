@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUser } from '@/shared/contexts/user-context';
-import {
-  getHistorialRecordById,
-  fetchMiembros,
-  fetchAmigos,
-} from '@/shared/lib/utils';
+import { getHistorialRecordById, fetchAmigos } from '@/shared/lib/utils';
+import { fetchMiembros } from '@/shared/firebase/miembros';
+import { type Miembro } from '@/shared/types';
 import { RoleGuard } from '@/shared/components/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -97,15 +95,6 @@ interface HistorialRecord extends HistorialRecordAPI {
   amigos: number;
   heRestauracion: number;
   hermanosVisitas: number;
-}
-
-interface Miembro {
-  id: string;
-  nombre: string;
-  telefono?: string;
-  categoria: 'hermano' | 'hermana' | 'nino' | 'adolescente';
-  notas?: string;
-  fechaRegistro: string;
 }
 
 interface Amigo {

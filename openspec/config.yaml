@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 15.4.8, React 19.1.1, TypeScript 5 (strict), Tailwind CSS v4, shadcn/ui, Firebase/Firestore
+  Architecture: App Router pages under src/app/(dashboard)/; feature folders under src/features/{feature}/ (hooks + components + services + pages); shared types in src/shared/types/; Firebase CRUD via useFirebaseCRUD<T> hooks and src/shared/firebase/ modules
+  Testing: jest (`npm test`), tests mirror src/ under src/__tests__/
+  Style: ESLint via `npm run lint`, build via `npm run build` (next build)
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Data model changes must state migration/backfill strategy for existing Firestore documents
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns (amigos feature is the reference pattern)
+      - UI copy in the app is Spanish (neutral); code identifiers and comments in English
+    tdd: false
+    test_command: "npm test"
+  verify:
+    test_command: "npm test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
