@@ -126,6 +126,33 @@ describe('runMiembroTagMigration', () => {
     expect(deps.writeBatch).not.toHaveBeenCalled();
   });
 
+  it('dry-run reports success: false when a document is unreadable', async () => {
+    const deps: MiembroTagMigrationDeps = {
+      readCollection: jest.fn().mockResolvedValue([
+        {
+          id: 'm1',
+          data: () => {
+            throw new Error('Corrupt data');
+          },
+        },
+        { id: 'm2', data: () => ({ categoria: 'hermano' }) },
+      ]),
+      writeBatch: jest.fn().mockResolvedValue(undefined),
+      log: mockLog,
+      errorLog: mockErrorLog,
+    };
+
+    const result = await runMiembroTagMigration(
+      { dryRun: true, execute: false },
+      deps
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].id).toBe('m1');
+    expect(deps.writeBatch).not.toHaveBeenCalled();
+  });
+
   it('execute writes only changed documents in batches', async () => {
     const deps = createMockDeps([
       { id: 'm1', data: { categoria: 'hermano' } },
@@ -143,6 +170,51 @@ describe('runMiembroTagMigration', () => {
     expect(deps.writeBatch).toHaveBeenCalledWith('miembros', [
       { id: 'm1', data: expect.objectContaining({ esMiembro: true }) },
     ]);
+  });
+
+  it('writes only the esMiembro field per document, not the whole record', async () => {
+    const deps = createMockDeps([
+      {
+        id: 'm1',
+        data: { categoria: 'hermano', nombre: 'Juan', telefono: '123' },
+      },
+    ]);
+
+    await runMiembroTagMigration({ dryRun: false, execute: true }, deps);
+
+    expect(deps.writeBatch).toHaveBeenCalledWith('miembros', [
+      { id: 'm1', data: { esMiembro: true } },
+    ]);
+  });
+
+  it('records a failing batch and still runs later batches', async () => {
+    const writeBatch = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('Batch write failed'))
+      .mockResolvedValueOnce(undefined);
+
+    const deps: MiembroTagMigrationDeps = {
+      readCollection: jest.fn().mockResolvedValue([
+        { id: 'm1', data: () => ({ categoria: 'hermano' }) },
+        { id: 'm2', data: () => ({ categoria: 'hermana' }) },
+      ]),
+      writeBatch,
+      log: mockLog,
+      errorLog: mockErrorLog,
+    };
+
+    const result = await runMiembroTagMigration(
+      { dryRun: false, execute: true, batchSize: 1 },
+      deps
+    );
+
+    expect(writeBatch).toHaveBeenCalledTimes(2);
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual([{ id: 'm1', error: 'Batch write failed' }]);
+    expect(result.totalUpdated).toBe(1);
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      expect.stringContaining('Error writing batch 1/2')
+    );
   });
 
   it('logs errors for malformed documents without crashing', async () => {

@@ -61,19 +61,30 @@ Chain strategy: pending
 
 ## Phase 6: Filter Extraction & UI Foundation (Slice B)
 
-- [ ] 6.1 Create `src/shared/lib/miembros-filters.ts`: export `type MembershipFilter = 'todos' | 'miembros' | 'no-miembros'` and pure function `filterMiembros(rows: Miembro[], search?: string, categoria?: string, membership: MembershipFilter = 'todos'): Miembro[]` combining categoria and membership filters (mirrors `sort-utils.ts` structure)
-- [ ] 6.2 Create `src/shared/ui/switch.tsx`: shadcn Switch component mirroring checkbox, wrapping `@radix-ui/react-switch` (see 6.3 for dependency install)
-- [ ] 6.3 Install `@radix-ui/react-switch` dependency via `npm install` (shadcn prerequisite); verify lockfile updates
+- [x] 6.1 Create `src/shared/lib/miembros-filters.ts`: export `type MembershipFilter = 'todos' | 'miembros' | 'no-miembros'` and pure function `filterMiembros(rows: Miembro[], search?: string, categoria?: string, membership: MembershipFilter = 'todos'): Miembro[]` combining categoria and membership filters (mirrors `sort-utils.ts` structure)
+- [x] 6.2 Create `src/shared/ui/switch.tsx`: shadcn Switch component mirroring checkbox, wrapping `@radix-ui/react-switch` (see 6.3 for dependency install)
+- [x] 6.3 Install `@radix-ui/react-switch` dependency via `npm install` (shadcn prerequisite); verify lockfile updates
 
 ## Phase 7: UI Integration (Slice B)
 
-- [ ] 7.1 Update `src/app/(dashboard)/miembros/page.tsx`: add membership `<Select>` control (options: "Todos", "Miembros", "No miembros") beside categoria filter; apply `filterMiembros()` to combined filter state; add `<Badge variant="secondary">Miembro</Badge>` to table rows where `esMiembro === true`; update edit dialog to include `<Switch>` for "Miembro" toggle bound to `esMiembro` field
-- [ ] 7.2 Update `src/app/(dashboard)/miembros/[id]/page.tsx`: add `<Badge>Miembro</Badge>` display on detail view if `esMiembro === true`; add `<Switch>` for "Miembro" toggle in edit form, updating `esMiembro` on save via `updateMiembro()`
+- [x] 7.1 Update `src/app/(dashboard)/miembros/page.tsx`: add membership `<Select>` control (options: "Todos", "Miembros", "No miembros") beside categoria filter; apply `filterMiembros()` to combined filter state; add `<Badge variant="secondary">Miembro</Badge>` to table rows where `esMiembro === true`; update edit dialog to include `<Switch>` for "Miembro" toggle bound to `esMiembro` field
+- [x] 7.2 Update `src/app/(dashboard)/miembros/[id]/page.tsx`: add `<Badge>Miembro</Badge>` display on detail view if `esMiembro === true`; add `<Switch>` for "Miembro" toggle in edit form, updating `esMiembro` on save via `updateMiembro()`
 
 ## Phase 8: UI Unit Tests (Slice B)
 
-- [ ] 8.1 Create `src/__tests__/lib/miembros-filters.test.ts`: table-driven test cases covering all three membership filter values (`todos`, `miembros`, `no-miembros`) × three categoria values (`hermano`, `nino`, `adolescente`) on plain fixtures (12+ cases; no Firestore mock)
-- [ ] 8.2 Run `npm run build` and `npm test` — verify all tests pass; no page-level RTL smoke tests (deferred per design; filter logic is pure and tested separately)
+- [x] 8.1 Create `src/__tests__/lib/miembros-filters.test.ts`: table-driven test cases covering all three membership filter values (`todos`, `miembros`, `no-miembros`) × three categoria values (`hermano`, `nino`, `adolescente`) on plain fixtures (12+ cases; no Firestore mock)
+- [x] 8.2 Run `npm run build` and `npm test` — verify all tests pass; no page-level RTL smoke tests (deferred per design; filter logic is pure and tested separately)
+
+---
+
+## Review follow-ups (slice B)
+
+Approved fixes from the gentle-ai review of Slice A, implemented alongside Slice B:
+
+- [x] FIX-1 `src/services/miembroTagMigration.ts`: dry-run branch now returns `success: errors.length === 0` (matching the execute branch) instead of an unconditional `true`, so `scripts/migrate-miembro-tag.ts` exits 1 when a dry run hits an unreadable document. Added test `dry-run reports success: false when a document is unreadable`.
+- [x] FIX-2a `src/services/miembroTagMigration.ts`: the batch update payload is now a minimal `{ esMiembro }` object derived per document instead of the whole transformed record, so a concurrent edit to other fields is never reverted by the migration. `transformMiembroDocument`'s public shape and idempotency semantics are unchanged. Added test `writes only the esMiembro field per document, not the whole record`.
+- [x] FIX-2b `src/services/miembroTagMigration.ts`: each `writeBatch` call inside `runMiembroTagMigration` is now wrapped in try/catch; a failing batch records its documents' ids into `errors` and later batches still run instead of the whole run aborting unreported. `totalUpdated` now reflects only successful writes. Added test `records a failing batch and still runs later batches`.
+- No changes were needed in `scripts/migrate-miembro-tag.ts`: it already forwards `result.success` to the process exit code and passes through `document.data` verbatim, so both fixes are fully contained in the service.
 
 ---
 
