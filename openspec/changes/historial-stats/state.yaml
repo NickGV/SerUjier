@@ -1,0 +1,54 @@
+change: historial-stats
+store: openspec
+created: 2026-08-24
+preflight:
+  execution_mode: interactive
+  artifact_store: openspec
+  delivery_strategy: single-pr
+  review_budget_lines: 800
+delivery_resolution:
+  decided: 2026-08-24
+  outcome: chained-prs
+  chain_strategy: stacked-to-main
+  rationale: "tasks forecast ~1450 lines vs 800 budget; owner chose the split over a size:exception"
+  size_exception:
+    granted_by: owner
+    date: 2026-08-24
+    scope: "PR 1 / Slice A only"
+    actual_lines: 1163
+    budget_lines: 800
+    rationale: "782 of the 1163 lines are one pure helper module plus its 38-test suite (apply front-loaded slice B's pure calculations into the same cohesive tested module); owner chose a single PR over splitting already-verified work"
+  slices:
+    - "PR 1 / Slice A (actual 1163, size:exception granted): pure helpers + tests, estadisticas route + page shell, amigos follow-up table (flagship), normalizeHistorialRecord adopted by both historial pages, entry link (tasks phases 1-3)"
+    - "PR 2 / Slice B (~750): shadcn chart primitive, per-servicio averages + recharts bar chart, date-range filter, top faltantes ranking, orphan cleanup, [id] label fix (tasks phases 4-7)"
+phases:
+  explore: done
+  proposal: done
+  spec: done  # 9 requirements / 12 scenarios, ADDED-only (openspec/specs is empty on main)
+  design: done  # D1-D8 with rejected alternatives; forecast ~1450 lines flags an A/B slice split
+  tasks: done  # 23 tasks / 7 phases; forecast ~1450 lines vs 800 budget -> decision needed before apply
+  apply: pending
+  verify: pending
+  archive: pending
+product_decisions:
+  stats_v1:
+    - "Promedio por tipo de culto (per-servicio averages across the 9-value enum)"
+    - "Top faltantes de miembros, ventana ultimos 90 dias"
+    - "Seguimiento individual de AMIGOS (user's own emphasis): per-amigo last-attended service/date and days since last visit, to track how long a visitor has not returned"
+  not_selected_v1:
+    - "Tendencia de asistencia en el tiempo (week/month trend)"
+    - "Miembros vs no-miembros"
+  placement: "new Estadisticas tab/section inside historial (not enriching the list page)"
+  visual: "recharts from v1 (shadcn chart primitives), lazy-loaded so the historial list bundle is not penalized"
+  faltantes_window: "last 90 days"
+  assumptions: "esMiembro/faltantes computed from CURRENT membership status; orphaned features/historial/components/historial/* deleted as cleanup; pre-existing 'Total Asistentes' label bug in historial/[id] fixed as minor ride-along"
+proposal_confirmed_decisions:
+  faltantes_denominator: "all servicio types count as a miss within the 90-day window (not dominical-only)"
+  faltantes_scope: "only esMiembro true (diverges intentionally from historial/[id], which still counts all miembros; possible later alignment)"
+  amigos_never_visited: "same single table, sorted last, rendered as 'nunca' (NOT a separate group)"
+  date_filter_v1: "YES - desde/hasta range in the stats view scoping per-servicio averages and the chart; faltantes stays fixed 90 days; amigos last-visit stays all-time"
+  placement_mechanism: "dedicated route segment src/app/(dashboard)/historial/estadisticas/ (static segment wins over [id]); no tabs.tsx primitive exists so a route is cheaper and auto-code-splits recharts"
+  crud_consolidation: "DEFERRED - legacy shared/lib/utils.ts historial CRUD (~150 lines, live read path for delete + Excel/PDF/CSV export) is not repointed here; instead one tested normalizeHistorialRecord is introduced and adopted by both existing pages so no third normalization appears. Full consolidation recorded as a follow-up change."
+notes:
+  - "Product goal is open-ended ('estadísticas más útiles en historial'); proposal round must lock which stats ship first, placement, and chart-vs-cards."
+  - "Pre-existing adjacent bug surfaced by exploration (out of scope unless owner pulls it in): historial/[id] third quick-stat card labeled 'Total Asistentes' renders total registered miembros, not attendees."

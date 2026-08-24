@@ -7,6 +7,11 @@ import { getHistorialRecordById, fetchAmigos } from '@/shared/lib/utils';
 import { fetchMiembros } from '@/shared/firebase/miembros';
 import { type Miembro } from '@/shared/types';
 import { RoleGuard } from '@/shared/components/role-guard';
+import {
+  normalizeHistorialRecord,
+  type HistorialRecordRaw,
+  type NormalizedHistorialFields,
+} from '@/shared/lib/historial-stats';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
@@ -64,38 +69,16 @@ import {
 } from '@/shared/lib/export/utils';
 import { toast } from 'sonner';
 
-interface HistorialRecordAPI {
+interface HistorialRecordAPI extends HistorialRecordRaw {
   id: string;
-  fecha: string;
-  servicio: string;
   ujier: string | string[];
   hermanos: number;
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  amigos?: number;
-  simpatizantes?: number; // Legacy field
-  total: number;
-  amigosAsistieron?: Array<{ id: string; nombre: string }>;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
-  visitasAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
-  miembrosAsistieron?: {
-    hermanos?: Array<{ id: string; nombre: string }>;
-    hermanas?: Array<{ id: string; nombre: string }>;
-    ninos?: Array<{ id: string; nombre: string }>;
-    adolescentes?: Array<{ id: string; nombre: string }>;
-    heRestauracion?: Array<{ id: string; nombre: string }>;
-  };
-  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
-  heRestauracion?: number;
-  hermanosVisitas?: number;
 }
 
-interface HistorialRecord extends HistorialRecordAPI {
-  amigos: number;
-  heRestauracion: number;
-  hermanosVisitas: number;
-}
+type HistorialRecord = HistorialRecordAPI & NormalizedHistorialFields;
 
 interface Amigo {
   id: string;
@@ -158,19 +141,11 @@ function ServicioHistorialContent() {
           fetchMiembros(),
           fetchAmigos(),
         ]);
-        // Ensure new fields exist with default values
+        // Ensure new fields exist with default values (legacy fallback
+        // chain is centralized in `normalizeHistorialRecord`)
         const recordApi = recordData as HistorialRecordAPI;
-        const normalizedRecord: HistorialRecord = {
-          ...recordApi,
-          amigos: recordApi.amigos ?? recordApi.simpatizantes ?? 0,
-          amigosAsistieron:
-            recordApi.amigosAsistieron ??
-            recordApi.simpatizantesAsistieron ??
-            recordApi.visitasAsistieron ??
-            [],
-          heRestauracion: recordApi.heRestauracion || 0,
-          hermanosVisitas: recordApi.hermanosVisitas || 0,
-        };
+        const normalizedRecord: HistorialRecord =
+          normalizeHistorialRecord(recordApi);
         setRecord(normalizedRecord);
         setAllMembers(membersData);
         setAllAmigos(amigosData);

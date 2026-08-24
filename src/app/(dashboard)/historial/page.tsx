@@ -3,6 +3,11 @@
 import { RoleGuard } from '@/shared/components/role-guard';
 import { useModulePermissions } from '@/shared/hooks/use-permisos';
 import { deleteHistorialRecord, fetchHistorial } from '@/shared/lib/utils';
+import {
+  normalizeHistorialRecord,
+  type HistorialRecordRaw,
+  type NormalizedHistorialFields,
+} from '@/shared/lib/historial-stats';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -16,6 +21,7 @@ import {
 } from '@/shared/ui/select';
 import {
   AlertTriangle,
+  BarChart3,
   Calendar,
   CalendarDays,
   Download,
@@ -27,6 +33,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -44,38 +51,16 @@ import {
   loadLogoBase64,
 } from '@/shared/lib/export/utils';
 
-interface HistorialRecordAPI {
+interface HistorialRecordAPI extends HistorialRecordRaw {
   id: string;
-  fecha: string;
-  servicio: string;
   ujier: string | string[];
   hermanos: number;
   hermanas: number;
   ninos: number;
   adolescentes: number;
-  amigos?: number;
-  simpatizantes?: number; // Legacy field
-  total: number;
-  amigosAsistieron?: Array<{ id: string; nombre: string }>;
-  simpatizantesAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
-  visitasAsistieron?: Array<{ id: string; nombre: string }>; // Legacy field
-  miembrosAsistieron?: {
-    hermanos?: Array<{ id: string; nombre: string }>;
-    hermanas?: Array<{ id: string; nombre: string }>;
-    ninos?: Array<{ id: string; nombre: string }>;
-    adolescentes?: Array<{ id: string; nombre: string }>;
-    heRestauracion?: Array<{ id: string; nombre: string }>;
-  };
-  hermanosVisitasAsistieron?: Array<{ id: string; nombre: string }>;
-  heRestauracion?: number;
-  hermanosVisitas?: number;
 }
 
-interface HistorialRecord extends HistorialRecordAPI {
-  amigos: number;
-  heRestauracion: number;
-  hermanosVisitas: number;
-}
+type HistorialRecord = HistorialRecordAPI & NormalizedHistorialFields;
 
 const DIAS_SEMANA_CHIPS: Array<{ value: number; label: string }> = [
   { value: 2, label: 'Martes' },
@@ -134,20 +119,11 @@ function HistorialContent() {
       }
 
       const data = await fetchHistorial();
-      // Ensure new fields exist with default values
-      const normalizedData: HistorialRecord[] = data.map(
-        (record: HistorialRecordAPI) => ({
-          ...record,
-          amigos: record.amigos ?? record.simpatizantes ?? 0,
-          amigosAsistieron:
-            record.amigosAsistieron ??
-            record.simpatizantesAsistieron ??
-            record.visitasAsistieron ??
-            [],
-          heRestauracion: record.heRestauracion || 0,
-          hermanosVisitas: record.hermanosVisitas || 0,
-        })
-      );
+      // Ensure new fields exist with default values (legacy fallback chain
+      // is centralized in `normalizeHistorialRecord`)
+      const normalizedData: HistorialRecord[] = (
+        data as HistorialRecordAPI[]
+      ).map(normalizeHistorialRecord);
       setHistorial(normalizedData);
 
       if (isRefresh) {
@@ -605,19 +581,9 @@ function HistorialContent() {
       await deleteHistorialRecord(recordId);
       // Recargar los datos
       const updatedData = await fetchHistorial();
-      const normalizedData: HistorialRecord[] = updatedData.map(
-        (record: HistorialRecordAPI) => ({
-          ...record,
-          amigos: record.amigos ?? record.simpatizantes ?? 0,
-          amigosAsistieron:
-            record.amigosAsistieron ??
-            record.simpatizantesAsistieron ??
-            record.visitasAsistieron ??
-            [],
-          heRestauracion: record.heRestauracion || 0,
-          hermanosVisitas: record.hermanosVisitas || 0,
-        })
-      );
+      const normalizedData: HistorialRecord[] = (
+        updatedData as HistorialRecordAPI[]
+      ).map(normalizeHistorialRecord);
       setHistorial(normalizedData);
       setShowDeleteConfirm(null);
       toast.success('Registro eliminado exitosamente');
@@ -669,18 +635,30 @@ function HistorialContent() {
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
               Historial de Asistencia
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadHistorialData(true)}
-              disabled={isRefreshing}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
-            >
-              <RefreshCw
-                className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
-              />
-              {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link href="/historial/estadisticas">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs sm:text-sm"
+                >
+                  <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  Estadísticas
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadHistorialData(true)}
+                disabled={isRefreshing}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:text-white hover:from-green-600 hover:to-green-700 text-xs sm:text-sm"
+              >
+                <RefreshCw
+                  className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`}
+                />
+                {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+              </Button>
+            </div>
           </div>
           <div className="flex items-center justify-between mt-2">
             <Badge
