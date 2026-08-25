@@ -32,11 +32,11 @@ delivery_resolution:
 phases:
   explore: done
   proposal: done
-  spec: done  # 9 requirements / 12 scenarios, ADDED-only (openspec/specs was empty on main)
+  spec: done  # 9 requirements / 13 scenarios (requirement 8 gained a scenario when it was amended post-apply), ADDED-only
   design: done  # D1-D8 with rejected alternatives; forecast ~1450 lines flags an A/B slice split
   tasks: done  # 23 tasks / 7 phases; forecast ~1450 lines vs 800 budget -> decision needed before apply
-  apply: in_progress  # Slice A done (tasks phases 1-3, PR #19 merged); Slice B in flight (phases 4-7)
-  verify: partial  # verify-report.md covers Slice A only; a second pass is expected after Slice B
+  apply: done  # Slice A merged as PR #19 (phases 1-3); Slice B is PR #21 (phases 4-7); 23/23 tasks complete
+  verify: done  # final pass covers Slice A + B, verdict pass_with_warnings, 0 blockers; verify-report.md carries the gentle-ai.verify-result/v1 envelope
   archive: pending
 product_decisions:
   stats_v1:
