@@ -7,9 +7,29 @@ import {
   normalizeHistorialRecord,
   todayISODate,
   toEpochDay,
+  type AttendeeBuckets,
   type HistorialRecordRaw,
   type MiembroLike,
 } from '@/shared/lib/historial-stats';
+
+describe('AttendeeBuckets', () => {
+  it('accepts every valid categoria key', () => {
+    const buckets: AttendeeBuckets = {
+      hermanos: [],
+      hermanas: [],
+      ninos: [],
+      adolescentes: [],
+      heRestauracion: [],
+    };
+    expect(Object.keys(buckets)).toHaveLength(5);
+  });
+
+  it('rejects a misspelled categoria key at compile time', () => {
+    // @ts-expect-error 'ninas' is not a valid MiembroAsistioCategoria key
+    const buckets: AttendeeBuckets = { ninas: [] };
+    expect(buckets).toBeDefined();
+  });
+});
 
 describe('normalizeHistorialRecord', () => {
   it('resolves the legacy simpatizantes -> amigos fallback and counts it downstream', () => {
@@ -162,6 +182,25 @@ describe('filterRecordsByDateRange', () => {
   it('does not mutate the original array', () => {
     filterRecordsByDateRange(rows, '2026-01-01', '2026-01-15');
     expect(rows).toHaveLength(4);
+  });
+
+  it('treats a lone malformed bound as absent, returning all rows unchanged', () => {
+    expect(
+      filterRecordsByDateRange(rows, '2026-13-01').map((r) => r.label)
+    ).toEqual(['a', 'b', 'c', 'd']);
+    expect(
+      filterRecordsByDateRange(rows, undefined, '2026-13-01').map(
+        (r) => r.label
+      )
+    ).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('ignores a malformed bound while still applying the other, valid bound', () => {
+    expect(
+      filterRecordsByDateRange(rows, '2026-13-01', '2026-01-15').map(
+        (r) => r.label
+      )
+    ).toEqual(['a', 'b']);
   });
 });
 

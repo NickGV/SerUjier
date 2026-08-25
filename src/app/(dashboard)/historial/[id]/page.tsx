@@ -734,7 +734,7 @@ function ServicioHistorialContent() {
       </Card>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -759,20 +759,6 @@ function ServicioHistorialContent() {
             </div>
             <div className="text-2xl font-bold text-red-700">
               {faltantes.length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Users className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">
-                Total Asistentes
-              </span>
-            </div>
-            <div className="text-2xl font-bold text-blue-700">
-              {allMembers.length}
             </div>
           </CardContent>
         </Card>
