@@ -111,7 +111,7 @@ export function computeTopFaltantes(
 | `.../components/estadisticas/TopFaltantesCard.tsx` | Create | 90-day ranking, `missedCount / servicesInWindow` |
 | `src/shared/ui/chart.tsx`, `src/shared/ui/skeleton.tsx` | Create | `npx shadcn@latest add chart skeleton` |
 | `src/app/(dashboard)/historial/page.tsx` | Modify | Header entry link (`Link` + `BarChart3`); both inline `??` chains → `normalizeHistorialRecord` |
-| `src/app/(dashboard)/historial/[id]/page.tsx` | Modify | Adopt normalizer; "Total Asistentes" → `asistentes.length` (was `allMembers.length`) |
+| `src/app/(dashboard)/historial/[id]/page.tsx` | Modify | Adopt normalizer; **remove** the redundant "Total Asistentes" card and drop the grid to two columns (superseded 2026-08-25: repointing it to `asistentes.length` duplicated the adjacent "Asistentes" card, so the owner chose removal) |
 | `src/features/historial/components/historial/{StatsSummary,CategoryGrid,utils}` | Delete | Orphaned duplicate stats logic (410 lines) |
 | `package.json` + lockfile | Modify | `recharts` |
 

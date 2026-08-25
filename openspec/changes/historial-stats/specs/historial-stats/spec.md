@@ -92,15 +92,23 @@ The system MUST delete `src/features/historial/components/historial/{StatsSummar
 - WHEN the repository is inspected after this change
 - THEN those three files no longer exist
 
-### Requirement: Historial Detail Quick-Stat Label Fix
+### Requirement: Historial Detail Redundant Quick-Stat Removed
 
-The system MUST correct the `historial/[id]` card labeled "Total Asistentes" so it renders that record's own attendee count, not `allMembers.length`.
+The `historial/[id]` quick-stat card labeled "Total Asistentes" rendered `allMembers.length` (total registered miembros), which did not match its label. Correcting the value to that record's own attendee count made it an exact duplicate of the adjacent "Asistentes" card, so the system MUST remove the card instead and render the remaining quick stats as a two-column grid.
 
-#### Scenario: Card shows the record's own attendee count
+> Decision history: this requirement originally read "Historial Detail Quick-Stat Label Fix" and mandated repointing the value to `asistentes.length`. That fix was implemented in slice B and immediately produced two cards showing an identical number under near-identical labels. The owner reviewed the result on 2026-08-25 and chose removal over relabeling, since the "Asistentes" card already carries that figure.
+
+#### Scenario: Duplicate card is gone
+
+- GIVEN the historial detail view for any record
+- WHEN the quick-stat row renders
+- THEN exactly two cards appear, "Asistentes" and "Faltantes", and no card labeled "Total Asistentes" exists
+
+#### Scenario: No attendee count is lost
 
 - GIVEN a record with a known attendee total
-- WHEN the card renders
-- THEN its number equals that record's attendee count, not the total registered miembros
+- WHEN the quick-stat row renders
+- THEN the "Asistentes" card still shows that record's own attendee count
 
 ### Requirement: Read-Only Behavior
 

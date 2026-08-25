@@ -18,17 +18,25 @@ delivery_resolution:
     actual_lines: 1163
     budget_lines: 800
     rationale: "782 of the 1163 lines are one pure helper module plus its 38-test suite (apply front-loaded slice B's pure calculations into the same cohesive tested module); owner chose a single PR over splitting already-verified work"
+  size_exception_slice_b:
+    granted_by: owner
+    date: 2026-08-25
+    scope: "PR 2 / Slice B only"
+    forecast_lines: 1400
+    budget_lines: 800
+    rationale: "orchestrator measured the real Slice B shape before apply and offered a mechanical/logic split; owner chose one PR with size:exception instead. Roughly 1040 of the forecast lines are mechanical (~330 vendored shadcn chart.tsx, ~300 generated pnpm-lock entries for recharts, 410 deleted orphan lines that nothing imports) against ~380 lines of new logic (3 cards, chart, date filter, label fix)."
+    disclosed_risk: "the Slice A forecast said ~700 and landed at 1163, so this ~1400 figure is an estimate and may also run over"
   slices:
-    - "PR 1 / Slice A (actual 1163, size:exception granted): pure helpers + tests, estadisticas route + page shell, amigos follow-up table (flagship), normalizeHistorialRecord adopted by both historial pages, entry link (tasks phases 1-3)"
-    - "PR 2 / Slice B (~750): shadcn chart primitive, per-servicio averages + recharts bar chart, date-range filter, top faltantes ranking, orphan cleanup, [id] label fix (tasks phases 4-7)"
+    - "PR 1 / Slice A (actual 1163, size:exception granted): pure helpers + tests, estadisticas route + page shell, amigos follow-up table (flagship), normalizeHistorialRecord adopted by both historial pages, entry link (tasks phases 1-3) -- MERGED as PR #19"
+    - "PR 2 / Slice B (forecast ~1400, size:exception granted): shadcn chart primitive, per-servicio averages + recharts bar chart, date-range filter, top faltantes ranking, orphan cleanup, [id] label fix (tasks phases 4-7)"
 phases:
   explore: done
   proposal: done
-  spec: done  # 9 requirements / 12 scenarios, ADDED-only (openspec/specs is empty on main)
+  spec: done  # 9 requirements / 12 scenarios, ADDED-only (openspec/specs was empty on main)
   design: done  # D1-D8 with rejected alternatives; forecast ~1450 lines flags an A/B slice split
   tasks: done  # 23 tasks / 7 phases; forecast ~1450 lines vs 800 budget -> decision needed before apply
-  apply: pending
-  verify: pending
+  apply: in_progress  # Slice A done (tasks phases 1-3, PR #19 merged); Slice B in flight (phases 4-7)
+  verify: partial  # verify-report.md covers Slice A only; a second pass is expected after Slice B
   archive: pending
 product_decisions:
   stats_v1:
