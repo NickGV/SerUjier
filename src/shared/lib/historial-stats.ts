@@ -12,8 +12,23 @@ import type { Miembro, MiembroSimplificado } from '@/shared/types';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Attendee ids grouped by an arbitrary bucket key (e.g. categoria). */
-export type AttendeeBuckets = Partial<Record<string, MiembroSimplificado[]>>;
+/**
+ * Closed set of categoria keys a `miembro` attendee can be bucketed under.
+ * Mirrors the pre-Slice-A literal union both historial pages declared
+ * inline, so a misspelled key fails `pnpm type-check` instead of silently
+ * type-checking and yielding `undefined` at runtime.
+ */
+export type MiembroAsistioCategoria =
+  | 'hermanos'
+  | 'hermanas'
+  | 'ninos'
+  | 'adolescentes'
+  | 'heRestauracion';
+
+/** Attendee ids grouped by a known categoria bucket key. */
+export type AttendeeBuckets = Partial<
+  Record<MiembroAsistioCategoria, MiembroSimplificado[]>
+>;
 
 /** Subset of `Miembro` needed to rank top faltantes. */
 export type MiembroLike = Pick<
@@ -111,19 +126,25 @@ export function toEpochDay(fecha: string): number | null {
 }
 
 /**
- * Filters rows to an inclusive `[desde, hasta]` date range. Either bound may
- * be omitted (or an empty string); when both are omitted every row is kept.
- * Rows with an unparseable `fecha` are excluded whenever a range is active.
+ * Filters rows to an inclusive `[desde, hasta]` date range. A bound counts
+ * as "active" only when it parses to a real calendar date via `toEpochDay`;
+ * an omitted, empty, or *unparseable* bound (e.g. `'2026-13-01'`) is treated
+ * exactly like an absent one for that side — it never narrows the range and
+ * it never, by itself, flips the range from "inactive" to "active". This
+ * matters because an active range excludes rows whose own `fecha` is
+ * unparseable, so without this rule a malformed bound could silently start
+ * dropping rows it was never meant to affect. Only when at least one bound
+ * resolves to a real date does the range become active.
  */
 export function filterRecordsByDateRange<T extends { fecha: string }>(
   rows: readonly T[],
   desde?: string,
   hasta?: string
 ): T[] {
-  if (!desde && !hasta) return [...rows];
-
   const desdeEpoch = desde ? toEpochDay(desde) : null;
   const hastaEpoch = hasta ? toEpochDay(hasta) : null;
+
+  if (desdeEpoch === null && hastaEpoch === null) return [...rows];
 
   return rows.filter((row) => {
     const rowEpoch = toEpochDay(row.fecha);
